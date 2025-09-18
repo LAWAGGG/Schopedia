@@ -12,7 +12,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        $product = Product::get();
+
+        return response()->json([
+            'product'=>$product
+        ]);
     }
 
     /**
@@ -28,7 +32,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**
