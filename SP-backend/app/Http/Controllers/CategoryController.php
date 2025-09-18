@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
@@ -12,7 +13,11 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        //
+        $category = Category::get();
+
+        return response()->json([
+            "Categories"=>$category
+        ]);
     }
 
     /**
@@ -28,7 +33,21 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        if (Auth::user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Forbidden Access'
+            ], 403);
+        }
+
+        $val = $request->validate([
+            "name" => "required|string"
+        ]);
+
+        $category = Category::create($val);
+
+        return response()->json([
+            "category" => $category
+        ]);
     }
 
     /**
@@ -52,7 +71,17 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        //
+        if(!$category){
+            return response()->json([
+                'message'=>'category not found'
+            ],404);
+        }
+
+        $category->update();
+
+        return response()->json([
+            "Category"=>$category
+        ]);
     }
 
     /**
@@ -60,6 +89,16 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        if(!$category){
+            return response()->json([
+                'message'=>'category not found'
+            ],404);
+        }
+
+        $category->delete();
+
+        return response()->json([
+            "message"=>"category deleted succesfully"
+        ]);
     }
 }
