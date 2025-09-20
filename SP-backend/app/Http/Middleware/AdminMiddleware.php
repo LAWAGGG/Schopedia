@@ -16,12 +16,13 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        return $next($request);
-
+        
         if (Auth::user()->role !== 'admin') {
             return response()->json([
                 'message' => 'Forbidden Access'
             ], 403);
         }
+        
+        return $next($request);
     }
 }

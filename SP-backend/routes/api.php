@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -24,7 +25,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
     //product route (CRUD)
+    Route::get('/product/own',[ProductController::class,"showOwnProduct"]);
     Route::resource("product", ProductController::class);
+    Route::post('/product/{product}/update',[ProductController::class, "update"]);
+
+    //orders
+    Route::post('/order/{product_id}', [OrderController::class, "store"]);
 
     Route::middleware("admin")->group(function () {
         //category route (CRUD)

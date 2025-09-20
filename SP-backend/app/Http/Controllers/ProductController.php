@@ -22,6 +22,14 @@ class ProductController extends Controller
         ]);
     }
 
+    public function showOwnProduct(){
+        $products = Product::where("user_id", Auth::user()->id)->get();
+
+        return response()->json([
+            "Products" =>$products
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -98,42 +106,54 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $request->validate(["name", "description", "price", "stock", "category_id"]);
-
-        if (!$product) {
-            return response()->json([
-                'message' => 'Product not found'
-            ], 404);
-        }
-
         if ($product->user_id != Auth::user()->id) {
             return response()->json([
-                "message" => "Access Denied"
+                "message" => "unauthorized action"
             ], 403);
         }
 
-        $input = $request->all();
+        $val = Validator::make($request->all(), [
+            "name" => "nullable|string|max:100",
+            "description" => "nullable|string",
+            "price" => "nullable|numeric",
+            "stock" => "nullable|numeric",
+            "category_id" => "nullable|exists:categories,id",
+            "image" => "nullable|image|mimes:jpg,jpeg,png"
+        ]);
 
+        if ($val->fails()) {
+            return response()->json([
+                "message" => "invalid fields",
+                "errors" => $val->errors()
+            ], 422);
+        }
+
+        $input = $request->only(['name', 'description', 'price', 'stock', 'category_id']);
+       
         if ($request->hasFile("image")) {
             $file = $request->file("image");
+            $slug = str($request->name ?? $product->name)->slug();
+            $ext  = $file->extension();
 
-            $slug = str($request->name)->slug();
-
-            $ext = $file->getClientOriginalExtension();
-
-            if ($product->image && Storage::disk("public")->exists(str_replace("storage/", "", $product->image))) {
-                Storage::disk("public")->delete(str_replace("storage/", "", $product->image));
+            // pengecekan eksistensi image
+            if ($product->image) {
+                $oldDir = dirname(str_replace("storage/", "", $product->image));
+                if (Storage::disk("public")->exists($oldDir)) {
+                    Storage::disk("public")->deleteDirectory($oldDir);
+                }
             }
             $path = $file->storeAs("images/$slug", "image.$ext", "public");
-
-            $input['image'] = "storage/" . $path;
+            $input["image"] = "storage/" . $path;
         }
 
         $product->update($input);
+
         return response()->json([
+            "message" => "Product updated succesfully",
             "product" => $product
         ]);
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -146,7 +166,7 @@ class ProductController extends Controller
             ], 404);
         }
 
-        if ($product->user_id != Auth::user()->id) {
+        if ($product->user_id != Auth::user()->id && Auth::user()->role != "admin") {
             return response()->json([
                 "message" => "Access Denied"
             ], 403);
