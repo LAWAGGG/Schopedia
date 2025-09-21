@@ -14,9 +14,22 @@ class OrderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function ordersAsBuyer()
     {
-        //
+        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->get();
+
+        return response()->json([
+            "Buyer Orders" => $orders
+        ]);
+    }
+
+    public function ordersAsSeller()
+    {
+        $orders = Order::where('seller_id', Auth::user()->id)->with(['product', 'buyer'])->get();
+
+        return response()->json([
+            "Seller Orders" => $orders
+        ]);
     }
 
     /**
@@ -59,10 +72,16 @@ class OrderController extends Controller
             ], 404);
         }
 
-        if($product->stock < $request->quantity){
+        if ($product->stock < $request->quantity) {
             return response()->json([
-                "message"=>"total product is $product->stock"
-            ],422);
+                "message" => "total product is $product->stock"
+            ], 422);
+        }
+
+        if (Auth::user()->id == $product->seller_id) {
+            return response()->json([
+                "message" => "you cannot order yours product"
+            ], 403);
         }
 
         $totalPrice = $product->price * $request->quantity;
@@ -78,7 +97,7 @@ class OrderController extends Controller
             "product_id" => $product->id,
             'seller_id' => $product->user_id,
             'quantity' => $request->quantity,
-            'total_price' => $totalPrice,
+            'total_price' => number_format($totalPrice, 0, ',', '.'),
             'status' => 'pending'
         ]);
 
@@ -91,9 +110,40 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Order $order)
+    public function showOrderBuyer($order_id)
     {
-        //
+        $order = Order::where('user_id', Auth::user()->id)
+            ->where('id', $order_id)
+            ->with(['product', 'seller'])
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'message' => "Order buyer not found"
+            ], 404);
+        }
+
+        return response()->json([
+            "Buyer Order" => $order
+        ]);
+    }
+
+    public function showOrderSeller($order_id)
+    {
+        $order = Order::where('seller_id', Auth::user()->id)
+            ->where('id', $order_id)
+            ->with(['product', 'buyer'])
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'message' => "Order seller not found"
+            ], 404);
+        }
+
+        return response()->json([
+            "Buyer Order" => $order
+        ]);
     }
 
     /**
@@ -107,9 +157,52 @@ class OrderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Order $order)
+    public function update(Request $request, $order_id)
     {
-        //
+        $order = Order::where('seller_id', Auth::user()->id)
+            ->where('id', $order_id)
+            ->with(['product', 'buyer'])
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order Seller not found'
+            ], 404);
+        }
+
+        $val = Validator::make($request->all(), [
+            "status" => 'required|in:pending,accepted,canceled'
+        ]);
+
+        if ($val->fails()) {
+            return response()->json([
+                "message" => "invalid fields",
+                "errors" => $val->errors()
+            ], 422);
+        }
+
+        $wallet = Wallet::where('user_id', $order->user_id)->first();
+
+        if (!$wallet) {
+            return response()->json([
+                "message" => "wallet not found"
+            ], 404);
+        }
+
+        if ($request->status == 'accepted') {
+            $wallet->update([
+                'balance' => $wallet->balance - $order->total_price
+            ]);
+        }
+
+        $order->update([
+            "status" => (string) $request->status
+        ]);
+
+        return response()->json([
+            "message" => "Order updated succesfully",
+            "Seller Order" => $order
+        ]);
     }
 
     /**

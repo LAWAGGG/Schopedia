@@ -31,6 +31,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //orders
     Route::post('/order/{product_id}', [OrderController::class, "store"]);
+    Route::get('/order/buyer', [OrderController::class, 'ordersAsBuyer']);
+    Route::get('/order/seller', [OrderController::class, 'ordersAsSeller']);
+    Route::get('/order/buyer/{order_id}', [OrderController::class, 'showOrderBuyer']);
+    Route::get('/order/seller/{order_id}', [OrderController::class, 'showOrderSeller']);
+    Route::put('/order/seller/{order_id}', [OrderController::class, "update"]);
 
     Route::middleware("admin")->group(function () {
         //category route (CRUD)

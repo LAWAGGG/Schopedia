@@ -18,15 +18,31 @@ class ProductController extends Controller
         $product = Product::get();
 
         return response()->json([
-            'product' => $product
+            "product" => $product->map(function ($product) {
+                return [
+                    "id" => $product->id,
+                    "user_id" => $product->user_id,
+                    "name" => $product->name,
+                    "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
+                    "image" => $product->image,
+                ];
+            })
         ]);
     }
 
-    public function showOwnProduct(){
+    public function showOwnProduct()
+    {
         $products = Product::where("user_id", Auth::user()->id)->get();
 
         return response()->json([
-            "Products" =>$products
+            "product" => $products->map(function ($product) {
+                return [
+                    "id" => $product->id,
+                    "name" => $product->name,
+                    "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
+                    "image" => $product->image,
+                ];
+            })
         ]);
     }
 
@@ -43,7 +59,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $val = $request->validate([
+        $val = Validator::make($request->all(), [
             "name" => "required",
             "description" => "required",
             "price" => "required|numeric",
@@ -52,15 +68,21 @@ class ProductController extends Controller
             "image" => "nullable|image|mimes:png,jpg,jpeg"
         ]);
 
-        $input = $val;
+        if ($val->fails()) {
+            return response()->json([
+                "message" => "Invalid fields",
+                "errors" => $val->errors()
+            ], 422);
+        }
+
+        $input = $request->all();
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $slug = str($request->name)->slug();
-            $filename = $slug . "." . $file->getClientOriginalExtension();
             $path = $file->storeAs(
                 "images/$slug", // folder
-                "image." . $file->getClientOriginalExtension(),
+                "image." . $file->extension(),
                 'public' // disk storage
             );
             // simpan path ke database
@@ -72,8 +94,17 @@ class ProductController extends Controller
         $product = Product::create($input);
 
         return response()->json([
-            "message" => "product created succesfully",
-            "product" => $product
+            "message" => "Product created successfully",
+            "product" => [
+                "id" => $product->id,
+                "name" => $product->name,
+                "description" => $product->description,
+                "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
+                "stock" => $product->stock,
+                "image" => $product->image,
+                "date" => $product->created_at->format('Y-m-d H:i:s'),
+                "category_id" => $product->category_id
+            ]
         ]);
     }
 
@@ -89,7 +120,16 @@ class ProductController extends Controller
         }
 
         return response()->json([
-            "product" => $product
+            "product" => [
+                "id" => $product->id,
+                "name" => $product->name,
+                "description" => $product->description,
+                "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
+                "stock" => $product->stock,
+                "image" => $product->image,
+                "date" => $product->created_at->format('Y-m-d H:i:s'),
+                "category_id" => $product->category_id
+            ]
         ]);
     }
 
@@ -129,7 +169,7 @@ class ProductController extends Controller
         }
 
         $input = $request->only(['name', 'description', 'price', 'stock', 'category_id']);
-       
+
         if ($request->hasFile("image")) {
             $file = $request->file("image");
             $slug = str($request->name ?? $product->name)->slug();
@@ -150,7 +190,16 @@ class ProductController extends Controller
 
         return response()->json([
             "message" => "Product updated succesfully",
-            "product" => $product
+            "product" => [
+                "id" => $product->id,
+                "name" => $product->name,
+                "description" => $product->description,
+                "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
+                "stock" => $product->stock,
+                "image" => $product->image,
+                "date" => $product->created_at->format('Y-m-d H:i:s'),
+                "category_id" => $product->category_id
+            ]
         ]);
     }
 

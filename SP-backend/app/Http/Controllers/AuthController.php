@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -14,12 +15,14 @@ class AuthController extends Controller
         $val = Validator::make($request->all(), [
             'name' => "required",
             'email' => 'required|unique:users,email',
-            'password' => 'required|min:8'
+            'password' => 'required|min:8',
+            'phone_number'=>'required|numeric|unique:wallets,phone_number|min:10'
         ]);
 
         if ($val->fails()) {
             return response()->json([
-                'message' => 'invalid fields'
+                'message' => 'invalid fields',
+                "errors"=>$val->errors()
             ], 422);
         }
 
@@ -30,6 +33,11 @@ class AuthController extends Controller
             'role' => 'user'
         ]);
 
+        $wallet = Wallet::create([
+            'user_id'=>$user->id,
+            'phone_number'=>$request->phone_number
+        ]);
+
         Auth::login($user);
 
         $token = Auth::user()->createToken('koentji')->plainTextToken;
@@ -37,6 +45,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'user registered succesfully',
             'user' => $user,
+            'wallet'=>number_format($wallet->balance, 2, ',', '.'),
             "token" => $token
         ]);
     }
