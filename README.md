@@ -65,7 +65,7 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
 
 ---
 
-⚠️ Proyek masih dalam proses pengembanga.  
+⚠️ Proyek masih dalam proses pengembangan.  
 Fitur-fitur dasar (auth, order, wallet) sudah mulai berjalan, tapi tampilan frontend masih dalam tahap pengembangan.
 
 
