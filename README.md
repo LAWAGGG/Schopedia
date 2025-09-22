@@ -32,7 +32,7 @@ Fitur-fitur dasar (auth, order, wallet) sudah mulai berjalan, tapi tampilan fron
 ```bash
 # Clone repository
 git clone https://github.com/username/schopedia.git
-cd schopedia/backend
+cd schopedia/SP-backend
 
 # Install dependencies
 composer install
