@@ -1,6 +1,6 @@
 # 🛒 Schopedia
 
-Schopedia adalah aplikasi e-commerce/marketplace yang dibuat khusus untuk lingkungan sekolah. Memungkinkan siswa menjual produk buatan mereka sendiri.
+Schopedia adalah sebuah tugas kelompok membuat aplikasi e-commerce/marketplace yang dibuat khusus untuk lingkungan sekolah. Memungkinkan siswa menjual produk buatan/jasa mereka sendiri.
 Aplikasi ini masih dalam tahap pengembangan dan dirancang sebagai platform sederhana untuk mendukung kegiatan kewirausahaan di lingkungan sekolah.
 
 Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan sistem pemesanan produk yang dilengkapi fitur dompet digital.
