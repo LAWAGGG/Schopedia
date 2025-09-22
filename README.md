@@ -37,7 +37,7 @@ cd schopedia/SP-backend
 # Install dependencies
 composer install
 cp .env.example .env
-(ubah nama db sesuai database yang sudah dibuat)
+# (ubah nama db sesuai database yang sudah dibuat)
 php artisan key:generate
 
 # Migrate database
