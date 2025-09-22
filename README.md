@@ -1,12 +1,14 @@
 # 🛒 Schopedia
 
-Schopedia adalah aplikasi e-commerce sederhana yang sedang dalam tahap pengembangan.  
-Proyek ini menggunakan React (frontend) dan Laravel (backend) untuk membangun sistem pemesanan produk dengan fitur dompet digital.
+Schopedia adalah aplikasi e-commerce/marketplace yang dibuat khusus untuk lingkungan sekolah. Memungkinkan siswa menjual produk buatan mereka sendiri.
+Aplikasi ini masih dalam tahap pengembangan dan dirancang sebagai platform sederhana untuk mendukung kegiatan kewirausahaan di lingkungan sekolah.
+
+Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan sistem pemesanan produk yang dilengkapi fitur dompet digital.
 
 ---
 
 ## 🚀 Tech Stack
-- Frontend: React + Vite
+- Frontend: React + TailwindCss
 - Backend: Laravel 11 (REST API)
 - Database: MySQL
 
@@ -22,7 +24,7 @@ Proyek ini menggunakan React (frontend) dan Laravel (backend) untuk membangun si
 
 ## 📌 Status
 ⚠️ Proyek masih dalam proses pengembangan.  
-Fitur-fitur dasar (auth, order, wallet) sudah mulai berjalan, tapi tampilan frontend masih dalam tahap pembangunan.
+Fitur-fitur dasar (auth, order, wallet) sudah mulai berjalan, tapi tampilan frontend masih dalam tahap pengembangan.
 
 ---
 
@@ -57,4 +59,5 @@ php artisan serve
 
 ---
 
-💡 Proyek ini dibuat untuk pembelajaran fullstack development menggunakan React dan Laravel.
+💡 Proyek ini dibuat untuk pembelajaran Web development
+
