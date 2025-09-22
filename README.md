@@ -22,33 +22,38 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
 
 ---
 
-## 📌 Status
-⚠️ Proyek masih dalam proses pengembangan.  
-Fitur-fitur dasar (auth, order, wallet) sudah mulai berjalan, tapi tampilan frontend masih dalam tahap pengembangan.
+## 📦 Instalasi & Penggunaan
 
----
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/username/schopedia.git
+   cd schopedia/SP-backend
+   ```
 
-## 🔧 Cara Menjalankan (Backend)
-```bash
-# Clone repository
-git clone https://github.com/username/schopedia.git
-cd schopedia/SP-backend
+2. **Setup Backend**
+    ```bash
+    # Install dependencies
+    composer install
+    cp .env.example .env
+    # (konfigurasi nama db sesuai database yang sudah dibuat)
+    php artisan key:generate
+    
+    # Migrate database
+    php artisan migrate
+    
+    # Jalankan seeder
+    php artisan db:seed
+    
+    # Jalankan server
+    php artisan serve
+    ```
 
-# Install dependencies
-composer install
-cp .env.example .env
-# (ubah nama db sesuai database yang sudah dibuat)
-php artisan key:generate
-
-# Migrate database
-php artisan migrate
-
-# Jalankan seeder
-php artisan db:seed
-
-# Jalankan server
-php artisan serve
-```
+3. **Setup Frontend (Belum dibuat)**
+    ```bash
+    cd schopedia/SP-frontend
+    npm install
+    npm run dev
+    ```
 
 ---
 
@@ -60,5 +65,7 @@ php artisan serve
 
 ---
 
-💡 Proyek ini dibuat untuk pembelajaran Web development
+⚠️ Proyek masih dalam proses pengembanga.  
+Fitur-fitur dasar (auth, order, wallet) sudah mulai berjalan, tapi tampilan frontend masih dalam tahap pengembangan.
+
 
