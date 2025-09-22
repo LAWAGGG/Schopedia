@@ -15,16 +15,20 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product = Product::get();
+        $product = Product::with(['user'])->get();
 
         return response()->json([
-            "product" => $product->map(function ($product) {
+            "All Products" => $product->map(function ($product) {
                 return [
                     "id" => $product->id,
-                    "user_id" => $product->user_id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
                     "image" => $product->image,
+                    "user" => [
+                        "id" => $product->user->id,
+                        "name" => $product->user->name,
+                        "email" => $product->user->email,
+                    ],
                 ];
             })
         ]);
@@ -32,10 +36,10 @@ class ProductController extends Controller
 
     public function showOwnProduct()
     {
-        $products = Product::where("user_id", Auth::user()->id)->get();
+        $products = Product::where("user_id", Auth::user()->id)->with(['user'])->get();
 
         return response()->json([
-            "product" => $products->map(function ($product) {
+            "Own Product" => $products->map(function ($product) {
                 return [
                     "id" => $product->id,
                     "name" => $product->name,
@@ -111,8 +115,10 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show($id)
     {
+        $product = Product::with(['user', 'category'])->where("id", $id)->first();
+
         if (!$product) {
             return response()->json([
                 'message' => 'Product not found'
@@ -128,7 +134,7 @@ class ProductController extends Controller
                 "stock" => $product->stock,
                 "image" => $product->image,
                 "date" => $product->created_at->format('Y-m-d H:i:s'),
-                "category_id" => $product->category_id
+                "category" =>$product->category->name
             ]
         ]);
     }

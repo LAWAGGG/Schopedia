@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Wallet;
+use App\Models\Wallet_Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -97,7 +98,7 @@ class OrderController extends Controller
             "product_id" => $product->id,
             'seller_id' => $product->user_id,
             'quantity' => $request->quantity,
-            'total_price' => number_format($totalPrice, 0, ',', '.'),
+            'total_price' => $totalPrice,
             'status' => 'pending'
         ]);
 
@@ -190,8 +191,33 @@ class OrderController extends Controller
         }
 
         if ($request->status == 'accepted') {
-            $wallet->update([
-                'balance' => $wallet->balance - $order->total_price
+            $wallet->decrement('balance', $order->total_price);
+
+            $sellerWallet = Wallet::where('user_id', $order->seller_id)->first();
+            if (!$sellerWallet) {
+                return response()->json([
+                    "message" => "seller wallet not found"
+                ], 404);
+            }
+
+            $sellerWallet->increment('balance', $order->total_price);
+
+            // Transaksi buyer
+            Wallet_Transaction::create([
+                'wallet_id' => $wallet->id,
+                'order_id' => $order->id,
+                'type' => 'payment',
+                'amount' => $order->total_price,
+                'note' => 'Payment for Order #' . $order->id
+            ]);
+
+            // Catat transaksi seller
+            Wallet_Transaction::create([
+                'wallet_id' => $sellerWallet->id,
+                'order_id' => $order->id,
+                'type' => 'transfer',
+                'amount' => $order->total_price,
+                'note' => 'Earning from Order #' . $order->id
             ]);
         }
 

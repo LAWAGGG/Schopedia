@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('wallet_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('wallet_id')->constrained()->onDelete('cascade');
-            $table->enum('type',['topup','payment','transfer','receive']);
-            $table->decimal('amount');
+            $table->foreignId('order_id')->nullable()->constrained()->onDelete('set null');
+            $table->enum('type', ['topup', 'payment', 'transfer', 'receive']);
+            $table->decimal('amount', 15, 2);
+            $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('wallet__transactions');
+        Schema::dropIfExists('wallet_transactions');
     }
 };
