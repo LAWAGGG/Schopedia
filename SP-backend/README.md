@@ -1,7 +1,5 @@
-**Setup Backend**
-
-    ```
-    bash
+1. **Setup Backend**
+    ```bash
     # Install dependencies
     composer install
     cp .env.example .env
@@ -16,4 +14,4 @@
     
     # Jalankan server
     php artisan serve
-   
+    ```
