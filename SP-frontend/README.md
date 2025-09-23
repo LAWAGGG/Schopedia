@@ -2,7 +2,7 @@
 
 # 🛒 Schopedia Frontend  
 
-![Banner](https://dummyimage.com/1000x280/ff00ff/ffffff&text=Schopedia+Frontend)  
+![Banner](https://dummyimage.com/1000x280/7f00ff/ffffff&text=Schopedia+Frontend)  
 
 > 🎓 *Marketplace sekolah sederhana untuk mendukung kegiatan kewirausahaan siswa.*  
 
