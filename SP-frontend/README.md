@@ -1,9 +1,22 @@
+<div align="center">
+
 # 🛒 Schopedia Frontend
+
+![Banner](https://dummyimage.com/1000x250/4a90e2/ffffff&text=Schopedia+Frontend)
+
+[![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://react.dev/)  
+[![Vite](https://img.shields.io/badge/Vite-Bundler-purple?logo=vite)](https://vitejs.dev/)  
+[![Laravel](https://img.shields.io/badge/Laravel-Backend-red?logo=laravel)](https://laravel.com/)  
+[![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
+
+</div>
+
+---
 
 **Schopedia** adalah aplikasi e-commerce/marketplace sederhana yang dibuat khusus untuk lingkungan sekolah.  
 Aplikasi ini memungkinkan siswa menjual produk buatan/jasa mereka sendiri, melakukan transaksi, dan belajar kewirausahaan secara langsung.  
 
-Proyek ini masih dalam tahap pengembangan 🚧, dibangun menggunakan **React + Vite** (frontend) dan **Laravel** (backend).
+🚧 Proyek ini masih dalam tahap pengembangan, dibangun dengan **React + Vite** (frontend) dan **Laravel** (backend).
 
 ---
 
@@ -47,7 +60,7 @@ Proyek ini masih dalam tahap pengembangan 🚧, dibangun menggunakan **React + V
    ```bash
    git clone https://github.com/LAWAGGG/Schopedia.git
    cd Schopedia/SP-frontend
-   ```
+    ```
 
 2. **Install dependencies**
     ```bash
