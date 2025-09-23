@@ -1,12 +1,49 @@
-# React + Vite
+# 🛒 Schopedia Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Schopedia** adalah aplikasi e-commerce/marketplace sederhana yang dibuat khusus untuk lingkungan sekolah.  
+Aplikasi ini memungkinkan siswa menjual produk buatan/jasa mereka sendiri, melakukan transaksi, dan belajar kewirausahaan secara langsung.  
 
-Currently, two official plugins are available:
+Proyek ini masih dalam tahap pengembangan 🚧, dibangun menggunakan **React + Vite** (frontend) dan **Laravel** (backend).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## ✨ Fitur Utama
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- 🔑 **Authentication**  
+  - Login & Register (User & Admin)  
+  - Role-based access  
+
+- 📦 **Produk**  
+  - CRUD produk (buat, lihat, edit, hapus)  
+  - Kelola stok & harga  
+
+- 🛍️ **Order / Pesanan**  
+  - User dapat membuat pesanan  
+  - Seller/Admin dapat mengelola pesanan masuk  
+
+- 💰 **Wallet (Dompet Digital)**  
+  - Top-up saldo  
+  - Pembayaran order  
+  - Riwayat transaksi  
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+| Area | Teknologi |
+|------|-----------|
+| Frontend | [React 18](https://react.dev/), [Vite](https://vitejs.dev/) |
+| Backend | [Laravel](https://laravel.com/) (REST API) |
+| Styling | Tailwind CSS *(opsional)* |
+| State Management | Context API / Redux *(sesuaikan)* |
+| Tools | ESLint, Prettier |
+| API Client | Axios / Fetch |
+
+---
+
+## 🚀 Instalasi & Menjalankan Proyek
+
+1. **Clone repo**
+   ```bash
+   git clone https://github.com/LAWAGGG/Schopedia.git
+   cd Schopedia/SP-frontend
