@@ -15,11 +15,23 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
 ---
 
 ## ✨ Fitur Utama
-- Authentication User & Admin
-  Autentikasi Register, Login, Logout untuk User & Admin dengan Bearer Token
-- Produk: CRUD produk dengan stok & harga
-- Order: User bisa membuat pesanan, seller dapat mengelola pesanan
-- Wallet: Topup saldo, pembayaran order, pencatatan transaksi
+
+### 🔑 Authentication (User & Admin)
+- Mendukung **Register, Login, dan Logout** untuk User & Admin.  
+- Sistem keamanan menggunakan **Bearer Token** untuk mengakses endpoint.
+
+### 📦 Produk
+- **CRUD Produk** (Create, Read, Update, Delete).  
+- Setiap produk memiliki **stok** dan **harga** yang dapat dikelola admin/seller.
+
+### 🛒 Order
+- **User** dapat membuat pesanan dari produk yang tersedia.  
+- **Seller/Admin** dapat mengelola pesanan (update status, proses, dll).
+
+### 💰 Wallet
+- Fitur **Top Up Saldo** untuk User.  
+- Pembayaran pesanan dapat menggunakan saldo wallet.  
+- Semua aktivitas tercatat dalam **riwayat transaksi**.
 
 ---
 
