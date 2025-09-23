@@ -8,7 +8,6 @@
 
 [![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white)](https://react.dev/) 
 [![Vite](https://img.shields.io/badge/Vite-4.x-646cff?logo=vite&logoColor=yellow)](https://vitejs.dev/)  
-[![Laravel](https://img.shields.io/badge/Laravel-Backend-ff2d20?logo=laravel&logoColor=white)](https://laravel.com/) 
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)  
 
 </div>  
