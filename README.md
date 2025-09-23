@@ -78,6 +78,9 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
 
 ---
 
+## 🔗 Figma
+https://www.figma.com/design/nkPxDcQgJvmziKdWTo7IgZ/Intek?node-id=0-1&t=1wGi1D7wTaRVCoZ8-1
+
 ⚠️ Proyek masih dalam proses pengembangan.  
 Fitur-fitur dasar (auth, order, wallet) sudah mulai berjalan, tapi tampilan frontend masih dalam tahap pengembangan.
 
