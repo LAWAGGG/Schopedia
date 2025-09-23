@@ -47,3 +47,18 @@ Proyek ini masih dalam tahap pengembangan 🚧, dibangun menggunakan **React + V
    ```bash
    git clone https://github.com/LAWAGGG/Schopedia.git
    cd Schopedia/SP-frontend
+   ```
+
+2. **Install dependencies**
+    ```bash
+    npm install
+    # atau
+    yarn install
+    ```
+
+3. **Jalankan development server**
+    ```bash
+    npm run dev
+    ```
+
+
