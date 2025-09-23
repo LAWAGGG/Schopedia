@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/order/buyer/{order_id}', [OrderController::class, 'showOrderBuyer']);
     Route::get('/order/seller/{order_id}', [OrderController::class, 'showOrderSeller']);
     Route::put('/order/seller/{order_id}', [OrderController::class, "update"]);
+    
+    //wallet
+    Route::get('/wallet', [WalletController::class, "index"]);
+    Route::put('/wallet/topUp', [WalletController::class, "update"]);
 
     Route::middleware("admin")->group(function () {
         //category route (CRUD)

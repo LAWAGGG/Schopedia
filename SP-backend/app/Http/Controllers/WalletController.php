@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Wallet;
+use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class WalletController extends Controller
 {
@@ -12,7 +14,20 @@ class WalletController extends Controller
      */
     public function index()
     {
-        //
+        $user = Auth::user();
+        $wallet = Wallet::where('user_id', $user->id)->first();
+
+        if(!$wallet){
+            return response()->json([
+                "message" => "Wallet not found for the user."
+            ], 404);
+        }
+
+        return response()->json([
+            "your_wallet" => $wallet
+        ]);
+
+        
     }
 
     /**
@@ -28,7 +43,9 @@ class WalletController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
+
+
     }
 
     /**
@@ -50,9 +67,36 @@ class WalletController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Wallet $wallet)
+    public function update(Request $request)
     {
-        //
+        $val = Validator::make($request->all(), [
+            "balance" => "required|numeric|min:1"
+        ]);
+
+        if($val->fails()){
+            return response()->json([
+                "message" => "Validation Error",
+                "errors" => $val->errors()
+            ], 422);
+        }
+
+        $user = Auth::user();
+        $wallet = Wallet::where('user_id', $user->id)->first();
+
+        if(!$wallet){
+            return response()->json([
+                "message" => "Wallet not found for the user."
+            ], 404);
+        }
+
+        $wallet->balance += $request->balance;
+
+        $wallet->update();
+
+        return response()->json([
+            "message" => "Wallet updated successfully",
+            "wallet" => $wallet
+        ]);
     }
 
     /**
