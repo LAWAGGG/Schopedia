@@ -28,7 +28,6 @@
 | Bagian | Teknologi |
 |--------|-----------|
 | 🎨 Frontend | [React 18](https://react.dev/) + [Vite](https://vitejs.dev/) |
-| ⚙️ Backend | [Laravel](https://laravel.com/) (REST API) |
 | 🎭 Styling | Tailwind CSS |
 | 🔄 State Management | Context API / Redux |
 | 📡 API Client | Axios / Fetch |
