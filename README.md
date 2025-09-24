@@ -9,7 +9,7 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
 
 ## 🚀 Tech Stack
 - Frontend: React + TailwindCss
-- Backend: Laravel 11 (REST API)
+- Backend: Laravel 12 (REST API)
 - Database: PostgreSQL
 
 ---
@@ -19,6 +19,10 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
 ### 🔑 Authentication (User & Admin)
 - Mendukung **Register, Login, dan Logout** untuk User & Admin.  
 - Sistem keamanan menggunakan **Bearer Token** untuk mengakses endpoint.
+
+### 👤 User
+- User dapat update profil dirinya (nama, email, password)
+- User dapat menghapus akun mereka sendiri 
 
 ### 📦 Produk
 - **CRUD Produk** (Create, Read, Update, Delete).  
@@ -84,6 +88,6 @@ https://www.figma.com/design/nkPxDcQgJvmziKdWTo7IgZ/Intek?node-id=0-1&t=1wGi1D7w
 ---
 
 ⚠️ Proyek masih dalam proses pengembangan.  
-Fitur-fitur dasar (auth, order, wallet) sudah mulai berjalan, tapi tampilan frontend masih dalam tahap pengembangan.
+Fitur-fitur dasar sudah mulai berjalan, frontend masih dalam tahap pengembangan.
 
 
