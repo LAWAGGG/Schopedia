@@ -71,15 +71,7 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
     npm install
     npm run dev
     ```
-
----
-
-## 📅 Roadmap
-- [ ] Menyelesaikan frontend React
-- [ ] Integrasi API Laravel dengan React
-- [ ] Tambah fitur notifikasi & history transaksi
-- [ ] Deploy ke server
-
+    
 ---
 
 ## 🔗 Figma
