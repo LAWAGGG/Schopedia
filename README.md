@@ -8,7 +8,9 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
 ---
 
 ## 🚀 Tech Stack
-- Frontend: React + TailwindCss
+- Frontend:
+     - Web : React + TailwindCss
+     - Mobile : React Native
 - Backend: Laravel 12 (REST API)
 - Database: PostgreSQL
 
