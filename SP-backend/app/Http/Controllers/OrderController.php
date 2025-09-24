@@ -79,7 +79,7 @@ class OrderController extends Controller
             ], 422);
         }
 
-        if (Auth::user()->id == $product->seller_id) {
+        if (Auth::user()->id === $product->user_id) {
             return response()->json([
                 "message" => "you cannot order yours product"
             ], 403);
@@ -208,7 +208,8 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'type' => 'payment',
                 'amount' => $order->total_price,
-                'note' => 'Payment for Order #' . $order->id
+                'note' => 'Payment for Order #' . $order->id,
+                'status' => 'success'
             ]);
 
             // Catat transaksi seller
@@ -217,7 +218,8 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'type' => 'transfer',
                 'amount' => $order->total_price,
-                'note' => 'Earning from Order #' . $order->id
+                'note' => 'Earning from Order #' . $order->id,
+                'status' => 'success'
             ]);
         }
 

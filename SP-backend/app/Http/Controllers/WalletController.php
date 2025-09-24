@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Wallet;
-use Auth;
+use App\Models\Wallet_Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class WalletController extends Controller
@@ -15,65 +16,34 @@ class WalletController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $wallet = Wallet::where('user_id', $user->id)->first();
+        $wallet = Wallet::where('user_id', $user->id)->with(['user'])->first();
 
-        if(!$wallet){
+        if (!$wallet) {
             return response()->json([
                 "message" => "Wallet not found for the user."
             ], 404);
         }
 
         return response()->json([
-            "your_wallet" => $wallet
+            "My Wallet" => [
+                "id" => $wallet->id,
+                "balance" => "Rp" . number_format($wallet->balance, 2, ',', '.'),
+                "phone_number" => $wallet->phone_number,
+                'user' => [
+                    'id' => $wallet->user->id,
+                    "name" => $wallet->user->name
+                ]
+            ]
         ]);
-
-        
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        
-
-
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Wallet $wallet)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Wallet $wallet)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request)
+    public function topUp(Request $request)
     {
         $val = Validator::make($request->all(), [
-            "balance" => "required|numeric|min:1"
+            "balance" => "required|numeric|min:1000"
         ]);
 
-        if($val->fails()){
+        if ($val->fails()) {
             return response()->json([
                 "message" => "Validation Error",
                 "errors" => $val->errors()
@@ -81,9 +51,9 @@ class WalletController extends Controller
         }
 
         $user = Auth::user();
-        $wallet = Wallet::where('user_id', $user->id)->first();
+        $wallet = Wallet::where('user_id', $user->id)->with(['user'])->first();
 
-        if(!$wallet){
+        if (!$wallet) {
             return response()->json([
                 "message" => "Wallet not found for the user."
             ], 404);
@@ -91,19 +61,65 @@ class WalletController extends Controller
 
         $wallet->balance += $request->balance;
 
-        $wallet->update();
+        Wallet_Transaction::create([
+            "wallet_id" => $wallet->id,
+            "type" => "topup",
+            "amount" => $request->balance,
+            "status" => "success",
+            "note" => "top up Rp." . number_format($request->balance, 0, ',', '.') . "to my wallet"
+        ]);
+
+        $wallet->update([
+            "balance" => $wallet->balance
+        ]);
 
         return response()->json([
-            "message" => "Wallet updated successfully",
-            "wallet" => $wallet
+            "message" => "Wallet balance updated successfully",
+            "wallet" => [
+                "id" => $wallet->id,
+                "balance" => "Rp" . number_format($wallet->balance, 2, ',', '.'),
+                "phone_number" => $wallet->phone_number,
+                'user' => [
+                    'id' => $wallet->user->id,
+                    "name" => $wallet->user->name
+                ]
+            ]
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Wallet $wallet)
+    public function WalletHistory()
     {
-        //
+        $user = Auth::user();
+        $wallet = Wallet::where('user_id', $user->id)->with(['user'])->first();
+
+        if (!$wallet) {
+            return response()->json([
+                "message" => "Wallet not found for the user."
+            ], 404);
+        }
+
+        $transaction = Wallet_Transaction::where('wallet_id', $wallet->id)->with(['order.buyer'])->get();
+
+        return response()->json([
+            "Transaction history" => $transaction->map(function ($transaction) {
+                return [
+                    "id" => $transaction->id,
+                    "type" => $transaction->type,
+                    "order" => $transaction->order ? [
+                        "user"   => [
+                            "id"   => $transaction->order->buyer->id,
+                            "name" => $transaction->order->buyer->name,
+                        ],
+                        "quantity"    => $transaction->order->quantity,
+                        "total_price" => $transaction->order->total_price,
+                        "status"      => $transaction->order->status,
+                    ] : null,
+                    "amount" => "Rp" . number_format($transaction->amount, 0, ',', '.'),
+                    "status" => $transaction->status,
+                    "note" => $transaction->note,
+                    "created_at" => $transaction->created_at->format('Y-m-d H:i:s'),
+                ];
+            })
+        ]);
     }
 }

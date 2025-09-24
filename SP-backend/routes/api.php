@@ -37,10 +37,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/order/buyer/{order_id}', [OrderController::class, 'showOrderBuyer']);
     Route::get('/order/seller/{order_id}', [OrderController::class, 'showOrderSeller']);
     Route::put('/order/seller/{order_id}', [OrderController::class, "update"]);
-    
+
     //wallet
     Route::get('/wallet', [WalletController::class, "index"]);
-    Route::put('/wallet/topUp', [WalletController::class, "update"]);
+    Route::put('/wallet/topUp', [WalletController::class, "topUp"]);
+    Route::get('/wallet/transaction/history', [WalletController::class,"WalletHistory"]);
 
     Route::middleware("admin")->group(function () {
         //category route (CRUD)

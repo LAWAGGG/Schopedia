@@ -93,7 +93,7 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        if (Auth::user()->id != $user->id) {
+        if (Auth::user()->id != $user->id && Auth::user()->role != "admin") {
             return response()->json([
                 "message" => "Access denied"
             ], 403);
