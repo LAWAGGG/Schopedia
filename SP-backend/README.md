@@ -98,54 +98,62 @@
 - **Order ↔ Transaction**: tiap order menghasilkan 1 transaksi pembayaran.  
 
 
-```mermaid
-erDiagram
-    USER ||--o{ PRODUCT : "has many"
-    USER ||--o{ ORDER : "as buyer"
-    USER ||--o{ ORDER : "as seller"
-    USER ||--|| WALLET : "has one"
-    WALLET ||--o{ TRANSACTION : "has many"
-    PRODUCT ||--o{ ORDER : "has many"
-    ORDER ||--|| TRANSACTION : "has one"
+@startuml
 
-    USER {
-        int id PK
-        string name
-        string email
-        string password
-        string role
-    }
+entity "User" as user {
+  *id : int <<PK>>
+  --
+  name : string
+  email : string
+  password : string
+  role : string
+}
 
-    PRODUCT {
-        int id PK
-        int user_id FK
-        string name
-        int price
-        int stock
-        string description
-    }
+entity "Product" as product {
+  *id : int <<PK>>
+  --
+  user_id : int <<FK>>
+  name : string
+  price : int
+  stock : int
+  description : string
+}
 
-    ORDER {
-        int id PK
-        int buyer_id FK
-        int seller_id FK
-        int product_id FK
-        int qty
-        string status
-    }
+entity "Order" as order {
+  *id : int <<PK>>
+  --
+  buyer_id : int <<FK>>
+  seller_id : int <<FK>>
+  product_id : int <<FK>>
+  qty : int
+  status : string
+}
 
-    WALLET {
-        int id PK
-        int user_id FK
-        decimal saldo
-    }
+entity "Wallet" as wallet {
+  *id : int <<PK>>
+  --
+  user_id : int <<FK>>
+  saldo : decimal
+}
 
-    TRANSACTION {
-        int id PK
-        int wallet_id FK
-        int order_id FK
-        decimal nominal
-        string type
-        string status
-    }
-```
+entity "Transaction" as transaction {
+  *id : int <<PK>>
+  --
+  wallet_id : int <<FK>>
+  order_id : int <<FK>>
+  nominal : decimal
+  type : string
+  status : string
+}
+
+' --- Relationships ---
+user ||--o{ product : "has many"
+user ||--o{ order : "as buyer"
+user ||--o{ order : "as seller"
+user ||--|| wallet : "has one"
+wallet ||--o{ transaction : "has many"
+product ||--o{ order : "has many"
+order ||--|| transaction : "has one"
+
+@enduml
+
