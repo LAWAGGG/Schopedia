@@ -76,7 +76,11 @@ class OrderController extends Controller
         if ($product->stock < $request->quantity) {
             return response()->json([
                 "message" => "total product is $product->stock"
-            ], 422);
+            ], 400);
+        } else if ($product->stock == 0) {
+            return response()->json([
+                "message" => "Product Is Empty"
+            ], 400);
         }
 
         if (Auth::user()->id === $product->user_id) {
@@ -190,15 +194,17 @@ class OrderController extends Controller
             ], 404);
         }
 
-        if ($request->status == 'accepted') {
-            $wallet->decrement('balance', $order->total_price);
+        $sellerWallet = Wallet::where('user_id', $order->seller_id)->first();
 
-            $sellerWallet = Wallet::where('user_id', $order->seller_id)->first();
-            if (!$sellerWallet) {
-                return response()->json([
-                    "message" => "seller wallet not found"
-                ], 404);
-            }
+        if (!$sellerWallet) {
+            return response()->json([
+                "message" => "seller wallet not found"
+            ], 404);
+        }
+
+        if ($request->status == 'accepted' && $order->status != "accepted") {
+
+            $wallet->decrement('balance', $order->total_price);
 
             $sellerWallet->increment('balance', $order->total_price);
 
@@ -221,6 +227,14 @@ class OrderController extends Controller
                 'note' => 'Earning from Order #' . $order->id,
                 'status' => 'success'
             ]);
+
+            if ($order->quantity > $order->product->stock) {
+                return response()->json([
+                    "message" => "Insufficient stock for this product"
+                ], 400);
+            }
+
+            $order->product->decrement("stock", $order->quantity);
         }
 
         $order->update([

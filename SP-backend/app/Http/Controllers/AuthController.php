@@ -14,7 +14,7 @@ class AuthController extends Controller
     {
         $val = Validator::make($request->all(), [
             'name' => "required",
-            'email' => 'required|unique:users,email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'phone_number'=>'required|numeric|unique:wallets,phone_number|min:10'
         ]);
@@ -56,6 +56,12 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password,
         ]);
+
+        if(!$user){
+            return response()->json([
+                "message"=>"user $request->email not found"
+            ],404);
+        }
 
         $token = Auth::user()->createToken('koentji')->plainTextToken;
 

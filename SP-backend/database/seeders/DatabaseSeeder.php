@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\User;
 use App\Models\Wallet;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -30,6 +31,16 @@ class DatabaseSeeder extends Seeder
 
         Category::create([
             'name'=>'barang elektronik'
+        ]);
+
+        Product::create([
+            "user_id"=>1,
+            "category_id"=>1,
+            "name"=>"Product test",
+            "description"=>"test",
+            "price"=>15000,
+            "stock"=>5,
+            "image"=>""
         ]);
     }
 }

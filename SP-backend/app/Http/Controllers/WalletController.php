@@ -66,7 +66,7 @@ class WalletController extends Controller
             "type" => "topup",
             "amount" => $request->balance,
             "status" => "success",
-            "note" => "top up Rp." . number_format($request->balance, 0, ',', '.') . "to my wallet"
+            "note" => "top up Rp." . number_format($request->balance, 0, ',', '.') . " to my wallet"
         ]);
 
         $wallet->update([

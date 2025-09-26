@@ -15,6 +15,7 @@ Route::middleware('api')->get('/user', function (Request $request) {
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/product/get', [ProductController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //logout user
@@ -42,6 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wallet', [WalletController::class, "index"]);
     Route::put('/wallet/topUp', [WalletController::class, "topUp"]);
     Route::get('/wallet/transaction/history', [WalletController::class,"WalletHistory"]);
+
+    //Category
+    Route::get('/category/get', [CategoryController::class, 'index']);
 
     Route::middleware("admin")->group(function () {
         //category route (CRUD)
