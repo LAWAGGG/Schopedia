@@ -24,10 +24,9 @@ class ProductController extends Controller
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
                     "image" => $product->image,
-                    "user" => [
+                    "seller" => [
                         "id" => $product->user->id,
                         "name" => $product->user->name,
-                        "email" => $product->user->email,
                     ],
                 ];
             })
@@ -133,7 +132,7 @@ class ProductController extends Controller
                 "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
                 "stock" => $product->stock,
                 "image" => $product->image,
-                "date" => $product->created_at->format('Y-m-d H:i:s'),
+                "date_uploaded" => $product->created_at->format('Y-m-d H:i:s'),
                 "category" =>$product->category->name
             ]
         ]);

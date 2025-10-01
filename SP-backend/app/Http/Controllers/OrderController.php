@@ -17,28 +17,58 @@ class OrderController extends Controller
      */
     public function ordersAsBuyer()
     {
-        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->get();
+        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->get();
 
         return response()->json([
-            "Buyer Orders" => $orders
+            "Buyer Orders" => $orders->map(function ($order) {
+                return [
+                    "id" => $order->id,
+                    "quantity" => $order->quantity,
+                    "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
+                    "status" => $order->status,
+                    "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
+                    "product" => [
+                        "id" => $order->product->id,
+                        "name" => $order->product->name,
+                        "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
+                        "stock" => $order->product->stock,
+                    ],
+                    "seller" => [
+                        "id" => $order->seller->id,
+                        "name" => $order->seller->name,
+                        "email" => $order->seller->email
+                    ],
+                ];
+            })
         ]);
     }
 
     public function ordersAsSeller()
     {
-        $orders = Order::where('seller_id', Auth::user()->id)->with(['product', 'buyer'])->get();
+        $orders = Order::where('seller_id', Auth::user()->id)->with(['product', 'buyer'])->orderBy('created_at', 'desc')->get();
 
         return response()->json([
-            "Seller Orders" => $orders
+            "Seller Orders" => $orders->map(function ($order) {
+                return [
+                    "id" => $order->id,
+                    "quantity" => $order->quantity,
+                    "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
+                    "status" => $order->status,
+                    "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
+                    "product" => [
+                        "id" => $order->product->id,
+                        "name" => $order->product->name,
+                        "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
+                        "stock" => $order->product->stock,
+                    ],
+                    "buyer" => [
+                        "id" => $order->buyer->id,
+                        "name" => $order->buyer->name,
+                        "email" => $order->buyer->email
+                    ],
+                ];
+            })
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -129,7 +159,28 @@ class OrderController extends Controller
         }
 
         return response()->json([
-            "Buyer Order" => $order
+            "Buyer Order" => [
+                "id" => $order->id,
+                "product" => [
+                    "id" => $order->product->id,
+                    "name" => $order->product->name,
+                    "description" => $order->product->description,
+                    "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
+                    "stock" => $order->product->stock,
+                    "date_uploaded" => $order->product->created_at->format('Y-m-d H:i:s'),
+                    "image" => $order->product->image,
+                    "category" => $order->product->category->name
+                ],
+                "seller" => [
+                    "id" => $order->seller->id,
+                    "name" => $order->seller->name,
+                    "email" => $order->seller->email
+                ],
+                "quantity" => $order->quantity,
+                "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
+                "status" => $order->status,
+                "date_ordered" => $order->created_at->format('Y-m-d H:i:s')
+            ]
         ]);
     }
 
@@ -147,16 +198,30 @@ class OrderController extends Controller
         }
 
         return response()->json([
-            "Buyer Order" => $order
-        ]);
-    }
+            "Seller Order" => [
+                "id" => $order->id,
+                "product" => [
+                    "id" => $order->product->id,
+                    "name" => $order->product->name,
+                    "description" => $order->product->description,
+                    "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
+                    "stock" => $order->product->stock,
+                    "date_uploaded" => $order->product->created_at->format('Y-m-d H:i:s'),
+                    "image" => $order->product->image,
+                    "category" => $order->product->category->name
+                ],
+                "seller" => [
+                    "id" => $order->seller->id,
+                    "name" => $order->seller->name,
+                    "email" => $order->seller->email
+                ],
+                "quantity" => $order->quantity,
+                "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
+                "status" => $order->status,
+                "date_ordered" => $order->created_at->format('Y-m-d H:i:s')
+            ]
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Order $order)
-    {
-        //
+        ]);
     }
 
     /**
@@ -175,9 +240,11 @@ class OrderController extends Controller
             ], 404);
         }
 
-        $val = Validator::make($request->all(), [
-            "status" => 'required|in:pending,accepted,canceled'
-        ]);
+        if (Auth::user()->id == $order->seller_id) {
+            $val = Validator::make($request->all(), [
+                "status" => 'required|in:pending,accepted,canceled'
+            ]);
+        }
 
         if ($val->fails()) {
             return response()->json([
@@ -202,13 +269,18 @@ class OrderController extends Controller
             ], 404);
         }
 
+        if ($request->status == $order->status) {
+            return response()->json([
+                "message" => "No changes detected"
+            ], 400);
+        }
+
         if ($request->status == 'accepted' && $order->status != "accepted") {
 
             $wallet->decrement('balance', $order->total_price);
 
             $sellerWallet->increment('balance', $order->total_price);
 
-            // Transaksi buyer
             Wallet_Transaction::create([
                 'wallet_id' => $wallet->id,
                 'order_id' => $order->id,
@@ -218,7 +290,6 @@ class OrderController extends Controller
                 'status' => 'success'
             ]);
 
-            // Catat transaksi seller
             Wallet_Transaction::create([
                 'wallet_id' => $sellerWallet->id,
                 'order_id' => $order->id,
@@ -237,6 +308,34 @@ class OrderController extends Controller
             $order->product->decrement("stock", $order->quantity);
         }
 
+        if ($request->status == 'canceled' && $order->status != 'canceled') {
+            if ($order->status == 'accepted') {
+                $wallet->increment('balance', $order->total_price);
+
+                $sellerWallet->decrement('balance', $order->total_price);
+
+                Wallet_Transaction::create([
+                    'wallet_id' => $wallet->id,
+                    'order_id' => $order->id,
+                    'type' => 'payment',
+                    'amount' => $order->total_price,
+                    'note' => 'Refund for Canceled Order #' . $order->id . " canceled by " . (Auth::user()->id == $order->seller_id ? "seller" : "buyer"),
+                    'status' => 'success'
+                ]);
+
+                Wallet_Transaction::create([
+                    'wallet_id' => $sellerWallet->id,
+                    'order_id' => $order->id,
+                    'type' => 'transfer',
+                    'amount' => $order->total_price,
+                    'note' => 'Transferring for canceled Order #' . $order->id . " canceled by " . (Auth::user()->id == $order->seller_id ? "seller" : "buyer"),
+                    'status' => 'success'
+                ]);
+
+                $order->product->increment('stock', $order->quantity);
+            }
+        }
+
         $order->update([
             "status" => (string) $request->status
         ]);
@@ -247,11 +346,65 @@ class OrderController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Order $order)
+    public function updateAsBuyer(Request $request, $order_id)
     {
-        //
+        $order = Order::where('user_id', Auth::user()->id)
+            ->where('id', $order_id)
+            ->with(['product', 'seller'])
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order Seller not found'
+            ], 404);
+        }
+
+        if (Auth::user()->id == $order->user_id) {
+            $val = Validator::make($request->all(), [
+                "status" => 'required|in:pending,accepted,canceled'
+            ]);
+        }
+
+        if ($val->fails()) {
+            return response()->json([
+                "message" => "invalid fields",
+                "errors" => $val->errors()
+            ], 422);
+        }
+
+        if ($request->status == $order->status) {
+            return response()->json([
+                "message" => "No changes detected, the status is still -> " . $order->status
+            ], 400);
+        }
+
+        if($request->status == 'canceled'){
+            if($order->status == 'accepted'){
+                return response()->json([
+                    "message"=>"You cannot cancel accepted order, please contact the seller via email:" . $order->seller->email
+                ],403);
+            }
+
+            if($order->status == 'canceled'){
+                return response()->json([
+                    "message"=>"Order already canceled"
+                ],403);
+            }
+
+            if($order->status == 'pending'){
+                $order->update([
+                    "status" => (string)$request->status
+                ]);
+
+                return response()->json([
+                    "message"=>"Order canceled successfully",
+                    "Order"=>$order
+                ]);
+            }
+        } else{
+            return response()->json([
+                "message"=>"Invalid status edit, as a buyer you can only cancel order"
+            ],403);
+        }
     }
 }
