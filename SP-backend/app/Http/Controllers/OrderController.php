@@ -240,11 +240,9 @@ class OrderController extends Controller
             ], 404);
         }
 
-        if (Auth::user()->id == $order->seller_id) {
-            $val = Validator::make($request->all(), [
-                "status" => 'required|in:pending,accepted,canceled'
-            ]);
-        }
+        $val = Validator::make($request->all(), [
+            "status" => 'required|in:pending,accepted,canceled'
+        ]);
 
         if ($val->fails()) {
             return response()->json([
@@ -271,15 +269,29 @@ class OrderController extends Controller
 
         if ($request->status == $order->status) {
             return response()->json([
-                "message" => "No changes detected"
+                "message" => "No changes detected, the status is still -> " . $order->status
             ], 400);
         }
 
         if ($request->status == 'accepted' && $order->status != "accepted") {
 
+            if ($wallet->balance < $order->total_price) {
+                return response()->json([
+                    "message" => "Buyer wallet balance is not enough to accept this order"
+                ], 403);
+            }
+
             $wallet->decrement('balance', $order->total_price);
 
             $sellerWallet->increment('balance', $order->total_price);
+
+            if ($order->quantity > $order->product->stock) {
+                return response()->json([
+                    "message" => "Not enough stock for this product"
+                ], 400);
+            }
+
+            $order->product->decrement("stock", $order->quantity);
 
             Wallet_Transaction::create([
                 'wallet_id' => $wallet->id,
@@ -298,14 +310,6 @@ class OrderController extends Controller
                 'note' => 'Earning from Order #' . $order->id,
                 'status' => 'success'
             ]);
-
-            if ($order->quantity > $order->product->stock) {
-                return response()->json([
-                    "message" => "Insufficient stock for this product"
-                ], 400);
-            }
-
-            $order->product->decrement("stock", $order->quantity);
         }
 
         if ($request->status == 'canceled' && $order->status != 'canceled') {
@@ -359,11 +363,9 @@ class OrderController extends Controller
             ], 404);
         }
 
-        if (Auth::user()->id == $order->user_id) {
-            $val = Validator::make($request->all(), [
-                "status" => 'required|in:pending,accepted,canceled'
-            ]);
-        }
+        $val = Validator::make($request->all(), [
+            "status" => 'required|in:pending,accepted,canceled'
+        ]);
 
         if ($val->fails()) {
             return response()->json([
@@ -378,33 +380,33 @@ class OrderController extends Controller
             ], 400);
         }
 
-        if($request->status == 'canceled'){
-            if($order->status == 'accepted'){
+        if ($request->status == 'canceled') {
+            if ($order->status == 'accepted') {
                 return response()->json([
-                    "message"=>"You cannot cancel accepted order, please contact the seller via email:" . $order->seller->email
-                ],403);
+                    "message" => "You cannot cancel accepted order, please contact the seller via email:" . $order->seller->email
+                ], 403);
             }
 
-            if($order->status == 'canceled'){
+            if ($order->status == 'canceled') {
                 return response()->json([
-                    "message"=>"Order already canceled"
-                ],403);
+                    "message" => "Order already canceled"
+                ], 403);
             }
 
-            if($order->status == 'pending'){
+            if ($order->status == 'pending') {
                 $order->update([
                     "status" => (string)$request->status
                 ]);
 
                 return response()->json([
-                    "message"=>"Order canceled successfully",
-                    "Order"=>$order
+                    "message" => "Order canceled successfully",
+                    "Order" => $order
                 ]);
             }
-        } else{
+        } else {
             return response()->json([
-                "message"=>"Invalid status edit, as a buyer you can only cancel order"
-            ],403);
+                "message" => "Invalid status edit, as a buyer you can only cancel order"
+            ], 403);
         }
     }
 }
