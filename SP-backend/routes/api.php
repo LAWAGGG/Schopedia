@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SellingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ Route::get('/product/get', [ProductController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //logout user
-    Route::post('/logout',[AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     //user route (get, update, delete)
     Route::get('/users', [UserController::class, 'index']);
@@ -27,9 +28,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
     //product route (CRUD)
-    Route::get('/product/own',[ProductController::class,"showOwnProduct"]);
+    Route::get('/product/own', [ProductController::class, "showOwnProduct"]);
     Route::resource("product", ProductController::class);
-    Route::post('/product/{product}/update',[ProductController::class, "update"]);
+    Route::post('/product/{product}/update', [ProductController::class, "update"]);
+
+    //buyed Product
+    Route::get('/product/get/buyed', [OrderController::class, 'BuyedProduct']);
 
     //orders
     Route::post('/order/{product_id}', [OrderController::class, "store"]);
@@ -40,16 +44,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/order/seller/{order_id}', [OrderController::class, "update"]);
     Route::put('/order/buyer/{order_id}/cancel', [OrderController::class, 'updateAsBuyer']);
 
+    //history
+    Route::get('/selling/history', [SellingController::class, 'getSellingHistory']);
+    Route::get('/selling/total', [SellingController::class, 'totalSelling']);
+
     //wallet
     Route::get('/wallet', [WalletController::class, "index"]);
     Route::put('/wallet/topUp', [WalletController::class, "topUp"]);
-    Route::get('/wallet/transaction/history', [WalletController::class,"WalletHistory"]);
+    Route::get('/wallet/transaction/history', [WalletController::class, "WalletHistory"]);
 
     //Category
     Route::get('/category/get', [CategoryController::class, 'index']);
 
-    Route::middleware("admin")->group(function(){
+    Route::middleware("admin")->group(function () {
         //category route (CRUD)
-        Route::resource("category",CategoryController::class);
+        Route::resource("category", CategoryController::class);
     });
 });

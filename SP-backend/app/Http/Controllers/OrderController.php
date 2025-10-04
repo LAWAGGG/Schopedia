@@ -12,12 +12,18 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function BuyedProduct()
+    {
+        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->where("status", "accepted")->get();
+
+        return response()->json([
+            "Buyed Product" => $orders
+        ]);
+    }
+
     public function ordersAsBuyer()
     {
-        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->get();
+        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->where("status", '!=' ,"accepted")->get();
 
         return response()->json([
             "Buyer Orders" => $orders->map(function ($order) {
@@ -45,7 +51,7 @@ class OrderController extends Controller
 
     public function ordersAsSeller()
     {
-        $orders = Order::where('seller_id', Auth::user()->id)->with(['product', 'buyer'])->orderBy('created_at', 'desc')->get();
+        $orders = Order::where('seller_id', Auth::user()->id)->with(['product', 'buyer'])->where('status', '!=' ,'accepted')->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             "Seller Orders" => $orders->map(function ($order) {
