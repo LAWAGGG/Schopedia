@@ -18,7 +18,7 @@ class ProductController extends Controller
         $product = Product::with(['user'])->get();
 
         return response()->json([
-            "All Products" => $product->map(function ($product) {
+            "all_products" => $product->map(function ($product) {
                 return [
                     "id" => $product->id,
                     "name" => $product->name,
@@ -38,7 +38,7 @@ class ProductController extends Controller
         $products = Product::where("user_id", Auth::user()->id)->with(['user'])->get();
 
         return response()->json([
-            "Own Product" => $products->map(function ($product) {
+            "own_product" => $products->map(function ($product) {
                 return [
                     "id" => $product->id,
                     "name" => $product->name,
@@ -227,13 +227,10 @@ class ProductController extends Controller
         }
 
         if ($product->image) {
-            // Ambil path asli tanpa "storage/"
             $relativePath = str_replace("storage/", "", $product->image);
 
-            // Hapus file image
             Storage::disk("public")->delete($relativePath);
 
-            // Hapus folder parent (misalnya images/slug)
             $folderPath = dirname($relativePath);
             Storage::disk("public")->deleteDirectory($folderPath);
         }

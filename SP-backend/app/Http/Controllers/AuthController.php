@@ -16,6 +16,7 @@ class AuthController extends Controller
             'name' => "required",
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
+            'role' => 'required|in:buyer,seller',
             'phone_number'=>'required|numeric|unique:wallets,phone_number|min:10'
         ]);
 
@@ -30,7 +31,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role' => 'user'
+            'role' => $request->role
         ]);
 
         $wallet = Wallet::create([
@@ -40,13 +41,11 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        $token = Auth::user()->createToken('koentji')->plainTextToken;
 
         return response()->json([
             'message' => 'user registered succesfully',
             'user' => $user,
             'wallet'=>number_format($wallet->balance, 2, ',', '.'),
-            "token" => $token
         ]);
     }
 

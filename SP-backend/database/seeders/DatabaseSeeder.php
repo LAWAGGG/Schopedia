@@ -19,28 +19,41 @@ class DatabaseSeeder extends Seeder
         User::create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
-            'password'=>bcrypt('12345678'),
-            'role'=>'admin'
+            'password' => bcrypt('12345678'),
+            'role' => 'admin'
+        ]);
+
+        User::create([
+            'name' => 'Person',
+            'email' => 'person@gmail.com',
+            'password' => bcrypt('12345678'),
+            'role' => 'seller'
+        ]);
+
+          Wallet::create([
+            'user_id' => 1,
+            'balance' => 150000000.00,
+            'phone_number' => '0000000000'
         ]);
 
         Wallet::create([
-            'user_id'=>1,
-            'balance'=>150000000.00,
-            'phone_number'=>'0000000000'
+            'user_id' => 2,
+            'balance' => 150000000.00,
+            'phone_number' => '087731366777'
         ]);
 
         Category::create([
-            'name'=>'barang elektronik'
+            'name' => 'barang elektronik'
         ]);
 
         Product::create([
-            "user_id"=>1,
-            "category_id"=>1,
-            "name"=>"Product test",
-            "description"=>"test",
-            "price"=>15000,
-            "stock"=>5,
-            "image"=>""
+            "user_id" => 2,
+            "category_id" => 1,
+            "name" => "Product test",
+            "description" => "test",
+            "price" => 15000,
+            "stock" => 5,
+            "image" => ""
         ]);
     }
 }

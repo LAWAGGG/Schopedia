@@ -18,7 +18,12 @@ return new class extends Migration
             $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
             $table->integer('quantity');
             $table->decimal('total_price');
-            $table->enum("status",['pending', 'accepted','canceled'])->default('pending');
+            $table->text('location');
+            $table->text('notes')->nullable();
+            $table->enum("status", ['pending', 'accepted', 'canceled', 'completed'])->default('pending');
+            $table->enum('shipping_status', ['pending', 'shipped', 'delivered'])->default('pending'); // status pengiriman
+            $table->string('delivery_service')->nullable();
+            $table->string('tracking_number')->nullable();
             $table->timestamps();
         });
     }

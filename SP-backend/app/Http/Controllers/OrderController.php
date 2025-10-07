@@ -14,19 +14,38 @@ class OrderController extends Controller
 {
     public function BuyedProduct()
     {
-        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->where("status", "accepted")->get();
+        $orders = Order::where('user_id', Auth::user()->id)
+            ->where('status', 'completed')
+            ->with(['product', 'seller'])
+            ->get();
+
+        $buyedProducts = $orders->map(function ($order) {
+            return [
+                'id' => $order->product->id,
+                'name' => $order->product->name,
+                'description' => $order->product->description,
+                'price' => $order->product->price,
+                'image' => $order->product->image,
+                'seller' => [
+                    'id' => $order->seller->id,
+                    'name' => $order->seller->name,
+                    'email' => $order->seller->email,
+                ],
+            ];
+        });
 
         return response()->json([
-            "Buyed Product" => $orders
+            'buyed_product' => $buyedProducts
         ]);
     }
 
+
     public function ordersAsBuyer()
     {
-        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->where("status", '!=' ,"accepted")->get();
+        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->where("status", '!=', "accepted")->get();
 
         return response()->json([
-            "Buyer Orders" => $orders->map(function ($order) {
+            "buyer_orders" => $orders->map(function ($order) {
                 return [
                     "id" => $order->id,
                     "quantity" => $order->quantity,
@@ -51,102 +70,104 @@ class OrderController extends Controller
 
     public function ordersAsSeller()
     {
-        $orders = Order::where('seller_id', Auth::user()->id)->with(['product', 'buyer'])->where('status', '!=' ,'accepted')->orderBy('created_at', 'desc')->get();
+        $orders = Order::where('seller_id', Auth::user()->id)
+            ->with(['product', 'buyer'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json([
-            "Seller Orders" => $orders->map(function ($order) {
+            "seller_orders" => $orders->map(function ($order) {
                 return [
                     "id" => $order->id,
                     "quantity" => $order->quantity,
                     "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
-                    "status" => $order->status,
+                    "status" => ucfirst($order->status),
+                    "shipping_status" => ucfirst($order->shipping_status),
+                    "delivery_service" => $order->delivery_service ?? '-',
+                    "tracking_number" => $order->tracking_number ?? '-',
+                    "location" => $order->location,
+                    "notes" => $order->notes ?? '-',
                     "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
                     "product" => [
                         "id" => $order->product->id,
                         "name" => $order->product->name,
                         "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
                         "stock" => $order->product->stock,
+                        "image" => $order->product->image ?? null,
                     ],
                     "buyer" => [
                         "id" => $order->buyer->id,
                         "name" => $order->buyer->name,
-                        "email" => $order->buyer->email
+                        "email" => $order->buyer->email,
                     ],
                 ];
             })
         ]);
     }
 
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request, $product_id)
     {
-        $product = Product::where("id", $product_id)->first();
+        $product = Product::find($product_id);
 
         if (!$product) {
-            return response()->json([
-                "message" => "product not found"
-            ], 404);
+            return response()->json(['message' => 'Product not found'], 404);
         }
 
         $val = Validator::make($request->all(), [
-            "quantity" => 'required|numeric|min:1',
+            'quantity' => 'required|numeric|min:1',
+            'location' => 'required|string',
+            'notes' => 'nullable|string'
         ]);
 
         if ($val->fails()) {
             return response()->json([
-                "message" => "invalid fields",
-                "errors" => $val->errors()
+                'message' => 'Invalid fields',
+                'errors' => $val->errors()
             ], 422);
         }
 
-        $wallet = Wallet::where('user_id', Auth::user()->id)->first();
+        $wallet = Wallet::where('user_id', Auth::id())->first();
 
         if (!$wallet) {
-            return response()->json([
-                "message" => "wallet not found"
-            ], 404);
+            return response()->json(['message' => 'Wallet not found'], 404);
         }
 
         if ($product->stock < $request->quantity) {
-            return response()->json([
-                "message" => "total product is $product->stock"
-            ], 400);
-        } else if ($product->stock == 0) {
-            return response()->json([
-                "message" => "Product Is Empty"
-            ], 400);
+            return response()->json(['message' => "Only {$product->stock} items available"], 400);
         }
 
-        if (Auth::user()->id === $product->user_id) {
-            return response()->json([
-                "message" => "you cannot order yours product"
-            ], 403);
+        if (Auth::id() === $product->user_id) {
+            return response()->json(['message' => 'You cannot order your own product'], 403);
         }
 
         $totalPrice = $product->price * $request->quantity;
 
         if ($wallet->balance < $totalPrice) {
-            return response()->json([
-                "message" => "not enough money"
-            ], 422);
+            return response()->json(['message' => 'Not enough balance'], 422);
         }
 
         $order = Order::create([
-            "user_id" => Auth::user()->id,
-            "product_id" => $product->id,
+            'user_id' => Auth::id(),
+            'product_id' => $product->id,
             'seller_id' => $product->user_id,
             'quantity' => $request->quantity,
             'total_price' => $totalPrice,
-            'status' => 'pending'
+            'status' => 'pending',
+            'location' => $request->location,
+            'notes' => $request->notes,
+            'shipping_status' => 'pending',
         ]);
 
         return response()->json([
-            "message" => "order created succesfully",
-            "Order" => $order
+            'message' => 'Order created successfully',
+            'order' => $order
         ]);
     }
+
 
     /**
      * Display the specified resource.
@@ -165,7 +186,7 @@ class OrderController extends Controller
         }
 
         return response()->json([
-            "Buyer Order" => [
+            "buyer_order" => [
                 "id" => $order->id,
                 "product" => [
                     "id" => $order->product->id,
@@ -204,7 +225,7 @@ class OrderController extends Controller
         }
 
         return response()->json([
-            "Seller Order" => [
+            "seller_order" => [
                 "id" => $order->id,
                 "product" => [
                     "id" => $order->product->id,
@@ -352,7 +373,7 @@ class OrderController extends Controller
 
         return response()->json([
             "message" => "Order updated succesfully",
-            "Seller Order" => $order
+            "seller_order" => $order
         ]);
     }
 
@@ -414,5 +435,96 @@ class OrderController extends Controller
                 "message" => "Invalid status edit, as a buyer you can only cancel order"
             ], 403);
         }
+    }
+
+    public function shipOrder(Request $request, $order_id)
+    {
+        $val = Validator::make($request->all(), [
+            'delivery_service' => 'required|string',
+            'tracking_number' => 'required|string',
+        ]);
+
+        if ($val->fails()) {
+            return response()->json([
+                "message" => "Invalid fields",
+                "errors" => $val->errors()
+            ], 422);
+        }
+        $order = Order::where('seller_id', Auth::id())->where('id', $order_id)->first();
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        if ($order->status == "canceled" || $order->status == "pending") {
+            return response()->json([
+                "message" => "order status is $order->status, you have to update it to accepted!"
+            ], 403);
+        }
+
+        if ($order->shipping_status !== 'pending') {
+            return response()->json(['message' => 'Order already shipped or delivered'], 400);
+        }
+
+        $order->update([
+            'shipping_status' => 'shipped',
+            'delivery_service' => $request->delivery_service,
+            'tracking_number' => $request->tracking_number,
+        ]);
+
+        return response()->json([
+            "message" => "Order marked as shipped successfully",
+            "order" => [
+                "id" => $order->id,
+                "status" => ucfirst($order->status),
+                "shipping_status" => ucfirst($order->shipping_status),
+                "delivery_service" => $order->delivery_service,
+                "tracking_number" => $order->tracking_number,
+                "buyer" => [
+                    "id" => $order->buyer->id,
+                    "name" => $order->buyer->name,
+                    "email" => $order->buyer->email
+                ],
+                "product" => [
+                    "id" => $order->product->id,
+                    "name" => $order->product->name,
+                ],
+            ]
+        ]);
+    }
+
+    public function markDelivered($order_id)
+    {
+        $order = Order::where('seller_id', Auth::id())->where('id', $order_id)->first();
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        if ($order->shipping_status !== 'shipped') {
+            return response()->json(['message' => 'Order not yet shipped'], 400);
+        }
+
+        $order->update([
+            'shipping_status' => 'delivered',
+            'status' => 'completed'
+        ]);
+
+        return response()->json([
+            "message" => "Order marked as delivered successfully",
+            "order" => [
+                "id" => $order->id,
+                "status" => ucfirst($order->status),
+                "shipping_status" => ucfirst($order->shipping_status),
+                "delivery_service" => $order->delivery_service,
+                "tracking_number" => $order->tracking_number,
+                "delivered_at" => $order->updated_at->format('Y-m-d H:i:s'),
+                "buyer" => [
+                    "id" => $order->buyer->id,
+                    "name" => $order->buyer->name,
+                    "email" => $order->buyer->email
+                ],
+            ]
+        ]);
     }
 }

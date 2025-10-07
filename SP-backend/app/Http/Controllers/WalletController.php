@@ -25,7 +25,7 @@ class WalletController extends Controller
         }
 
         return response()->json([
-            "My Wallet" => [
+            "my_wallet" => [
                 "id" => $wallet->id,
                 "balance" => "Rp" . number_format($wallet->balance, 2, ',', '.'),
                 "phone_number" => $wallet->phone_number,
@@ -90,7 +90,7 @@ class WalletController extends Controller
     public function WalletHistory()
     {
         $user = Auth::user();
-        $wallet = Wallet::where('user_id', $user->id)->with(['user'])->first();
+        $wallet = Wallet::where('user_id', $user->id)->with(['user'])->orderBy('created_at','desc')->first();
 
         if (!$wallet) {
             return response()->json([

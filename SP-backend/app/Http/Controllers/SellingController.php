@@ -14,7 +14,7 @@ class SellingController extends Controller
         $order = Order::with(['product', 'buyer'])->where('seller_id', $user->id)->where('status', 'accepted')->get();
 
         return response()->json([
-            "Selling History" => $order->map(function ($order) {
+            "selling_history" => $order->map(function ($order) {
                 return [
                     "id" => $order->id,
                     "product" => [
@@ -45,8 +45,8 @@ class SellingController extends Controller
         $totalRevenue = $order->sum('total_price');
 
         return response()->json([
-            "Total Selling"=>$totalSelling,
-            "Total Revenue" => "Rp" . number_format($totalRevenue, 2,',', '.')
+            "total_selling"=>$totalSelling,
+            "total_revenue" => "Rp" . number_format($totalRevenue, 2,',', '.')
         ]);
     }
 }
