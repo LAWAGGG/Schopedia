@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //user route (get, update, delete)
     Route::get('/users', [UserController::class, 'index']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::post('/users/update', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
     //wallet
