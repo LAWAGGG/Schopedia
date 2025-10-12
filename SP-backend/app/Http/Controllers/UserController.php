@@ -9,66 +9,29 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $user = User::get();
+        $user = User::where("role", "!=", "admin")->get();
 
         return response()->json([
             'user' => $user
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $user = User::findOrFail($id);
 
         $val = Validator::make($request->all(),[
-            'name'=>"string",
-            'password'=>'max:20',
-            'email'=>'unique:users,email'
+            'name'=>"required|string",
+            'password'=>'required|max:20',
+            'email'=>'required|unique:users,email'
         ]);
 
         if ($val->fails()) {
             return response()->json([
-                'message' => 'invalid fields'
+                'message' => 'invalid fields',
+                'errors'=> $val->errors()
             ], 422);
         }
 
@@ -86,9 +49,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $user = User::find($id);

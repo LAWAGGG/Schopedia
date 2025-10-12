@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -40,8 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/product/own', [ProductController::class, "showOwnProduct"]);
 
         //product route (CRUD)
-        Route::post('/product', [ProductController::class, 'store']);
         Route::post('/product/{product}/update', [ProductController::class, "update"]);
+        Route::post('/product', [ProductController::class, 'store']);
         Route::delete('/product/{product}', [ProductController::class, 'destroy']);
 
         //order for seller
@@ -70,6 +71,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // product
         Route::get('/product', [ProductController::class, 'index']);
         Route::get('/product/{id}', [ProductController::class, 'show']);
+
+        //cart
+        Route::get('/cart', [CartController::class, "showOwnCart"]);
+        Route::post('/cart/{product_id}/add', [CartController::class, "store"]);
+        Route::delete('cart/{product_id}/delete', [CartController::class, "destroy"]);
     });
 
     Route::middleware("admin")->group(function () {

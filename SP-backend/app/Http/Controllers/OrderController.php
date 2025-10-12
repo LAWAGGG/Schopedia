@@ -22,10 +22,13 @@ class OrderController extends Controller
         $buyedProducts = $orders->map(function ($order) {
             return [
                 'id' => $order->product->id,
-                'name' => $order->product->name,
-                'description' => $order->product->description,
-                'price' => $order->product->price,
-                'image' => $order->product->image,
+                'quantity' => $order->quantity,
+                'total_price' => "Rp". number_format($order->total_price, 2, ",", "."),
+                'product'=>[
+                    'name' => $order->product->name,
+                    'price' => $order->product->price,
+                    'image' => $order->product->image,
+                ],
                 'seller' => [
                     'id' => $order->seller->id,
                     'name' => $order->seller->name,
@@ -53,15 +56,9 @@ class OrderController extends Controller
                     "status" => $order->status,
                     "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
                     "product" => [
-                        "id" => $order->product->id,
                         "name" => $order->product->name,
                         "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
-                        "stock" => $order->product->stock,
-                    ],
-                    "seller" => [
-                        "id" => $order->seller->id,
-                        "name" => $order->seller->name,
-                        "email" => $order->seller->email
+                        "seller" => $order->seller->name,
                     ],
                 ];
             })
@@ -89,10 +86,8 @@ class OrderController extends Controller
                     "notes" => $order->notes ?? '-',
                     "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
                     "product" => [
-                        "id" => $order->product->id,
                         "name" => $order->product->name,
                         "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
-                        "stock" => $order->product->stock,
                         "image" => $order->product->image ?? null,
                     ],
                     "buyer" => [
@@ -503,6 +498,10 @@ class OrderController extends Controller
 
         if ($order->shipping_status !== 'shipped') {
             return response()->json(['message' => 'Order not yet shipped'], 400);
+        }
+
+        if ($order->shipping_status === 'delivered' || $order->status == 'completed') {
+            return response()->json(['message' => 'Order already delivered'], 400);
         }
 
         $order->update([

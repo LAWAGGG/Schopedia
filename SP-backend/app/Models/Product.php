@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $guarded = [];
-    
+
     public function orders(){
         return $this->hasMany(Order::class, 'product_id');
     }
@@ -19,5 +19,9 @@ class Product extends Model
        public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function cart(){
+        return $this->hasMany(Cart::class, "product_id");
     }
 }

@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class WalletController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $user = Auth::user();

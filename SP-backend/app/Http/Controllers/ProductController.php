@@ -50,14 +50,6 @@ class ProductController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -139,18 +131,16 @@ class ProductController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Product $product)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Product $product)
     {
+        if(!$product){
+            return response()->json([
+                "message"=>"product not found"
+            ],422);
+        }
+
         if ($product->user_id != Auth::user()->id) {
             return response()->json([
                 "message" => "unauthorized action"
