@@ -10,7 +10,7 @@ export default function Login() {
 
     async function HandleLogin(e) {
         e.preventDefault();
-        const res = await fetch("http://localhost:8000/api/login", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}api/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -20,13 +20,14 @@ export default function Login() {
         });
 
         const data = await res.json();
-        if (res.status === 200 && data.role === "admin") {
+        console.log(data);
+        if (res.status === 200 && data.user.role === "admin") {
             navigate("/dashboardadmin");
             SetToken(data.token);
-        }else if (res.status === 200 && data.role === "seller") {
+        }else if (res.status === 200 && data.user.role === "seller") {
             navigate("/dashboardseller");
             SetToken(data.token);
-        }else if (res.status === 200 && data.role === "buyer") {
+        }else if (res.status === 200 && data.user.role === "buyer") {
             navigate("/dashboard");
             SetToken(data.token);
         } else if (res.status === 404) {
