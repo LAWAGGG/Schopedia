@@ -17,13 +17,13 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'role' => 'required|in:buyer,seller',
-            'phone_number'=>'required|numeric|unique:wallets,phone_number|min:10'
+            'phone_number' => 'required|numeric|unique:wallets,phone_number|min:10'
         ]);
 
         if ($val->fails()) {
             return response()->json([
                 'message' => 'invalid fields',
-                "errors"=>$val->errors()
+                "errors" => $val->errors()
             ], 422);
         }
 
@@ -35,8 +35,8 @@ class AuthController extends Controller
         ]);
 
         $wallet = Wallet::create([
-            'user_id'=>$user->id,
-            'phone_number'=>$request->phone_number
+            'user_id' => $user->id,
+            'phone_number' => $request->phone_number
         ]);
 
         Auth::login($user);
@@ -45,37 +45,48 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'user registered succesfully',
             'user' => $user,
-            'wallet'=>number_format($wallet->balance, 2, ',', '.'),
+            'wallet' => number_format($wallet->balance, 2, ',', '.'),
         ]);
     }
 
     public function login(Request $request)
     {
-        $user = Auth::attempt([
-            'email' => $request->email,
-            'password' => $request->password,
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
 
-        if(!$user){
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                "message"=>"user $request->email not found"
-            ],404);
+                "message" => "User dengan email {$request->email} tidak ditemukan atau password salah."
+            ], 404);
         }
 
-        $token = Auth::user()->createToken('koentji')->plainTextToken;
+        $user = Auth::user();
+
+        // Buat token baru
+        $token = $user->createToken('koentji')->plainTextToken;
 
         return response()->json([
-            'message' => 'user logged in succesfully',
-            'user' => $user,
-            "token" => $token
-        ]);
+            'message' => 'User berhasil login.',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'created_at' => $user->created_at,
+            ],
+            'token' => $token
+        ], 200);
     }
 
-    public function logout(){
+
+    public function logout()
+    {
         Auth::user()->tokens()->delete();
 
         return response()->json([
-            "message"=>"user logged out succesfully"
+            "message" => "user logged out succesfully"
         ]);
     }
 }
