@@ -31,35 +31,32 @@ export default function Login() {
     }
 
     return (
-        <div className="flex flex-col md:flex-row bg-gradient-to-b from-[#3768C8] to-[#290771] min-h-screen md:h-screen">
-            {/* BAGIAN KIRI */}
-            <div className="
-                flex justify-center items-center 
-                w-full md:w-1/2 
-                p-4 sm:p-6 md:p-12
-                h-[30vh] md:h-full
-            ">
+        <div className="flex flex-col md:flex-row bg-gradient-to-b from-[#3768C8] to-[#290771] h-screen overflow-hidden">
+            {/* BAGIAN KIRI (hanya muncul di desktop) */}
+            <div className="hidden md:flex justify-center items-center w-1/2 h-full p-12">
                 <img
                     src="hape.png"
                     alt="Smartphone"
-                    className="w-[45%] sm:w-[40%] md:w-[70%] lg:w-[65%] max-w-[350px] h-auto animate-float"
+                    className="w-[70%] max-w-[350px] h-auto animate-float"
                 />
             </div>
 
             {/* BAGIAN KANAN */}
             <div className="
-                z-1 flex flex-col justify-center items-center 
-                w-full md:w-1/2 
-                bg-white rounded-t-[25px] md:rounded-none md:rounded-l-[25px] 
-                p-6 sm:p-10 md:p-12 shadow-2xl md:shadow-none 
-                transition-all duration-300 
-                md:h-full md:max-h-screen md:overflow-y-auto
-            ">
+                    flex flex-col justify-center items-center 
+                    w-full md:w-1/2 
+                    bg-white 
+                    rounded-none md:rounded-l-[25px]
+                    p-8 md:p-12 
+                    shadow-2xl md:shadow-none 
+                    h-full
+                    overflow-hidden
+                        ">
                 <div className="text-center flex flex-col items-center">
                     <img
                         src="Schopediagg.png"
                         alt="Schopedia Logo"
-                        className="w-[130px] sm:w-[180px] md:w-[250px] h-auto mb-3"
+                        className="w-[150px] sm:w-[200px] md:w-[250px] h-auto mb-3"
                     />
                     <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2">
                         Welcome To Schopedia

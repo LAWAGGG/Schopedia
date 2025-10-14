@@ -36,22 +36,29 @@ export default function Register() {
     }
 
     return (
-        <div className=" flex flex-col md:flex-row bg-gradient-to-b from-[#3768C8] to-[#290771] min-h-screen">
-            {/* KIRI */}
-            <div className="flex justify-center items-center w-full md:w-1/2 p-6 sm:p-8 md:p-12">
+        <div className="flex flex-col md:flex-row bg-gradient-to-b from-[#3768C8] to-[#290771] h-screen overflow-hidden">
+            {/* BAGIAN KIRI (muncul hanya di desktop) */}
+            <div className="hidden md:flex justify-center items-center w-1/2 h-full p-12">
                 <img
                     src="hape.png"
                     alt="Smartphone"
-                    className="w-[70%] sm:w-[60%] md:w-[80%] lg:w-[65%] max-w-[450px] h-auto animate-float"
+                    className="w-[70%] max-w-[350px] h-auto animate-float"
                 />
             </div>
 
-            {/* Bagian Kanan */}
-            <div className="flex flex-col items-center bg-white w-full md:w-1/2 
-                            rounded-t-[25px] md:rounded-none md:rounded-l-[25px]
-                            p-6 sm:p-10 md:p-12 shadow-2xl md:shadow-none
-                            md:h-screen md:overflow-y-auto">
-                
+            {/* BAGIAN KANAN */}
+            <div
+                className="
+                flex flex-col items-center justify-center
+                w-full md:w-1/2
+                bg-white
+                rounded-none md:rounded-l-[25px]
+                p-8 md:p-12
+                shadow-2xl md:shadow-none
+                h-full
+                overflow-hidden
+            "
+            >
                 {/* Logo */}
                 <img
                     src="Schopediagg.png"
@@ -141,8 +148,13 @@ export default function Register() {
                     {/* Terms */}
                     <p className="text-gray-500 text-xs sm:text-sm text-center mt-2 leading-relaxed">
                         By creating an account, you agree to our{" "}
-                        <a href="#" className="underline text-black">Terms of Service</a> and{" "}
-                        <a href="#" className="underline text-black">Privacy Policy</a>.
+                        <a href="#" className="underline text-black">
+                            Terms of Service
+                        </a>{" "}
+                        and{" "}
+                        <a href="#" className="underline text-black">
+                            Privacy Policy
+                        </a>.
                     </p>
 
                     {/* Button */}
