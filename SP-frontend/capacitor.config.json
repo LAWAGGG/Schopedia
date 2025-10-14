@@ -1,5 +1,16 @@
 {
   "appId": "com.example.app",
   "appName": "Schopedia",
-  "webDir": "dist"
+  "webDir": "dist",
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  },
+  "server": {
+    "androidScheme": "http"
+  }
 }

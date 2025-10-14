@@ -54,6 +54,7 @@ class OrderController extends Controller
                     "quantity" => $order->quantity,
                     "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
                     "status" => $order->status,
+                    "shipping_status"=>$order->shipping_status,
                     "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
                     "product" => [
                         "name" => $order->product->name,
