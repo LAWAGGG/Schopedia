@@ -20,7 +20,13 @@ export default function Login() {
         });
 
         const data = await res.json();
-        if (res.status === 200) {
+        if (res.status === 200 && data.role === "admin") {
+            navigate("/dashboardadmin");
+            SetToken(data.token);
+        }else if (res.status === 200 && data.role === "seller") {
+            navigate("/dashboardseller");
+            SetToken(data.token);
+        }else if (res.status === 200 && data.role === "buyer") {
             navigate("/dashboard");
             SetToken(data.token);
         } else if (res.status === 404) {

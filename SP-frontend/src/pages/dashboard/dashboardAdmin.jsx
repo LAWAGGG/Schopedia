@@ -1,9 +1,9 @@
 import "./../../styles/dashboard.css";
 
-export default function Dashboard() {
+export default function DashboardAdmin() {
     return(
         <div className="dashboard">
-            <h1>user</h1>
+            <h1>admin</h1>
         </div>
     )
 }
