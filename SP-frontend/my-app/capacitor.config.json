@@ -1,0 +1,10 @@
+{
+  "appId": "com.schopedia.app",
+  "appName": "Schopedia",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}
