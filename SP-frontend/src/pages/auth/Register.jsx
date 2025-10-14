@@ -47,18 +47,20 @@ export default function Register() {
             </div>
 
             {/* BAGIAN KANAN */}
-            <div
-                className="
-                flex flex-col items-center justify-center
-                w-full md:w-1/2
-                bg-white
-                rounded-none md:rounded-l-[25px]
-                p-8 md:p-12
-                shadow-2xl md:shadow-none
-                h-full
-                overflow-hidden
-            "
-            >
+<div
+    className="
+    flex flex-col items-center 
+    w-full md:w-1/2
+    bg-white 
+    rounded-none md:rounded-l-[25px]
+    p-8 md:p-12 
+    shadow-2xl md:shadow-none 
+    h-auto md:h-screen 
+    overflow-y-auto 
+    "
+>
+
+
                 {/* Logo */}
                 <img
                     src="Schopediagg.png"
