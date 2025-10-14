@@ -1,8 +1,40 @@
+import { useState } from "react";
 import "../../styles/Login.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { SetToken } from "../../utils/utils";
 
 
 export default function Login() {
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const navigate = useNavigate()
+
+    async function HandleLogin(e) {
+        e.preventDefault()
+        const res = await fetch("http://localhost:8000/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+            , body: JSON.stringify({
+                "email": email,
+                "password": password
+            })
+        })
+        const data = await res.json()
+        if (res.status === 200) {
+            navigate("/dashboard")
+            SetToken(data.token)
+        }
+        else if (res.status === 404) {
+            alert("salah goblok")
+        }
+        else {
+            console.log("connection error")
+        }
+        console.log(data)
+    }
     return (
         <div className="flex flex-col md:flex-row bg-gradient-to-b from-[#3768C8] to-[#290771] min-h-screen md:h-screen md:overflow-hidden">
             {/* Kiri */}
@@ -33,10 +65,10 @@ export default function Login() {
                     </p>
                 </div>
 
-                <form className="flex flex-col gap-3 w-[85%] md:w-[70%] max-w-[500px]">
+                <form onSubmit={e => HandleLogin(e)} className="flex flex-col gap-3 w-[85%] md:w-[70%] max-w-[500px]">
                     <div className="flex flex-col">
                         <label className="text-sm mb-1">Email</label>
-                        <input
+                        <input onChange={e => setEmail(e.target.value)}
                             type="email"
                             placeholder="Enter your email"
                             className="h-10 px-3 text-sm border border-gray-300 rounded 
@@ -46,7 +78,7 @@ export default function Login() {
 
                     <div className="flex flex-col">
                         <label className="text-sm mb-1">Password</label>
-                        <input
+                        <input onChange={e => setPassword(e.target.value)}
                             type="password"
                             placeholder="Enter your password"
                             className="h-10 px-3 text-sm border border-gray-300 rounded 
@@ -66,12 +98,13 @@ export default function Login() {
                     </div>
 
                     <button
-                        type="submit"
-                        className="w-full h-[40px] bg-[#713491] text-white rounded-md text-[16px] 
-                        transition-all duration-300 hover:shadow-md hover:shadow-black active:scale-[0.98]"
+                        className="w-full h-[40px] bg-[#713491] text-white rounded-md text-[16px]
+                shadow-md hover:shadow-lg hover:bg-[#8f3fc7] hover:scale-105
+                transition-all duration-300 ease-in-out active:scale-95"
                     >
                         Login
                     </button>
+
                 </form>
 
                 <Link
