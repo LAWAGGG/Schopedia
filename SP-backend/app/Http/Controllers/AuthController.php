@@ -64,7 +64,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Buat token baru
+        $expiresAt = null;
+
+        if ($request->boolean('remember_me')) {
+            $expiresAt = now()->addMonth(1);
+        } else {
+            $expiresAt = now()->addDays(1);
+        }
+
         $token = $user->createToken('koentji')->plainTextToken;
 
         return response()->json([
@@ -75,6 +82,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'role' => $user->role,
                 'created_at' => $user->created_at,
+                "expires_at" => $expiresAt ? $expiresAt->toISOString() : null
             ],
             'token' => $token
         ], 200);
