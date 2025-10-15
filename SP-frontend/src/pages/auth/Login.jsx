@@ -2,14 +2,19 @@ import { useState } from "react";
 import "../../styles/Login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { SetToken } from "../../utils/utils";
+import LoadingScreen from "../../components/loading";
+
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null);
 
     async function HandleLogin(e) {
         e.preventDefault();
+        setLoading(true)
         const res = await fetch(`${import.meta.env.VITE_API_URL}api/login`, {
             method: "POST",
             headers: {
@@ -22,18 +27,27 @@ export default function Login() {
         const data = await res.json();
         console.log(data);
         if (res.status === 200 && data.user.role === "admin") {
+            setLoading(false);
             navigate("/dashboardadmin");
             SetToken(data.token);
-        }else if (res.status === 200 && data.user.role === "seller") {
+        } else if (res.status === 200 && data.user.role === "seller") {
+            setLoading(false);
             navigate("/dashboardseller");
             SetToken(data.token);
-        }else if (res.status === 200 && data.user.role === "buyer") {
+        } else if (res.status === 200 && data.user.role === "buyer") {
+            setLoading(false);
             navigate("/dashboard");
             SetToken(data.token);
         } else if (res.status === 404) {
-            alert("Email atau password salah!");
+            setLoading(false);
+            setError("Email atau password salah!");
+        }
+        else if (res.status === 422) {
+            setLoading(false);
+            setError("Email dan password harus diisi!");
         } else {
-            console.log("connection error");
+            setLoading(false);
+            setError("connection error");
         }
     }
 
@@ -125,7 +139,23 @@ export default function Login() {
                 >
                     Create an Account
                 </Link>
+
+                {/* Modal Error */}
+                {error && (
+                    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-opacity-30 z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs text-center">
+                            <p className=" font-semibold mb-4">{error}</p>
+                            <button
+                                onClick={() => setError(null)}
+                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            >
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
+            {loading && <LoadingScreen />}
         </div>
     );
 }
