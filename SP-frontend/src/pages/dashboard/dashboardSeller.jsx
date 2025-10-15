@@ -1,9 +1,15 @@
 import "./../../styles/dashboard.css";
+import Sidebar from "../../components/sideBar";
 
 export default function DashboardSeller() {
-    return(
+    return (
         <div className="dashboard">
-            <h1>Seller</h1>
+            <div className="sidebar">
+                <Sidebar />
+            </div>
+            <div className="content">
+
+            </div>
         </div>
     )
 }

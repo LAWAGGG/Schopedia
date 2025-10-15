@@ -1,10 +1,10 @@
-import "./../../styles/dashboard.css";
+import Sidebar from "../../components/sideBar";
 
-export default function Dashboard() {
-    return(
+export default function Wallet() {
+    return (
         <div className="dashboard">
             <div className="sidebar">
-                sidebar
+                <Sidebar />
             </div>
             <div className="content">
 

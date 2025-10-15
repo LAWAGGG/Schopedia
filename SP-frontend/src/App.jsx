@@ -4,6 +4,11 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/dashboard/dashboard";
 import DashboardAdmin from "./pages/dashboard/dashboardAdmin";
 import DashboardSeller from "./pages/dashboard/dashboardSeller";
+import SideBar from "./components/sideBar";
+import Orders from "./pages/others/orders";
+import Profile from "./pages/others/profile";
+import Product from "./pages/others/products";
+import Wallet from "./pages/others/wallet";
 
 export default function App() {
   return (
@@ -13,6 +18,11 @@ export default function App() {
       <Route path="/dashboard" element ={<Dashboard />} />
       <Route path="/dashboardadmin" element ={<DashboardAdmin />} />
       <Route path="/dashboardseller" element ={<DashboardSeller />} />
+      <Route path="/sidebar" element ={<SideBar />} />
+      <Route path="/orders" element ={<Orders />} />
+      <Route path="/profile" element ={<Profile />} />
+      <Route path="/products" element ={<Product />} />
+      <Route path="/wallet" element ={<Wallet />} />
     </Routes>
   );
 }
