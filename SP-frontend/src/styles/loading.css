@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+
+@keyframes spin-delay {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.animation-delay-200 {
+    animation: spin-delay 1.5s linear infinite;
+    animation-delay: 0.2s;
+}
+
+.animation-delay-400 {
+    animation: spin-delay 1.5s linear infinite;
+    animation-delay: 0.4s;
+}

@@ -2,6 +2,9 @@ import { useState } from "react";
 import "../../styles/Register.css";
 import { Link, useNavigate } from "react-router-dom";
 import { SetToken } from "../../utils/utils";
+import LoadingScreen from "../../components/loading";
+import Policy from "../../components/policy";
+import Terms from "../../components/terms";
 
 export default function Register() {
     const [name, setName] = useState("");
@@ -10,9 +13,13 @@ export default function Register() {
     const [role, setRole] = useState("");
     const [number, setNumber] = useState("");
     const Navigate = useNavigate();
+    const [loading, setLoading] = useState(false)
+    const [policyOpen, setPolicyOpen] = useState(false);
+    const [termsOpen, setTermsOpen] = useState(false);
 
     async function handleRegister(e) {
         e.preventDefault();
+        setLoading(true)
         const res = await fetch("http://localhost:8000/api/register", {
             method: "POST",
             headers: {
@@ -29,6 +36,7 @@ export default function Register() {
         });
         const data = await res.json();
         if (res.status === 200) {
+            setLoading(false);
             Navigate("/");
             SetToken(data.token);
         }
@@ -48,7 +56,7 @@ export default function Register() {
 
             {/* BAGIAN KANAN */}
             <div
-            className="
+                className="
                 flex flex-col items-center 
                 w-full md:w-1/2
                 bg-white 
@@ -59,7 +67,6 @@ export default function Register() {
                 overflow-y-auto 
                             "
             >
-
 
                 {/* Logo */}
                 <img
@@ -85,8 +92,8 @@ export default function Register() {
                             type="text"
                             placeholder="Enter your username"
                             className="h-11 px-3 text-sm border border-gray-300 rounded-md 
-                                       focus:ring-2 focus:ring-[#713491] focus:border-transparent 
-                                       placeholder:text-gray-400 transition-all duration-200"
+                                    focus:ring-2 focus:ring-[#713491] focus:border-transparent 
+                                    placeholder:text-gray-400 transition-all duration-200"
                         />
                     </div>
 
@@ -98,8 +105,8 @@ export default function Register() {
                             type="email"
                             placeholder="Enter your email"
                             className="h-11 px-3 text-sm border border-gray-300 rounded-md 
-                                       focus:ring-2 focus:ring-[#713491] focus:border-transparent 
-                                       placeholder:text-gray-400 transition-all duration-200"
+                                    focus:ring-2 focus:ring-[#713491] focus:border-transparent 
+                                    placeholder:text-gray-400 transition-all duration-200"
                         />
                     </div>
 
@@ -111,8 +118,8 @@ export default function Register() {
                             type="password"
                             placeholder="Enter your password"
                             className="h-11 px-3 text-sm border border-gray-300 rounded-md 
-                                       focus:ring-2 focus:ring-[#713491] focus:border-transparent 
-                                       placeholder:text-gray-400 transition-all duration-200"
+                                    focus:ring-2 focus:ring-[#713491] focus:border-transparent 
+                                    placeholder:text-gray-400 transition-all duration-200"
                         />
                     </div>
 
@@ -124,8 +131,8 @@ export default function Register() {
                             type="number"
                             placeholder="Enter your phone number"
                             className="h-11 px-3 text-sm border border-gray-300 rounded-md 
-                                       focus:ring-2 focus:ring-[#713491] focus:border-transparent 
-                                       placeholder:text-gray-400 transition-all duration-200"
+                                    focus:ring-2 focus:ring-[#713491] focus:border-transparent 
+                                    placeholder:text-gray-400 transition-all duration-200"
                         />
                     </div>
 
@@ -136,8 +143,8 @@ export default function Register() {
                             onChange={(e) => setRole(e.target.value)}
                             defaultValue=""
                             className="h-11 px-3 text-sm border border-gray-300 rounded-md 
-                                       focus:ring-2 focus:ring-[#713491] focus:border-transparent 
-                                       text-gray-700 transition-all duration-200"
+                                    focus:ring-2 focus:ring-[#713491] focus:border-transparent 
+                                    text-gray-700 transition-all duration-200"
                         >
                             <option value="" disabled>
                                 Select your role
@@ -150,11 +157,23 @@ export default function Register() {
                     {/* Terms */}
                     <p className="text-gray-500 text-xs sm:text-sm text-center mt-2 leading-relaxed">
                         By creating an account, you agree to our{" "}
-                        <a href="#" className="underline text-black">
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setTermsOpen(true);
+                            }}
+                            className="underline text-black">
                             Terms of Service
                         </a>{" "}
                         and{" "}
-                        <a href="#" className="underline text-black">
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setPolicyOpen(true);
+                            }}
+                            className="underline text-black">
                             Privacy Policy
                         </a>.
                     </p>
@@ -162,8 +181,8 @@ export default function Register() {
                     {/* Button */}
                     <button
                         className="w-full mt-5 h-[45px] bg-[#713491] text-white font-medium rounded-md text-[15px]
-                                   shadow-md hover:bg-[#8f3fc7] hover:scale-[1.03] 
-                                   transition-transform duration-300 active:scale-95"
+                                    shadow-md hover:bg-[#8f3fc7] hover:scale-[1.03] 
+                                    transition-transform duration-300 active:scale-95"
                     >
                         Register
                     </button>
@@ -172,14 +191,18 @@ export default function Register() {
                     <Link
                         to="/"
                         className="mt-5 relative text-sm text-[#713491] font-medium hover:opacity-80 
-                                   after:content-[''] after:absolute after:left-0 after:bottom-0 
-                                   after:h-[1px] after:w-0 after:bg-[#713491] 
-                                   after:transition-all after:duration-300 hover:after:w-full"
+                                    after:content-[''] after:absolute after:left-0 after:bottom-0 
+                                    after:h-[1px] after:w-0 after:bg-[#713491] 
+                                    after:transition-all after:duration-300 hover:after:w-full"
                     >
                         Already have an account? Login
                     </Link>
+
+                    {termsOpen && <Terms open={termsOpen} onClose={() => setTermsOpen(false)} />}
+                    {policyOpen && <Policy open={policyOpen} onClose={() => setPolicyOpen(false)} />}
                 </form>
             </div>
+            {loading && <LoadingScreen />}
         </div>
     );
 }

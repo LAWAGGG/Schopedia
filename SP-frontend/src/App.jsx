@@ -9,6 +9,7 @@ import Orders from "./pages/others/orders";
 import Profile from "./pages/others/profile";
 import Product from "./pages/others/products";
 import Wallet from "./pages/others/wallet";
+import Policy from "./components/policy";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/profile" element ={<Profile />} />
       <Route path="/products" element ={<Product />} />
       <Route path="/wallet" element ={<Wallet />} />
+      <Route path="/policy" element ={<Policy />} />
     </Routes>
   );
 }
