@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../../styles/Register.css";
 import { Link, useNavigate } from "react-router-dom";
-import { SetToken } from "../../utils/utils";
+// import { SetToken } from "../../utils/utils";
 import LoadingScreen from "../../components/loading";
 import Policy from "../../components/policy";
 import Terms from "../../components/terms";
@@ -38,7 +38,7 @@ export default function Register() {
         if (res.status === 200) {
             setLoading(false);
             Navigate("/");
-            SetToken(data.token);
+            // SetToken(data.token);
         }
         console.log(data);
     }

@@ -11,7 +11,7 @@ export default function Sidebar() {
     ];
 
     return (
-        <div className="w-60 h-screen bg-[#8B3DFF] text-white flex flex-col py-6">
+        <div className="w-60 fixed h-screen bg-[#8B3DFF] text-white flex flex-col py-6">
             {/* Logo */}
             <div className="px-6 mb-10">
                 <img className="invert brightness-0 text-2xl font-bold tracking-wide" src="Schopediagg.png" alt="logo" />

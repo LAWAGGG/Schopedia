@@ -1,8 +1,8 @@
 import { useState } from "react";
 import "../../styles/Login.css";
 import { Link, useNavigate } from "react-router-dom";
-import { SetToken } from "../../utils/utils";
 import LoadingScreen from "../../components/loading";
+import setToken from '../../utils/utils';
 
 
 export default function Login() {
@@ -11,6 +11,8 @@ export default function Login() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null);
+    const [remember, setRemember] = useState(false);
+    
 
     async function HandleLogin(e) {
         e.preventDefault();
@@ -21,7 +23,10 @@ export default function Login() {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({
+                "email":email, 
+                "password":password,
+                "remember_me":remember}),
         });
 
         const data = await res.json();
@@ -29,15 +34,15 @@ export default function Login() {
         if (res.status === 200 && data.user.role === "admin") {
             setLoading(false);
             navigate("/dashboardadmin");
-            SetToken(data.token);
+            setToken(data.token, remember);
         } else if (res.status === 200 && data.user.role === "seller") {
             setLoading(false);
             navigate("/dashboardseller");
-            SetToken(data.token);
+            setToken(data.token,remember);
         } else if (res.status === 200 && data.user.role === "buyer") {
             setLoading(false);
             navigate("/dashboard");
-            SetToken(data.token);
+            setToken(data.token,remember);
         } else if (res.status === 404) {
             setLoading(false);
             setError("Email atau password salah!");
@@ -118,6 +123,8 @@ export default function Login() {
                     <div className="flex items-center gap-2 text-sm mb-2">
                         <input
                             type="checkbox"
+                            checked={remember}
+                            onChange={(e) => setRemember(e.target.value)}
                             id="remember"
                             className="w-4 h-4 cursor-pointer accent-[#713491]"
                         />
