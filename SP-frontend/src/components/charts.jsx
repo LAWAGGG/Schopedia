@@ -23,7 +23,7 @@ const dailySalesData = [
 
 export default function Charts() {
     return (
-        <div className="min-h-screen p-0">
+        <div className="p-0">
             {/* Summary Cards
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <div className="p-6 bg-green-500 text-white rounded-lg shadow">
