@@ -72,7 +72,7 @@ class AuthController extends Controller
             $expiresAt = now()->addDays(1);
         }
 
-        $token = $user->createToken('koentji')->plainTextToken;
+        $token = $user->createToken('koentji', [], $expiresAt)->plainTextToken;
 
         return response()->json([
             'message' => 'User berhasil login.',
