@@ -11,7 +11,7 @@ export default function Sidebar() {
     ];
 
     return (
-        <div className="w-60 fixed h-screen bg-[#8B3DFF] text-white flex flex-col py-6">
+        <div className="w-60 fixed h-screen bg-[#713491] text-white flex flex-col py-6">
             {/* Logo */}
             <div className="px-6 mb-10">
                 <img className="invert brightness-0 text-2xl font-bold tracking-wide" src="Schopediagg.png" alt="logo" />
@@ -29,7 +29,7 @@ export default function Sidebar() {
                             className={({ isActive }) =>
                                 `flex items-center gap-3 px-6 py-3 rounded-l-full transition-all duration-300 ${isActive
                                     ? "bg-white text-[#8B3DFF] "
-                                    : "text-white hover:bg-[#9B5FFF]/40"
+                                    : "text-white hover:bg-[#713491]/40"
                                 }`
                             }
                         >
