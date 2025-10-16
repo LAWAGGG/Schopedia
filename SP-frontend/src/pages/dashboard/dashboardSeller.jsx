@@ -1,4 +1,4 @@
-import "./../../styles/dashboard.css";
+import "./../../styles/dashboardseller.css";
 import Sidebar from "../../components/sideBar";
 import Charts from "../../components/charts";
 import SearchBar from "../../components/searchBar";

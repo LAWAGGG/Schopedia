@@ -1,4 +1,4 @@
-import "./../../styles/dashboard.css";
+// import "./../../styles/dashboard.css";
 
 export default function DashboardAdmin() {
     return(
