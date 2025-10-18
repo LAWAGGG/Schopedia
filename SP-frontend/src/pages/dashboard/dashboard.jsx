@@ -1,5 +1,5 @@
 // import "./../../styles/dashboard.css";
-import { useEffect, useState } from "react";
+import { useEffect,useState  } from "react";
 import Card from "../../components/card"
 import { getToken } from "../../utils/utils";
 
@@ -17,17 +17,37 @@ export default function Dashboard() {
         });
         const data = await res.json();
         console.log(data);
+
+        if(data.all_products){
+            setProducts(data.all_products);
+        }else{
+            console.warn("Data tidak ditemukan :",data);
+        }
     }
     useEffect(()=>{
         FetchProduct()
     },[]);
+    
     return(
         <div className="dashboard">
             <div className="sidebar">
-                <Card />
+            
             </div>
             <div className="content">
-
+                <div className="card">
+                    {products.length > 0 ?(
+                        products.map((products)=>(
+                            <Card 
+                            key={products.id}
+                            image ={products.image}
+                            name={products.name}
+                            price={products.price}
+                            />
+                        ))
+                    ):(
+                        <p>memuat product....</p>
+                    )}
+                </div>
             </div>
         </div>
     )

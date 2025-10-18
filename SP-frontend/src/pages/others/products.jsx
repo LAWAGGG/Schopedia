@@ -1,11 +1,11 @@
 import Sidebar from "../../components/sideBar";
-import Card from "../../components/card"
+// import Card from "../../components/card"
 
 export default function Products() {
     return (
         <div className="dashboard">
             <div className="sidebar">
-                <Card />
+            
             </div>
             <div className="content">
                 
