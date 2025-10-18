@@ -3,8 +3,10 @@ import Sidebar from "../../components/sideBar";
 import Charts from "../../components/charts";
 import SearchBar from "../../components/searchBar";
 import { Wallet, PackageSearch, ShoppingCart, Boxes ,} from 'lucide-react';
+import {getName} from '../../utils/utils'
 
 export default function DashboardSeller() {
+    const name = getName()
     return (
         <div className="dashboard">
             <div className="sidebar">
@@ -16,7 +18,7 @@ export default function DashboardSeller() {
                     <SearchBar />
                 </div>
 
-                <h2 className="text-xl font-bold mb-15">Welcome back ,<span>anjay</span></h2>
+                <h2 className="text-xl font-bold mb-15">Welcome back, <span className="text-blue-500 text-2xl">{name}</span></h2>
 
                 <div className="menu  mb-15 ">
                     <div className="flex flex-wrap gap-6 justify-between">

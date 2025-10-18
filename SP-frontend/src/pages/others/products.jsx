@@ -5,7 +5,7 @@ export default function Products() {
     return (
         <div className="dashboard">
             <div className="sidebar">
-            
+            <Sidebar />
             </div>
             <div className="content">
                 

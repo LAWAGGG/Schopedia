@@ -8,11 +8,12 @@ import setToken from '../../utils/utils';
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null);
     const [remember, setRemember] = useState(false);
-    
+
+    const navigate = useNavigate();
+
 
     async function HandleLogin(e) {
         e.preventDefault();
@@ -24,9 +25,10 @@ export default function Login() {
                 "Accept": "application/json",
             },
             body: JSON.stringify({
-                "email":email, 
-                "password":password,
-                "remember_me":remember}),
+                "email": email,
+                "password": password,
+                "remember_me": remember
+            }),
         });
 
         const data = await res.json();
@@ -34,15 +36,15 @@ export default function Login() {
         if (res.status === 200 && data.user.role === "admin") {
             setLoading(false);
             navigate("/dashboardadmin");
-            setToken(data.token, remember);
+            setToken(data.token, remember,data.user.name);
         } else if (res.status === 200 && data.user.role === "seller") {
             setLoading(false);
             navigate("/dashboardseller");
-            setToken(data.token,remember);
+            setToken(data.token, remember,data.user.name);
         } else if (res.status === 200 && data.user.role === "buyer") {
             setLoading(false);
             navigate("/dashboard");
-            setToken(data.token,remember);
+            setToken(data.token, remember,data.user.name);
         } else if (res.status === 404) {
             setLoading(false);
             setError("Email atau password salah!");

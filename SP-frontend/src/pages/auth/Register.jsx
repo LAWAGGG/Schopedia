@@ -39,6 +39,13 @@ export default function Register() {
             setLoading(false);
             Navigate("/");
             // SetToken(data.token);
+        } else if (data.errors.email) {
+            setLoading(false);
+
+            // ini buat jeda
+            setTimeout(() => {
+                alert("Email sudah dipakai!");
+            }, 500);
         }
         console.log(data);
     }
