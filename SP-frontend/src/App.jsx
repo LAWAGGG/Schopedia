@@ -1,15 +1,16 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import Dashboard from "./pages/dashboard/dashboard";
-import DashboardAdmin from "./pages/dashboard/dashboardAdmin";
-import DashboardSeller from "./pages/dashboard/dashboardSeller";
+import Dashboard from "./pages/buyer/dashboard";
+import DashboardAdmin from "./pages/admin/dashboardAdmin";
 import SideBar from "./components/sideBar";
-import Orders from "./pages/others/orders";
-import Profile from "./pages/others/profile";
-import Product from "./pages/others/products";
-import Wallet from "./pages/others/wallet";
 import Policy from "./components/policy";
+
+import Orders from "./pages/seller/orders";
+import Profile from "./pages/seller/profile";
+import Product from "./pages/seller/products";
+import Wallet from "./pages/seller/wallet";
+import DashboardSeller from "./pages/seller/dashboardSeller";
 
 export default function App() {
   return (
