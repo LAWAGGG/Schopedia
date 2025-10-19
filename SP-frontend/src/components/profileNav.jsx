@@ -1,13 +1,15 @@
 import { User } from 'lucide-react';
+import {getName} from '../utils/utils';
 
 
 export default function ProfileNav() {
+    const name = getName()
     return (
-        <div className="shadow-sm rounded-sm flex justify-between items-center p-4 w-[985px]">
+        <div className="shadow-sm ml-2 rounded-sm flex justify-between items-center p-4 w-[969px]">
             <h1 className="text-xl font-bold ">Edit Profile</h1>
-            <div className="flex gap-2 border border-gray-300 rounded-2xl py-1 px-2 items-center">
-                <User />
-                <span>Fagih</span>
+            <div className="flex gap-2 border border-gray-300 rounded-2xl py-1 px-3 items-center shrink-0">
+                <User className="w-4 h-4 text-gray-700" />
+                <span className="truncate max-w-[150px] text-gray-700">{name}</span>
             </div>
         </div>
     )

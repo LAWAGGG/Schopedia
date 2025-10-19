@@ -1,6 +1,6 @@
 // import "./../../styles/dashboard.css";
 import { useEffect,useState  } from "react";
-import Card from "../../components/card"
+import Card from "../../components/cardSeller"
 import { getToken } from "../../utils/utils";
 
 export default function Dashboard() {
@@ -34,7 +34,7 @@ export default function Dashboard() {
             
             </div>
             <div className="content">
-                <div className="card">
+                    {/* card */}
                     {products.length > 0 ?(
                         products.map((products)=>(
                             <Card 
@@ -47,7 +47,7 @@ export default function Dashboard() {
                     ):(
                         <p>memuat product....</p>
                     )}
-                </div>
+                
             </div>
         </div>
     )

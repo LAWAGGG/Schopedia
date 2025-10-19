@@ -2,6 +2,7 @@ import Sidebar from "../../components/sideBar";
 import ProfileNav from "../../components/profileNav";
 import { Pencil } from "lucide-react";
 
+
 export default function Profile() {
     function handleButton(){
         alert("Edit Photo")
