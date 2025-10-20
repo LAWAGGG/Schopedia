@@ -1,4 +1,4 @@
-export default function Card({ image, name, price }) {
+export default function Card({ image, name, price, onEdit, onDelete }) {
     return (
         <div className="bg-white rounded-xl pb-3 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden w-43 flex-shrink-0 border border-gray-100">
             {/* Gambar produk */}
@@ -22,10 +22,16 @@ export default function Card({ image, name, price }) {
 
             {/* Tombol aksi */}
             <div className="flex justify-center gap-2">
-                <button className="bg-gray-300 text-black text-[11px] px-4 py-1 rounded-lg hover:bg-gray-400 hover:scale-105 transition-all duration-200 shadow-sm">
+                <button
+                    onClick={onEdit}
+                    className="bg-gray-300 text-black text-[11px] px-4 py-1 rounded-lg hover:bg-gray-400 hover:scale-105 transition-all duration-200 shadow-sm"
+                    >
                     Edit
                 </button>
-                <button className="bg-gray-500 text-white text-[11px] px-3 py-1 rounded-lg hover:bg-gray-600 hover:scale-105 transition-all duration-200 shadow-sm">
+                <button 
+                onClick={onDelete}
+                className="bg-gray-500 text-white text-[11px] px-3 py-1 rounded-lg hover:bg-gray-600 hover:scale-105 transition-all duration-200 shadow-sm"
+                >
                     Delete
                 </button>
             </div>

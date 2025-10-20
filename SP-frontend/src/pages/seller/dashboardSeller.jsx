@@ -15,7 +15,7 @@ export default function DashboardSeller() {
             <div className="ml-60 px-6 pb-6">
 
                 <div className="mb-15">
-                    <SearchBar />
+                    <SearchBar title="Dashboard" />
                 </div>
 
                 <h2 className="text-xl font-bold mb-15">Welcome back, <span className="text-blue-500 text-2xl">{name}</span></h2>
@@ -30,7 +30,7 @@ export default function DashboardSeller() {
                             </div>
                             <div className="content">
                                 <h3 className="text-xs font-normal text-gray-600">Saldo</h3>
-                                <h1 className="font-bold text-lg">Rp.156.111.203</h1>
+                                <h1 className="font-bold text-lg">null</h1>
                             </div>
                         </div>
 
@@ -41,7 +41,7 @@ export default function DashboardSeller() {
                             </div>
                             <div className="content">
                                 <h3 className="text-xs font-normal text-gray-600">Total Products</h3>
-                                <h1 className="font-bold text-lg">36</h1>
+                                <h1 className="font-bold text-lg">null</h1>
                             </div>
                         </div>
 
@@ -52,7 +52,7 @@ export default function DashboardSeller() {
                             </div>
                             <div className="content">
                                 <h3 className="text-xs font-normal text-gray-600">Total Sold</h3>
-                                <h1 className="font-bold text-lg">180</h1>
+                                <h1 className="font-bold text-lg">null</h1>
                             </div>
                         </div>
 
@@ -63,7 +63,7 @@ export default function DashboardSeller() {
                             </div>
                             <div className="content">
                                 <h3 className="text-xs font-normal text-gray-600">Stock Left</h3>
-                                <h1 className="font-bold text-lg">25</h1>
+                                <h1 className="font-bold text-lg">null</h1>
                             </div>
                         </div>
 
