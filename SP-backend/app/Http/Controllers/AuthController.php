@@ -13,7 +13,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $val = Validator::make($request->all(), [
-            'name' => "required",
+            'name' => "required|alpha_num|max:10",
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'role' => 'required|in:buyer,seller',
@@ -64,8 +64,15 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Buat token baru
-        $token = $user->createToken('koentji')->plainTextToken;
+        $expiresAt = null;
+
+        if ($request->boolean('remember_me')) {
+            $expiresAt = now()->addMonth(1);
+        } else {
+            $expiresAt = now()->addDays(1);
+        }
+
+        $token = $user->createToken('koentji', [], $expiresAt)->plainTextToken;
 
         return response()->json([
             'message' => 'User berhasil login.',
@@ -75,6 +82,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'role' => $user->role,
                 'created_at' => $user->created_at,
+                "expires_at" => $expiresAt ? $expiresAt->toISOString() : null
             ],
             'token' => $token
         ], 200);
