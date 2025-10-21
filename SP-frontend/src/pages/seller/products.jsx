@@ -49,12 +49,12 @@ export default function Dashboard() {
     // Fetch kategori dari API
     async function fetchCategories() {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}category/get`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}api/category/get`, {
                 headers: { "Authorization": `Bearer ${getToken()}` },
             });
             const data = await res.json();
-            if (data.categories) {
-                setCategories(data.categories); // misal response {categories: [{id, name}, ...]}
+            if (data.Categories) {
+                setCategories(data.Categories); // misal response {categories: [{id, name}, ...]}
             }
         } catch (err) {
             console.error("Gagal fetch kategori: ", err);
