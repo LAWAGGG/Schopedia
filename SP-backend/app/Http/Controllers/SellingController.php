@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,15 +43,18 @@ class SellingController extends Controller
     {
         $user = Auth::user();
         $order = Order::with(['product', 'buyer'])->where('seller_id', $user->id)->where('status', 'completed')->get();
-        $wallet = User::where('id', Auth::user()->id)->with(['wallet'])->first();
+        $wallet = Wallet::where('user_id', $user->id)->first();
+        $product = Product::where("user_id", $user->id)->get();
 
+        $productLeft = $product->sum('stock');
         $totalSelling = $order->count();
         $totalRevenue = $order->sum('total_price');
 
         return response()->json([
-            "total_sold"=>$totalSelling,
-            "total_revenue" => "Rp" . number_format($totalRevenue, 2,',', '.'),
-            "balance"=>$wallet
+            "total_sold" => $totalSelling,
+            "total_revenue" => "Rp" . number_format($totalRevenue, 2, ',', '.'),
+            "balance" => "Rp" . number_format($wallet->balance, 2, ',', '.'),
+            "stock_left"=>$productLeft
         ]);
     }
 }
