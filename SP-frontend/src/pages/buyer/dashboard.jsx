@@ -1,8 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getToken } from "../../utils/utils";
-import CardProduct from "./ProductDetail";
-import BuyerCard from "../../components/cardBuyer";
+import CardBuyer from "../../components/cardBuyer";
 import Sidebarbuyyer from "../../components/sidebarBuyyer";
 
 export default function Dashboard() {
@@ -28,7 +27,11 @@ export default function Dashboard() {
       if (!res.ok) throw new Error(`Gagal fetch produk (status ${res.status})`);
 
       const data = await res.json();
+      console.log("API Response:", data); // DEBUG
+      
       const finalData = data.data || data.all_products || data;
+      console.log("Final Data:", finalData); // DEBUG
+      
       setProducts(Array.isArray(finalData) ? finalData : []);
     } catch (err) {
       setError(err.message);
@@ -37,7 +40,6 @@ export default function Dashboard() {
     }
   }
 
-  // Jalankan fetch sekali saat mount
   useEffect(() => {
     FetchProduct();
   }, []);
@@ -81,14 +83,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Kondisi loading / error
-  // if (isFetching)
-  //   return (
-  //     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-  //       <p className="text-lg text-gray-600">Loading produk...</p>
-  //     </div>
-  //   );
-
   if (error)
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -96,11 +90,10 @@ export default function Dashboard() {
       </div>
     );
 
-  // Tampilan utama
   return (
-    <div className="flex min-h-screen  select-none">
+    <div className="flex min-h-screen select-none">
       {/* Sidebar */}
-      <div className="w-64 bg-white  fixed left-0 top-0 bottom-0 z-10">
+      <div className="w-64 bg-white fixed left-0 top-0 bottom-0 z-10">
         <Sidebarbuyyer />
       </div>
 
@@ -116,36 +109,36 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Produk utama */}
+        {/* Daftar Produk */}
         <div
           ref={scrollRef}
           className="flex gap-6 overflow-x-auto pb-4 scroll-smooth cursor-grab"
         >
           {products.length > 0 ? (
-            products.map((product) => (
-              <CardProduct key={product.id} product={product} />
-            ))
+            products.map((product) => {
+              console.log("Product Object:", product); // DEBUG
+              console.log("Product ID:", product.id); // DEBUG
+              
+              return (
+                <div
+                  key={product.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log("=== CLICKED ===");
+                    console.log("Product ID:", product.id);
+                    console.log("Navigating to:", `/product/${product.id}`);
+                    navigate(`/product/${product.id}`);
+                  }}
+                >
+                  <CardBuyer product={product} hideButton />
+                </div>
+              );
+            })
           ) : (
             <p className="text-center text-gray-500 w-full">
-              Tidak ada produk tersedia
+              {isFetching ? "Memuat produk..." : "Tidak ada produk tersedia"}
             </p>
           )}
-        </div>
-
-        {/* Produk untuk pembeli */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 text-purple-700">
-            For Buyer
-          </h2>
-          <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth cursor-grab">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <BuyerCard key={`buyer-${product.id}`} product={product} />
-              ))
-            ) : (
-              <p className="text-gray-500">Belum ada produk untuk dibeli</p>
-            )}
-          </div>
         </div>
       </div>
     </div>

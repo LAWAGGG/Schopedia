@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Sidebar from "../../components/sideBar";
+import Sidebar from "../../components/sidebarBuyyer";
 import ProfileNav from "../../components/profileNav";
 import { Pencil } from "lucide-react";
 import { getToken } from "../../utils/utils";

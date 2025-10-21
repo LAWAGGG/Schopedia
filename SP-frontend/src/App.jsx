@@ -31,7 +31,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
 
       {/* Buyer */}
-      <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/profileBuyyer" element={<BuyerProfile />} />
       <Route path="/ordersBuyyer" element={<BuyerOrders />} />
