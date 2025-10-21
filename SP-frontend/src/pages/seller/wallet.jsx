@@ -1,4 +1,5 @@
 import Sidebar from "../../components/sideBar";
+import Navbar from '../../components/profileNav';
 
 export default function Wallet() {
     return (
@@ -6,8 +7,8 @@ export default function Wallet() {
             <div className="sidebar">
                 <Sidebar />
             </div>
-            <div className="content">
-
+            <div className="ml-66">
+                <Navbar title="E-Wallet" />
             </div>
         </div>
     )

@@ -100,7 +100,7 @@ export default function Profile() {
 
             <div className="flex-1 flex flex-col">
                 <div className="w-full bg-white">
-                    <ProfileNav />
+                    <ProfileNav title = "Profile" />
                 </div>
 
                 <div className="flex flex-col items-center md:items-start md:px-10 px-4 py-10 w-full relative">

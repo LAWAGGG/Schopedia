@@ -1,7 +1,7 @@
 import "./../../styles/dashboardseller.css";
 import Sidebar from "../../components/sideBar";
 import Charts from "../../components/charts";
-import SearchBar from "../../components/searchBar";
+import Profilenav from "../../components/profileNav";
 import { Wallet, PackageSearch, ShoppingCart, Boxes ,} from 'lucide-react';
 import {getName} from '../../utils/utils'
 
@@ -15,7 +15,7 @@ export default function DashboardSeller() {
             <div className="ml-60 px-6 pb-6">
 
                 <div className="mb-15">
-                    <SearchBar title="Dashboard" />
+                    <Profilenav title="Dashboard" />
                 </div>
 
                 <h2 className="text-xl font-bold mb-15">Welcome back, <span className="text-blue-500 text-2xl">{name}</span></h2>
