@@ -46,7 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/product/{product}', [ProductController::class, 'destroy']);
 
         //order for seller
-        Route::get('/order/seller', [OrderController::class, 'ordersAsSeller']);
+        Route::get('/order/seller', [OrderController::class, 'getOrdersAsSeller']);
         Route::get('/order/seller/{order_id}', [OrderController::class, 'showOrderSeller']);
         Route::put('/order/seller/{order_id}', [OrderController::class, "update"]);
         Route::put('/order/seller/{order_id}/ship', [OrderController::class, "shipOrder"]);
@@ -54,14 +54,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
         //history
         Route::get('/selling/history', [SellingController::class, 'getSellingHistory']);
-        Route::get('/selling/total', [SellingController::class, 'totalSelling']);
+        Route::get('/selling/dashboard', [SellingController::class, 'dashboardInformation']);
     });
 
 
     Route::middleware('buyer')->group(function () {
         //orders
         Route::post('/order/{product_id}', [OrderController::class, "store"]);
-        Route::get('/order/buyer', [OrderController::class, 'ordersAsBuyer']);
+        Route::get('/order/buyer', [OrderController::class, 'getOrdersAsBuyer']);
         Route::get('/order/buyer/{order_id}', [OrderController::class, 'showOrderBuyer']);
         Route::put('/order/buyer/{order_id}/cancel', [OrderController::class, 'updateAsBuyer']);
 
