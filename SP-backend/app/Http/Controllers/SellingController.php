@@ -14,7 +14,7 @@ class SellingController extends Controller
     public function getSellingHistory()
     {
         $user = Auth::user();
-        $order = Order::with(['product', 'buyer'])->where('seller_id', $user->id)->where('status', 'accepted')->get();
+        $order = Order::with(['product', 'buyer'])->where('seller_id', $user->id)->where('status', 'completed')->get();
 
         return response()->json([
             "selling_history" => $order->map(function ($order) {

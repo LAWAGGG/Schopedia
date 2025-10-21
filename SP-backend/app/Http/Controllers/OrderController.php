@@ -43,7 +43,7 @@ class OrderController extends Controller
     }
 
 
-    public function ordersAsBuyer()
+    public function getOrdersAsBuyer()
     {
         $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->where("status", '!=', "accepted")->get();
 
@@ -66,7 +66,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function ordersAsSeller()
+    public function getOrdersAsSeller()
     {
         $orders = Order::where('seller_id', Auth::user()->id)
             ->with(['product', 'buyer'])
