@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -36,17 +37,19 @@ class SellingController extends Controller
         ]);
     }
 
-    public function totalSelling()
+    public function dashboardInformation()
     {
         $user = Auth::user();
-        $order = Order::with(['product', 'buyer'])->where('seller_id', $user->id)->where('status', 'accepted')->get();
+        $order = Order::with(['product', 'buyer'])->where('seller_id', $user->id)->where('status', 'completed')->get();
+        $wallet = User::where('id', Auth::user()->id)->with(['wallet'])->first();
 
         $totalSelling = $order->count();
         $totalRevenue = $order->sum('total_price');
 
         return response()->json([
-            "total_selling"=>$totalSelling,
-            "total_revenue" => "Rp" . number_format($totalRevenue, 2,',', '.')
+            "total_sold"=>$totalSelling,
+            "total_revenue" => "Rp" . number_format($totalRevenue, 2,',', '.'),
+            "balance"=>$wallet
         ]);
     }
 }

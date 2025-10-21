@@ -54,7 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         //history
         Route::get('/selling/history', [SellingController::class, 'getSellingHistory']);
-        Route::get('/selling/total', [SellingController::class, 'totalSelling']);
+        Route::get('/selling/total', [SellingController::class, 'dashboardInformation']);
     });
 
 
