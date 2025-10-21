@@ -9,7 +9,11 @@ export default function Wallet() {
             </div>
             <div className="ml-66">
                 <Navbar title="E-Wallet" />
+                <div className="logo">
+                    
+                </div>
             </div>
         </div>
     )
+
 }
