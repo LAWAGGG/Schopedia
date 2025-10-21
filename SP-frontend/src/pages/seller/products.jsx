@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Card from "../../components/cardSeller";
 import CardSkeletons from "../../components/carsSellerskeleton";
@@ -31,34 +30,38 @@ export default function Dashboard() {
     // Fetch semua product
     async function FetchProduct() {
         try {
-            setIsFetching(true)
+            setIsFetching(true);
             const res = await fetch(`${import.meta.env.VITE_API_URL}api/product/own`, {
-                headers: { "Authorization": `Bearer ${getToken()}` },
+                headers: { Authorization: `Bearer ${getToken()}` },
             });
             const data = await res.json();
+            console.log(data)
             if (data.own_product) {
-                setProducts(data.own_product);
-                setFilteredProducts(data.own_product);
+                const productsWithFullImage = data.own_product.map((p) => ({
+                    ...p,
+                    image: p.image?.startsWith("http") ? p.image : `http://localhost:8000/${p.image}`,
+                    price: Number(p.price.replace(/[Rp.,]/g, "")) || 0, // angka murni
+                }));
+                setProducts(productsWithFullImage);
+                setFilteredProducts(productsWithFullImage);
             }
+
         } catch (err) {
-            console.error("gagal: ", err)
+            console.error("gagal: ", err);
         } finally {
             setIsFetching(false);
         }
     }
 
-    // Fetch kategori dari API
     async function fetchCategories() {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}api/category/get`, {
-                headers: { "Authorization": `Bearer ${getToken()}` },
+                headers: { Authorization: `Bearer ${getToken()}` },
             });
             const data = await res.json();
-            if (data.Categories) {
-                setCategories(data.Categories); // misal response {categories: [{id, name}, ...]}
-            }
+            if (data.Categories) setCategories(data.Categories);
         } catch (err) {
-            console.error("Gagal fetch kategori: ", err);
+            console.error(err);
         }
     }
 
@@ -67,10 +70,16 @@ export default function Dashboard() {
         fetchCategories();
     }, []);
 
-    // Modal control
     function openCreateModal() {
         setEditingProduct(null);
-        setFormData({ name: "", price: "", stock: "", description: "", category_id: categories[0]?.id || "", image: null });
+        setFormData({
+            name: "",
+            price: 0,
+            stock: 0,
+            description: "",
+            category_id: categories[0]?.id || "",
+            image: null,
+        });
         setShowModal(true);
     }
 
@@ -97,7 +106,7 @@ export default function Dashboard() {
 
         const form = new FormData();
         form.append("name", formData.name);
-        form.append("price", formData.price);
+        form.append("price", formData.price); // angka murni
         form.append("stock", formData.stock);
         form.append("description", formData.description);
         form.append("category_id", formData.category_id);
@@ -106,7 +115,7 @@ export default function Dashboard() {
         try {
             const res = await fetch(url, {
                 method: "POST",
-                headers: { "Authorization": `Bearer ${getToken()}` },
+                headers: { Authorization: `Bearer ${getToken()}` },
                 body: form,
             });
 
@@ -138,9 +147,8 @@ export default function Dashboard() {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}api/product/${deleteTarget.id}`, {
                 method: "DELETE",
-                headers: { "Authorization": `Bearer ${getToken()}` },
+                headers: { Authorization: `Bearer ${getToken()}` },
             });
-
             if (res.ok) {
                 FetchProduct();
                 setShowDeleteModal(false);
@@ -160,13 +168,9 @@ export default function Dashboard() {
     function handleSearch(keyword) {
         const lower = keyword.toLowerCase().trim();
         if (!lower) return setFilteredProducts(products);
-
-        const filtered = products.filter(
-            (p) =>
-                p.name.toLowerCase().includes(lower) ||
-                p.description?.toLowerCase().includes(lower)
+        setFilteredProducts(
+            products.filter((p) => p.name.toLowerCase().includes(lower) || p.description?.toLowerCase().includes(lower))
         );
-        setFilteredProducts(filtered);
     }
 
     return (
@@ -202,64 +206,60 @@ export default function Dashboard() {
                             />
                         ))
                     ) : (
-                        <div className="text-center text-gray-500 w-full py-8">
-                            Item tidak ditemukan
-                        </div>
+                        <div className="text-center text-gray-500 w-full py-8">Item tidak ditemukan</div>
                     )}
                 </div>
-
-                {/* Modal Create/Edit */}
-                {showModal && (
-                    <div className="fixed ml-60 inset-0 bg-black/40 flex items-center justify-center z-40">
-                        <div className="bg-white p-6 rounded-xl shadow-lg w-96">
-                            <h2 className="text-lg font-semibold mb-4">{editingProduct ? "Edit Produk" : "Tambah Produk"}</h2>
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                                <input type="text" placeholder="Nama produk" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="border p-2 rounded" required />
-                                <input type="number" placeholder="Harga" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="border p-2 rounded" required />
-                                <input type="number" placeholder="Stok" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} className="border p-2 rounded" required />
-                                <textarea placeholder="Deskripsi" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="border p-2 rounded" />
-
-                                <select value={formData.category_id} onChange={(e) => setFormData({ ...formData, category_id: parseInt(e.target.value) })} className="border p-2 rounded">
-                                    {categories.map((c) => (
-                                        <option key={c.id} value={c.id}>{c.name}</option>
-                                    ))}
-                                </select>
-
-                                <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })} />
-
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <button type="button" onClick={() => setShowModal(false)} className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Batal</button>
-                                    <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">{editingProduct ? "Simpan" : "Tambah"}</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
-                {/* Modal Delete */}
-                {showDeleteModal && (
-                    <div className="fixed ml-60 inset-0 bg-black/40 flex items-center justify-center z-40">
-                        <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-                            <p className="text-lg mb-4">Yakin ingin menghapus produk <span className="font-semibold">{deleteTarget?.name}</span>?</p>
-                            <div className="flex justify-center gap-3">
-                                <button onClick={() => setShowDeleteModal(false)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
-                                <button onClick={handleDeleteConfirm} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Hapus</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Modal Error */}
-                {showErrorModal && (
-                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-                            <p className="text-red-600 font-semibold mb-4">{errorMessage}</p>
-                            <button onClick={() => setShowErrorModal(false)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Tutup</button>
-                        </div>
-                    </div>
-                )}
             </div>
+            {/* Modal Create/Edit */}
+            {showModal && (
+                <div className="fixed ml-60 inset-0 bg-black/40 flex items-center justify-center z-40">
+                    <div className="bg-white p-6 rounded-xl shadow-lg w-96">
+                        <h2 className="text-lg font-semibold mb-4">{editingProduct ? "Edit Produk" : "Tambah Produk"}</h2>
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                            <input type="text" placeholder="Nama produk" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="border p-2 rounded" required />
+                            <input type="number" placeholder="Harga" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="border p-2 rounded" required />
+                            <input type="number" placeholder="Stok" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} className="border p-2 rounded" required />
+                            <textarea placeholder="Deskripsi" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="border p-2 rounded" />
+
+                            <select value={formData.category_id} onChange={(e) => setFormData({ ...formData, category_id: parseInt(e.target.value) })} className="border p-2 rounded">
+                                {categories.map((c) => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
+
+                            <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })} />
+
+                            <div className="flex justify-end gap-2 mt-4">
+                                <button type="button" onClick={() => setShowModal(false)} className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Batal</button>
+                                <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">{editingProduct ? "Simpan" : "Tambah"}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Delete */}
+            {showDeleteModal && (
+                <div className="fixed ml-60 inset-0 bg-black/40 flex items-center justify-center z-40">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+                        <p className="text-lg mb-4">Yakin ingin menghapus produk <span className="font-semibold">{deleteTarget?.name}</span>?</p>
+                        <div className="flex justify-center gap-3">
+                            <button onClick={() => setShowDeleteModal(false)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Batal</button>
+                            <button onClick={handleDeleteConfirm} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Error */}
+            {showErrorModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+                        <p className="text-red-600 font-semibold mb-4">{errorMessage}</p>
+                        <button onClick={() => setShowErrorModal(false)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Tutup</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
-
