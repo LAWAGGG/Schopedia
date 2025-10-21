@@ -1,64 +1,54 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { getToken } from "../../utils/utils";
+import CardProduct from "./ProductDetail";
+import BuyerCard from "../../components/cardBuyer";
+import Sidebarbuyyer from "../../components/sidebarBuyyer";
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const scrollRef = useRef(null); // referensi untuk drag-scroll
+  const scrollRef = useRef(null);
 
+  // Fetch produk
+  async function FetchProduct() {
+    try {
+      setIsFetching(true);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}api/product`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+      });
+
+      if (!res.ok) throw new Error(`Gagal fetch produk (status ${res.status})`);
+
+      const data = await res.json();
+      const finalData = data.data || data.all_products || data;
+      setProducts(Array.isArray(finalData) ? finalData : []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsFetching(false);
+    }
+  }
+
+  // Jalankan fetch sekali saat mount
   useEffect(() => {
-    setProducts([
-      {
-        id: 1,
-        name: "Car lo",
-        price: 500,
-        image:
-          "https://i.pinimg.com/736x/86/3e/52/863e522fa7da5b259e03315c3f48b8f0.jpg",
-      },
-      {
-        id: 2,
-        name: "Pop Mie",
-        price: 7000,
-        image:
-          "https://i.pinimg.com/736x/b4/46/20/b44620dd6a04bc160a8e9160e578a52d.jpg",
-      },
-      {
-        id: 3,
-        name: "Teh Botol",
-        price: 5000,
-        image:
-          "https://i.pinimg.com/736x/28/23/df/2823dffed0678e426c678fbc42409687.jpg",
-      },
-      {
-        id: 4,
-        name: "Donat Tiramisu",
-        price: 3000,
-        image:
-          "https://i.pinimg.com/736x/61/b3/1b/61b31b87d0de06602b93e115488432aa.jpg",
-      },
-      {
-        id: 5,
-        name: "Potabee",
-        price: 4000,
-        image:
-          "https://i.pinimg.com/736x/d4/1b/2d/d41b2daf758aa965fb51308a9e4c0946.jpg",
-      },
-      {
-        id: 6,
-        name: "Pencil",
-        price: 2000,
-        image:
-          "https://i.pinimg.com/736x/b4/bb/20/b4bb20d54336d2ce46fe1e011ef041fb.jpg",
-      },
-    ]);
+    FetchProduct();
   }, []);
 
-  // logika drag-scroll
+  // Event drag-scroll horizontal
   useEffect(() => {
     const slider = scrollRef.current;
+    if (!slider) return;
+
     let isDown = false;
-    let startX;
-    let scrollLeft;
+    let startX, scrollLeft;
 
     const startDragging = (e) => {
       isDown = true;
@@ -66,17 +56,15 @@ export default function Dashboard() {
       startX = e.pageX - slider.offsetLeft;
       scrollLeft = slider.scrollLeft;
     };
-
     const stopDragging = () => {
       isDown = false;
       slider.classList.remove("cursor-grabbing");
     };
-
     const onDrag = (e) => {
       if (!isDown) return;
       e.preventDefault();
       const x = e.pageX - slider.offsetLeft;
-      const walk = (x - startX) * 1.5; // semakin besar => drag lebih cepat
+      const walk = (x - startX) * 1.5;
       slider.scrollLeft = scrollLeft - walk;
     };
 
@@ -93,54 +81,72 @@ export default function Dashboard() {
     };
   }, []);
 
-  return (
-    <div className="p-8 bg-gray-100 min-h-screen select-none">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-center flex-1">All Product</h1>
+  // Kondisi loading / error
+  // if (isFetching)
+  //   return (
+  //     <div className="flex justify-center items-center min-h-screen bg-gray-100">
+  //       <p className="text-lg text-gray-600">Loading produk...</p>
+  //     </div>
+  //   );
 
-        <button
-          onClick={() => navigate("/")}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition"
-        >
-          Back
-        </button>
+  if (error)
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        <p className="text-lg text-red-500">Error: {error}</p>
+      </div>
+    );
+
+  // Tampilan utama
+  return (
+    <div className="flex min-h-screen  select-none">
+      {/* Sidebar */}
+      <div className="w-64 bg-white  fixed left-0 top-0 bottom-0 z-10">
+        <Sidebarbuyyer />
       </div>
 
-      {/* Scroll horizontal bisa drag */}
-      <div
-        ref={scrollRef}
-        className="flex gap-6 overflow-x-auto pb-4 scroll-smooth cursor-grab"
-      >
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-purple-400 hover:bg-purple-100 transition duration-300 min-w-[220px] flex-shrink-0"
+      {/* Konten utama */}
+      <div className="flex-1 ml-64 p-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-purple-700">All Product</h1>
+          <button
+            onClick={() => navigate("/")}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition"
           >
-            <div className="w-full h-48 overflow-hidden flex justify-center items-center bg-gray-50">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="h-full w-auto object-cover"
-              />
-            </div>
+            Back
+          </button>
+        </div>
 
-            <div className="p-4 text-center">
-              <h2 className="text-lg font-semibold text-gray-800">
-                {product.name}
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Rp {product.price.toLocaleString()}
-              </p>
+        {/* Produk utama */}
+        <div
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-auto pb-4 scroll-smooth cursor-grab"
+        >
+          {products.length > 0 ? (
+            products.map((product) => (
+              <CardProduct key={product.id} product={product} />
+            ))
+          ) : (
+            <p className="text-center text-gray-500 w-full">
+              Tidak ada produk tersedia
+            </p>
+          )}
+        </div>
 
-              <Link
-                to={`/product/${product.id}`}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
-              >
-                Lihat Detail
-              </Link>
-            </div>
+        {/* Produk untuk pembeli */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4 text-purple-700">
+            For Buyer
+          </h2>
+          <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth cursor-grab">
+            {products.length > 0 ? (
+              products.map((product) => (
+                <BuyerCard key={`buyer-${product.id}`} product={product} />
+              ))
+            ) : (
+              <p className="text-gray-500">Belum ada produk untuk dibeli</p>
+            )}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

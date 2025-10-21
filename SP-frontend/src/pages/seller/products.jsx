@@ -25,7 +25,7 @@ export default function Dashboard() {
         category_id: 1,
     });
 
-    // Fetch semua product
+    // Fetch semua product di miliki
     async function FetchProduct() {
         try {
             setIsFetching(true)
