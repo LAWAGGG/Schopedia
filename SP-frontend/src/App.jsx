@@ -4,7 +4,10 @@ import Register from "./pages/auth/Register";
 
 // Buyer
 import Dashboard from "./pages/buyer/dashboard";
-import ProductDetail from "./pages/product/ProductDetail";
+import ProductDetail from "./pages/buyer/ProductDetail";
+import BuyerProfile from "./pages/buyer/profileBuyyer";
+import BuyerOrders from "./pages/buyer/ordersBuyyer";
+import BuyerWallet from "./pages/buyer/walletBuyyer";
 
 // Admin
 import DashboardAdmin from "./pages/admin/dashboardAdmin";
@@ -30,6 +33,9 @@ export default function App() {
       {/* Buyer */}
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/product/:id" element={<ProductDetail />} />
+      <Route path="/profileBuyyer" element={<BuyerProfile />} />
+      <Route path="/ordersBuyyer" element={<BuyerOrders />} />
+      <Route path="/walletBuyyer" element={<BuyerWallet />} />
 
       {/* Admin */}
       <Route path="/dashboardadmin" element={<DashboardAdmin />} />

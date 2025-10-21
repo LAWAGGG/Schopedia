@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Card from "../../components/cardSeller";
 import CardSkeletons from "../../components/carsSellerskeleton";
@@ -261,3 +262,4 @@ export default function Dashboard() {
         </div>
     );
 }
+

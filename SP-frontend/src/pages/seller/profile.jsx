@@ -99,7 +99,7 @@ export default function Profile() {
       console.log(data);
 
       if (res.ok) {
-        alert("✅ Profil berhasil diperbarui!");
+        console.log("✅ Profil berhasil diperbarui!");
         setUser(prev => ({
           ...prev,
           name: form.name || prev.name,

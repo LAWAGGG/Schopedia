@@ -1,13 +1,12 @@
 import { NavLink } from "react-router-dom";
 import { LayoutDashboard, Box, Truck, Wallet, User } from "lucide-react";
 
-export default function Sidebar() {
+export default function Sidebarbuyyer() {
     const menuItems = [
-        { name: "Dashboard", icon: LayoutDashboard, path: "/dashboardseller" },
-        { name: "Products", icon: Box, path: "/products" },
-        { name: "Orders", icon: Truck, path: "/orders" },
-        { name: "E-Wallet", icon: Wallet, path: "/wallet" },
-        { name: "Profile", icon: User, path: "/profile" },
+        { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+        { name: "Orders", icon: Truck, path: "/ordersBuyyer" },
+        { name: "E-Wallet", icon: Wallet, path: "/walletBuyyer" },
+        { name: "Profile", icon: User, path: "/profileBuyyer" },
     ];
 
     return (
