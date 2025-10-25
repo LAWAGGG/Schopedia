@@ -2,22 +2,20 @@ import { Search, User } from "lucide-react";
 import { getName } from "../utils/utils";
 import { useState } from "react";
 
-export default function SearchBar({ onSearch,title }) {
+export default function SearchBar({ onSearch, title }) {
     const [search, setSearch] = useState("");
     const name = getName();
 
-    function handleSearch() {
-        if (onSearch) onSearch(search);
-    }
-
     return (
-        <div className="flex bg-white rounded-sm justify-between items-center shadow-sm p-4 gap-4">
-            <h1 className="text-xl font-bold whitespace-nowrap">{title}</h1>
+        <div className="flex flex-col sm:flex-row bg-white rounded-md justify-between items-center shadow-sm p-3 sm:p-4 gap-3 sm:gap-4 w-full">
+            <h1 className="hidden sm:block text-lg sm:text-xl font-bold text-left">
+                {title}
+            </h1>
 
-            <div className="flex items-center border border-gray-300 rounded-md px-3 py-1 flex-grow max-w-[500px]">
+            <div className="flex items-center border border-gray-300 rounded-md px-2 py-1 w-full sm:max-w-[600px]">
                 <Search
-                    onClick={handleSearch}
-                    className="cursor-pointer w-5 h-5 text-gray-500 mr-2"
+                    onClick={() => onSearch && onSearch(search)}
+                    className="cursor-pointer w-4 h-4 text-gray-500 mr-2"
                 />
                 <input
                     type="text"
@@ -30,7 +28,7 @@ export default function SearchBar({ onSearch,title }) {
                 />
             </div>
 
-            <div className="flex gap-2 border border-gray-300 rounded-2xl py-1 px-3 items-center shrink-0">
+            <div className="hidden sm:flex gap-2 border border-gray-300 rounded-2xl py-1 px-3 items-center shrink-0">
                 <User className="w-4 h-4 text-gray-700" />
                 <span className="truncate max-w-[150px] text-gray-700">{name}</span>
             </div>

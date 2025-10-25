@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import Sidebar from "../../components/sideBar";
+import Sidebarbuyyer from "../../components/sidebarBuyyer";
 import ProfileNav from "../../components/profileNav";
-import { Pencil, LogOut } from "lucide-react";
+import { Pencil, LogOut, LayoutDashboard, Truck, Wallet, User } from "lucide-react";
 import setToken from "../../utils/utils";
 import { getToken } from "../../utils/utils";
 import LoadingScreen from "../../components/loadingProfile";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 
 const BASE_URL = "http://localhost:8000";
 
@@ -29,7 +29,6 @@ export default function ProfileBuyyer() {
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
-  // Ambil data user
   useEffect(() => {
     const token = getToken();
     if (!token) {
@@ -44,7 +43,6 @@ export default function ProfileBuyyer() {
         });
         if (!res.ok) throw new Error("Gagal mengambil data profil.");
         const data = await res.json();
-        console.log(data);
 
         setUser({
           id: data.id || "",
@@ -96,10 +94,8 @@ export default function ProfileBuyyer() {
       });
 
       const data = await res.json();
-      console.log(data);
 
       if (res.ok) {
-        console.log("✅ Profil berhasil diperbarui!");
         setUser((prev) => ({
           ...prev,
           name: form.name || prev.name,
@@ -107,8 +103,8 @@ export default function ProfileBuyyer() {
           image: form.imageFile
             ? preview
             : data.image
-            ? `${BASE_URL}/${data.image.replace(/^\/?storage\//, "storage/")}`
-            : prev.image,
+              ? `${BASE_URL}/${data.image.replace(/^\/?storage\//, "storage/")}`
+              : prev.image,
         }));
         setForm((prev) => ({ ...prev, password: "" }));
         setPreview(null);
@@ -118,7 +114,7 @@ export default function ProfileBuyyer() {
           const errors = Object.values(data.errors).flat();
           errors.forEach((err) => alert(err));
         } else {
-          alert(data.message || "⚠️ Gagal memperbarui profil");
+          alert(data.message || "Gagal memperbarui profil");
         }
       }
     } catch (err) {
@@ -130,39 +126,38 @@ export default function ProfileBuyyer() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="hidden md:block w-64">
-        <Sidebar />
+    <div className="flex min-h-screen bg-gray-50 overflow-hidden">
+      {/* Sidebar Desktop */}
+      <div className="hidden md:block w-60">
+        <Sidebarbuyyer />
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="w-full bg-white">
+      {/* Konten Utama */}
+      <div className="flex-1 md:ml-60 flex flex-col">
+        <div className="w-full bg-white shadow-sm">
           <ProfileNav title="Profile" />
         </div>
 
-
-        <div className="flex flex-col items-center px-4 py-10 w-full relative">
+        <div className="flex flex-col items-center px-4 py-8 w-full relative">
           {(loading || saving) && (
             <div className="absolute inset-0 bg-white/80 flex justify-center items-center z-10 rounded-md">
               <LoadingScreen />
             </div>
           )}
 
-
+          {/* Foto Profil */}
           <div className="relative flex justify-center w-full mb-6">
             <div className="rounded-full bg-white shadow-lg">
               <img
-                className="rounded-full w-40 h-40 object-cover border-4 border-black shadow-md"
+                className="rounded-full w-32 h-32 md:w-40 md:h-40 object-cover border-4 border-[#8B3DFF] shadow-md"
                 src={preview || user.image || "/default-profile.jpg"}
                 alt="profile"
-                onError={(e) => {
-                  e.target.src = "/default-profile.jpg";
-                }}
+                onError={(e) => (e.target.src = "/default-profile.jpg")}
               />
             </div>
             <label
               htmlFor="imageUpload"
-              className="absolute bottom-2 right-[calc(50%-5rem)] bg-green-500 p-2 rounded-full hover:bg-green-600 shadow-md transition cursor-pointer"
+              className="absolute bottom-2 right-[calc(50%-4rem)] bg-[#8B3DFF] p-2 rounded-full hover:bg-[#713491] shadow-md cursor-pointer"
               title="Edit Photo"
             >
               <Pencil className="w-4 h-4 text-white" />
@@ -176,13 +171,14 @@ export default function ProfileBuyyer() {
             />
           </div>
 
-          <form onSubmit={handleSave} className="w-full max-w-md mx-auto relative">
+          {/* Form */}
+          <form onSubmit={handleSave} className="w-full max-w-md mx-auto">
             <div className="flex flex-col mb-4">
               <label className="mb-1 text-gray-700">Name</label>
               <input
                 type="text"
-                className="border border-gray-400 rounded-md p-2 w-full"
-                placeholder="Ganti username / biarkan kosong untuk tidak mengganti"
+                className="border border-gray-300 rounded-md p-2 w-full focus:ring-2 focus:ring-[#8B3DFF] outline-none"
+                placeholder="Ganti username / biarkan kosong"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
@@ -193,8 +189,8 @@ export default function ProfileBuyyer() {
               <label className="mb-1 text-gray-700">Email</label>
               <input
                 type="email"
-                className="border border-gray-400 rounded-md p-2 w-full"
-                placeholder="Ganti email / biarkan kosong untuk tidak mengganti"
+                className="border border-gray-300 rounded-md p-2 w-full focus:ring-2 focus:ring-[#8B3DFF] outline-none"
+                placeholder="Ganti email / biarkan kosong"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
@@ -205,31 +201,71 @@ export default function ProfileBuyyer() {
               <label className="mb-1 text-gray-700">Password</label>
               <input
                 type="password"
-                placeholder="Ganti password / biarkan kosong untuk tidak mengganti"
-                className="border border-gray-400 rounded-md p-2 w-full"
+                placeholder="Ganti password / biarkan kosong"
+                className="border border-gray-300 rounded-md p-2 w-full focus:ring-2 focus:ring-[#8B3DFF] outline-none"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </div>
 
-            <div className="flex gap-4 justify-center w-full">
+            {/* Tombol */}
+            <div className="flex gap-4 justify-center w-full mb-16 md:mb-0">
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="bg-[#9f9ca4] flex gap-3 text-white px-6 py-2 rounded-md hover:bg-gray-200 hover:text-black transition"
+                className="bg-gray-400 flex gap-2 items-center text-white px-5 py-2 rounded-md hover:bg-gray-500 transition"
               >
-                <LogOut />
+                <LogOut className="w-4 h-4" />
                 Log out
               </button>
               <button
                 type="submit"
-                className="bg-[#3C1848] text-white px-6 py-2 rounded-md hover:bg-gray-200 hover:text-black transition"
+                className="bg-[#8B3DFF] text-white px-6 py-2 rounded-md hover:bg-[#713491] transition"
               >
                 Save Changes
               </button>
             </div>
           </form>
         </div>
+      </div>
+
+      {/* Navbar bawah (mobile only) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-inner flex justify-around py-2 md:hidden z-50">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) =>
+            `flex flex-col items-center ${isActive ? "text-[#8B3DFF]" : "text-gray-500"}`
+          }
+        >
+          <LayoutDashboard className="w-6 h-6" />
+        </NavLink>
+
+        <NavLink
+          to="/ordersBuyyer"
+          className={({ isActive }) =>
+            `flex flex-col items-center ${isActive ? "text-[#8B3DFF]" : "text-gray-500"}`
+          }
+        >
+          <Truck className="w-6 h-6" />
+        </NavLink>
+
+        <NavLink
+          to="/walletBuyyer"
+          className={({ isActive }) =>
+            `flex flex-col items-center ${isActive ? "text-[#8B3DFF]" : "text-gray-500"}`
+          }
+        >
+          <Wallet className="w-6 h-6" />
+        </NavLink>
+
+        <NavLink
+          to="/profileBuyyer"
+          className={({ isActive }) =>
+            `flex flex-col items-center ${isActive ? "text-[#8B3DFF]" : "text-gray-500"}`
+          }
+        >
+          <User className="w-6 h-6" />
+        </NavLink>
       </div>
     </div>
   );

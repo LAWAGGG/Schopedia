@@ -1,19 +1,23 @@
-export default function CardBuyer({ product, hideButton }) {
+export default function CardBuyer({ product }) {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-purple-400 hover:bg-purple-100 transition duration-300 min-w-[220px] flex-shrink-0 cursor-pointer">
-      <div className="w-full h-48 overflow-hidden flex justify-center items-center bg-gray-50">
+    <div className="bg-white rounded-xl pb-3 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden w-43 flex-shrink-0 border border-gray-100 cursor-pointer">
+      {/* Gambar produk */}
+      <div className="relative group">
         <img
-          src={product.image || "https://via.placeholder.com/300"}
+          src={product.image || "https://via.placeholder.com/200"}
           alt={product.name}
-          className="h-full w-auto object-cover"
+          className="w-full h-32 object-cover transition-transform duration-500 group-hover:scale-105"
         />
+        {/* Overlay efek hover */}
+        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
 
-      <div className="p-4 text-center">
-        <h2 className="text-lg font-semibold text-gray-800">{product.name}</h2>
-        <p className="text-gray-600 mb-4">
-          {product.price || "Rp 0"}
-        </p>
+      {/* Isi card */}
+      <div className="p-2 text-center">
+        <h3 className="text-xs font-semibold text-gray-800 mb-1 truncate">
+          {product.name}
+        </h3>
+        <p className="text-gray-500 text-[11px] mb-2">{product.price || "Rp 0"}</p>
       </div>
     </div>
   );
