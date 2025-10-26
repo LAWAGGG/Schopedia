@@ -6,6 +6,8 @@ import Sidebarbuyyer from "../../components/sidebarBuyyer";
 import SearchBar from "../../components/searchbar";
 import { LayoutDashboard, Truck, Wallet, User, ShoppingCart } from "lucide-react";
 import banner from "../../../public/banner2.svg";
+import banner3 from "../../../public/banner3.jpg";
+import banner4 from "../../../public/banner4.webp";
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
@@ -23,7 +25,7 @@ export default function Dashboard() {
     "Kamera", "Gaming", "Buku", "Alat Tulis", "Olahraga"
   ];
 
-  const banners = [banner, banner, banner];
+  const banners = [banner, banner3, banner4];
 
   async function FetchProduct() {
     try {
