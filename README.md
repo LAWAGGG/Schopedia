@@ -67,7 +67,7 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
     php artisan serve
     ```
 
-3. **Setup Frontend (Belum dibuat)**
+3. **Setup Frontend**
     ```bash
     cd schopedia/SP-frontend
     npm install
@@ -79,9 +79,5 @@ Proyek ini dibangun menggunakan React (frontend) dan Laravel (backend), dengan s
 ## 🔗 Figma
 https://www.figma.com/design/nkPxDcQgJvmziKdWTo7IgZ/Intek?node-id=0-1&t=1wGi1D7wTaRVCoZ8-1
 
----
-
-⚠️ Proyek masih dalam proses pengembangan.  
-Fitur-fitur dasar sudah mulai berjalan, frontend masih dalam tahap pengembangan.
 
 
