@@ -23,7 +23,7 @@ class ProductController extends Controller
                     "id" => $product->id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
-                    "image" => 'http://localhost:8000' . $product->image,
+                    "image" => 'http://localhost:8000/storage/' . $product->image,
                     "seller" => [
                         "id" => $product->user->id,
                         "name" => $product->user->name,
@@ -43,7 +43,7 @@ class ProductController extends Controller
                     "id" => $product->id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
-                    "image" => 'http://localhost:8000' . $product->image,
+                    "image" => 'http://localhost:8000/storage/' . $product->image,
                 ];
             })
         ]);
@@ -123,7 +123,7 @@ class ProductController extends Controller
                 "description" => $product->description,
                 "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
                 "stock" => $product->stock,
-                "image" => 'http://localhost:8000' . $product->image,
+                "image" => 'http://localhost:8000/storage/' . $product->image,
                 "date_uploaded" => $product->created_at->format('Y-m-d H:i:s'),
                 "category" =>$product->category->name
             ]

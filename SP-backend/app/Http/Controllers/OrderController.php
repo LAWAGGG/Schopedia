@@ -27,7 +27,7 @@ class OrderController extends Controller
                 'product'=>[
                     'name' => $order->product->name,
                     'price' => $order->product->price,
-                    'image' => $order->product->image,
+                    'image' => "http://localhost:8000/storage" . $order->product->image,
                 ],
                 'seller' => [
                     'id' => $order->seller->id,
