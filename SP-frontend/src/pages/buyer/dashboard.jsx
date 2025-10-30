@@ -18,14 +18,30 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const bannerRef = useRef(null);
+  const [category, setCategory] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
-  const categories = [
-    "All", "Makanan", "Minuman", "Barang", "Elektronik",
-    "Fashion", "Kesehatan", "Aksesoris", "Rumah Tangga", "Lainnya",
-    "Kamera", "Gaming", "Buku", "Alat Tulis", "Olahraga"
-  ];
+  // const category = [
+  //   "All", "Makanan", "Minuman", "Barang", "Elektronik",
+  //   "Fashion", "Kesehatan", "Aksesoris", "Rumah Tangga", "Lainnya",
+  //   "Kamera", "Gaming", "Buku", "Alat Tulis", "Olahraga"
+  // ];
 
   const banners = [banner, banner3, banner4];
+
+  async function fetchCategories() {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}api/category/get`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${getToken()}`,
+      }
+    })
+    const data = await res.json()
+    console.log(data.Categories)
+    setCategory(data.Categories)
+  }
 
   async function FetchProduct() {
     try {
@@ -34,14 +50,15 @@ export default function Dashboard() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${getToken()}`,
+          "Accept": "application/json",
+          "Authorization": `Bearer ${getToken()}`,
         },
       });
       if (!res.ok) throw new Error(`Gagal fetch produk (status ${res.status})`);
       const data = await res.json();
       const finalData = data.data || data.all_products || data;
       setProducts(Array.isArray(finalData) ? finalData : []);
+      setFilteredProducts(Array.isArray(finalData) ? finalData : []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -51,7 +68,18 @@ export default function Dashboard() {
 
   useEffect(() => {
     FetchProduct();
+    fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (activeCategory === "All") {
+      setFilteredProducts(products);
+    } else {
+      setFilteredProducts(
+        products.filter((p) => p.category_id === activeCategory.id)
+      );
+    }
+  }, [activeCategory, products]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -151,8 +179,8 @@ export default function Dashboard() {
               <div
                 key={i}
                 className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${currentBanner === i
-                    ? "bg-purple-600 scale-110"
-                    : "bg-gray-300 scale-90"
+                  ? "bg-purple-600 scale-110"
+                  : "bg-gray-300 scale-90"
                   }`}
               />
             ))}
@@ -165,25 +193,36 @@ export default function Dashboard() {
             Kategori
           </h2>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory === cat
+            <button
+              onClick={() => setActiveCategory("All")}
+              className={`px-4 py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory === "All"
                   ? "bg-purple-600 text-white border-purple-600"
                   : "border-purple-400 text-purple-600 bg-white"
+                }`}
+            >
+              Semua
+            </button>
+
+            {category.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveCategory(item)}
+                className={`px-4 py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory.id === item.id
+                    ? "bg-purple-600 text-white border-purple-600"
+                    : "border-purple-400 text-purple-600 bg-white"
                   }`}
               >
-                {cat}
+                {item.name}
               </button>
             ))}
+
           </div>
         </div>
 
         {/* Produk */}
         <div className="grid grid-cols-2 mb-24 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5">
-          {products.length > 0 ? (
-            products.map((product) => (
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
               <div
                 key={product.id}
                 onClick={() => navigate(`/product/${product.id}`)}
