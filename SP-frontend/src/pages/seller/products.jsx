@@ -35,6 +35,7 @@ export default function Dashboard() {
                 headers: { Authorization: `Bearer ${getToken()}` },
             });
             const data = await res.json();
+            console.log(data);
             if (data.own_product) {
                 // Perbaiki URL image
                 const productsWithFullImage = data.own_product.map((p) => ({
@@ -85,14 +86,20 @@ export default function Dashboard() {
         setShowModal(true);
     }
 
+    function parsePrice(value) {
+        if (!value) return "";
+        return value.replace(/[^\d]/g, ""); // ambil hanya angka
+    }
+
     function openEditModal(product) {
+        console.log("Data product yang dikirim ke modal:", product);
         setEditingProduct(product);
         setFormData({
-            name: product.name,
-            price: product.price,
-            stock: product.stock,
+            name: product.name || "",
+            price: parsePrice(product.price),
+            stock: product.stock?.toString() || "",
             description: product.description || "",
-            category_id: product.category_id,
+            category_id: product.category_id || "",
             image: null,
         });
         setShowModal(true);
@@ -112,6 +119,9 @@ export default function Dashboard() {
         form.append("stock", formData.stock);
         form.append("description", formData.description);
         form.append("category_id", formData.category_id);
+
+        
+
         if (formData.image) form.append("image", formData.image);
 
         try {

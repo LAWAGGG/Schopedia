@@ -141,7 +141,7 @@ export default function Dashboard() {
         {/* Header Mobile */}
         <div className="fixed top-0 left-0 right-0 z-40 bg-white flex items-center justify-between px-4 py-2 shadow-sm md:hidden">
           <img src="/Schopediagg.png" alt="Schopedia" className="h-8 object-contain" />
-          <ShoppingCart className="w-6 h-6 text-gray-700" />
+          <ShoppingCart onClick={() => navigate("/cart")} className="w-6 h-6 text-gray-700" />
         </div>
 
         {/* SearchBar untuk semua ukuran */}
