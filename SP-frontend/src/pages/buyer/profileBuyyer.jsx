@@ -29,6 +29,23 @@ export default function ProfileBuyyer() {
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
+  async function handleLogout(e) {
+    e.preventDefault()
+    const res = await fetch(`${import.meta.env.VITE_API_URL}api/logout`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${getToken()}`,
+      }
+    })
+    const data = await res.json()
+    if (res.status == 200) {
+      navigate('/')
+    }
+    console.log(data)
+  }
+
   useEffect(() => {
     const token = getToken();
     if (!token) {
@@ -38,7 +55,7 @@ export default function ProfileBuyyer() {
 
     async function fetchUser() {
       try {
-        const res = await fetch(`${BASE_URL}/api/user`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}api/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Gagal mengambil data profil.");
@@ -49,7 +66,7 @@ export default function ProfileBuyyer() {
           name: data.name || "",
           email: data.email || "",
           image: data.image
-            ? `${BASE_URL}/${data.image.replace(/^\/?storage\//, "storage/")}`
+            ? `${import.meta.env.VITE_API_URL}${data.image.replace(/^\/?storage\//, "storage/")}`
             : "/default-profile.jpg",
         });
       } catch (err) {
@@ -84,7 +101,7 @@ export default function ProfileBuyyer() {
       if (form.password) formData.append("password", form.password);
       if (form.imageFile) formData.append("image", form.imageFile);
 
-      const res = await fetch(`${BASE_URL}/api/users/update`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}api/users/update`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -103,7 +120,7 @@ export default function ProfileBuyyer() {
           image: form.imageFile
             ? preview
             : data.image
-              ? `${BASE_URL}/${data.image.replace(/^\/?storage\//, "storage/")}`
+              ? `${import.meta.env.VITE_API_URL}${data.image.replace(/^\/?storage\//, "storage/")}`
               : prev.image,
         }));
         setForm((prev) => ({ ...prev, password: "" }));
@@ -212,7 +229,7 @@ export default function ProfileBuyyer() {
             <div className="flex gap-4 justify-center w-full mb-16 md:mb-0">
               <button
                 type="button"
-                onClick={() => navigate("/")}
+                onClick={ e =>handleLogout(e)}
                 className="bg-gray-400 flex gap-2 items-center text-white px-5 py-2 rounded-md hover:bg-gray-500 transition"
               >
                 <LogOut className="w-4 h-4" />
