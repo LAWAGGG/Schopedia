@@ -24,7 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //logout user
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    //user route (get, update, delete)
+    //user route
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users/update', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
@@ -37,8 +37,11 @@ Route::middleware('auth:sanctum')->group(function () {
     //Category
     Route::get('/category/get', [CategoryController::class, 'index']);
 
+    //Product
+    Route::get('/product/{id}', [ProductController::class, 'show']);
+
     Route::middleware('seller')->group(function () {
-        Route::get('/product/own', [ProductController::class, "showOwnProduct"]);
+        Route::get('/products/own', [ProductController::class, "showOwnProduct"]);
 
         //product route (CRUD)
         Route::post('/product/{product}/update', [ProductController::class, "update"]);
@@ -70,8 +73,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // product
         Route::get('/product', [ProductController::class, 'index']);
-        Route::get('/product/{id}', [ProductController::class, 'show']);
-
         //cart
         Route::get('/cart', [CartController::class, "showOwnCart"]);
         Route::post('/cart/{product_id}/add', [CartController::class, "store"]);

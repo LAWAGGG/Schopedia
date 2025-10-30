@@ -15,7 +15,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product = Product::with(['user'])->get();
+        $product = Product::with(['user', 'category'])->get();
 
         return response()->json([
             "all_products" => $product->map(function ($product) {
@@ -28,6 +28,7 @@ class ProductController extends Controller
                         "id" => $product->user->id,
                         "name" => $product->user->name,
                     ],
+                    "category_id"=>$product->category_id
                 ];
             })
         ]);
@@ -43,7 +44,7 @@ class ProductController extends Controller
                     "id" => $product->id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
-                    "image" => 'http://localhost:8000/storage/' . $product->image,
+                    "image" => 'http://localhost:8000/' . $product->image,
                 ];
             })
         ]);
