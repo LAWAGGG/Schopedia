@@ -31,19 +31,16 @@ export default function Dashboard() {
     async function FetchProduct() {
         try {
             setIsFetching(true);
-            const res = await fetch(`${import.meta.env.VITE_API_URL}api/product/own`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}api/products/own`, {
                 headers: { Authorization: `Bearer ${getToken()}` },
             });
+
             const data = await res.json();
-            console.log(data);
-            if (data.own_product) {
-                // Perbaiki URL image
-                const productsWithFullImage = data.own_product.map((p) => ({
-                    ...p,
-                    image: p.image?.startsWith("http") ? p.image : `http://localhost:8000/${p.image}`,
-                }));
-                setProducts(productsWithFullImage);
-                setFilteredProducts(productsWithFullImage);
+            console.log(data.own_product);
+
+            if (Array.isArray(data.own_product)) {
+                setProducts(data.own_product);
+                setFilteredProducts(data.own_product);
             }
         } catch (err) {
             console.error("gagal: ", err);
@@ -51,6 +48,7 @@ export default function Dashboard() {
             setIsFetching(false);
         }
     }
+
 
     // Fetch kategori dari API
     async function fetchCategories() {
@@ -88,22 +86,47 @@ export default function Dashboard() {
 
     function parsePrice(value) {
         if (!value) return "";
-        return value.replace(/[^\d]/g, ""); // ambil hanya angka
+        return value
+            .replace(/[^\d,-]/g, "") // hapus Rp dan karakter lain
+            .replace(/\./g, "") // hapus titik pemisah ribuan
+            .replace(/,(\d{2})$/, ".$1"); // ubah koma ke titik untuk desimal
     }
 
-    function openEditModal(product) {
-        console.log("Data product yang dikirim ke modal:", product);
-        setEditingProduct(product);
-        setFormData({
-            name: product.name || "",
-            price: parsePrice(product.price),
-            stock: product.stock?.toString() || "",
-            description: product.description || "",
-            category_id: product.category_id || "",
-            image: null,
-        });
-        setShowModal(true);
+
+    async function openEditModal(product) {
+        try {
+            console.log("Ambil data lengkap product ID:", product.id);
+
+            // Fetch detail product
+            const res = await fetch(
+                `${import.meta.env.VITE_API_URL}api/product/${product.id}`,
+                {
+                    method: "GET",
+                    headers: { Authorization: `Bearer ${getToken()}` },
+                }
+            );
+
+            const data = await res.json();
+            const productDetail = data.product || product; // fallback
+
+            setEditingProduct(productDetail);
+
+            setFormData({
+                name: productDetail.name || "",
+                price: parsePrice(productDetail.price),
+                stock: productDetail.stock?.toString() || "",
+                description: productDetail.description || "",
+                category_id: productDetail.category_id || categories[0]?.id || "",
+                image: null,
+            });
+
+            setShowModal(true);
+        } catch (error) {
+            console.error("Gagal fetch detail product:", error);
+            setShowModal(true); // Tetap buka modal walaupun gagal
+        }
     }
+
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -120,7 +143,7 @@ export default function Dashboard() {
         form.append("description", formData.description);
         form.append("category_id", formData.category_id);
 
-        
+
 
         if (formData.image) form.append("image", formData.image);
 
@@ -139,6 +162,9 @@ export default function Dashboard() {
                 setErrorMessage(data.message || "Gagal menyimpan data");
                 setShowErrorModal(true);
             }
+
+            console.log(data)
+
         } catch (err) {
             setErrorMessage("Terjadi kesalahan saat menyimpan produk");
             setShowErrorModal(true);
