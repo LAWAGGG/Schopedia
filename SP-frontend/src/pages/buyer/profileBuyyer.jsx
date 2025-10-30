@@ -229,43 +229,20 @@ export default function ProfileBuyyer() {
         </div>
       </div>
 
-      {/* Navbar bawah (mobile only) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-inner flex justify-around py-2 md:hidden z-50">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) =>
-            `flex flex-col items-center ${isActive ? "text-[#8B3DFF]" : "text-gray-500"}`
-          }
-        >
-          <LayoutDashboard className="w-6 h-6" />
-        </NavLink>
-
-        <NavLink
-          to="/ordersBuyyer"
-          className={({ isActive }) =>
-            `flex flex-col items-center ${isActive ? "text-[#8B3DFF]" : "text-gray-500"}`
-          }
-        >
-          <Truck className="w-6 h-6" />
-        </NavLink>
-
-        <NavLink
-          to="/walletBuyyer"
-          className={({ isActive }) =>
-            `flex flex-col items-center ${isActive ? "text-[#8B3DFF]" : "text-gray-500"}`
-          }
-        >
-          <Wallet className="w-6 h-6" />
-        </NavLink>
-
-        <NavLink
-          to="/profileBuyyer"
-          className={({ isActive }) =>
-            `flex flex-col items-center ${isActive ? "text-[#8B3DFF]" : "text-gray-500"}`
-          }
-        >
-          <User className="w-6 h-6" />
-        </NavLink>
+      {/* Bottom Navbar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden">
+        <button onClick={() => navigate("/dashboard")} className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}>
+          <LayoutDashboard size={22} />
+        </button>
+        <button onClick={() => navigate("/ordersBuyyer")} className={`flex flex-col items-center ${location.pathname === "/ordersBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
+          <Truck size={22} />
+        </button>
+        <button onClick={() => navigate("/walletBuyyer")} className={`flex flex-col items-center ${location.pathname === "/walletBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
+          <Wallet size={22} />
+        </button>
+        <button onClick={() => navigate("/profileBuyyer")} className={`flex flex-col items-center ${location.pathname === "/profileBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
+          <User size={22} />
+        </button>
       </div>
     </div>
   );

@@ -196,8 +196,8 @@ export default function Dashboard() {
             <button
               onClick={() => setActiveCategory("All")}
               className={`px-4 py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory === "All"
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "border-purple-400 text-purple-600 bg-white"
+                ? "bg-purple-600 text-white border-purple-600"
+                : "border-purple-400 text-purple-600 bg-white"
                 }`}
             >
               Semua
@@ -208,8 +208,8 @@ export default function Dashboard() {
                 key={item.id}
                 onClick={() => setActiveCategory(item)}
                 className={`px-4 py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory.id === item.id
-                    ? "bg-purple-600 text-white border-purple-600"
-                    : "border-purple-400 text-purple-600 bg-white"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "border-purple-400 text-purple-600 bg-white"
                   }`}
               >
                 {item.name}
@@ -239,7 +239,7 @@ export default function Dashboard() {
         </div>
 
         {/* Bottom Navbar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-inner border-t flex justify-around items-center h-18 md:hidden">
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden">
           <button onClick={() => navigate("/dashboard")} className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}>
             <LayoutDashboard size={22} />
           </button>
