@@ -23,7 +23,7 @@ class ProductController extends Controller
                     "id" => $product->id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
-                    "image" => 'http://localhost:8000/storage/' . $product->image,
+                    "image" => 'http://localhost:8000/' . $product->image,
                     "seller" => [
                         "id" => $product->user->id,
                         "name" => $product->user->name,
