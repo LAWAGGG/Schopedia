@@ -54,7 +54,48 @@ class SellingController extends Controller
             "total_sold" => $totalSelling,
             "total_revenue" => "Rp" . number_format($totalRevenue, 2, ',', '.'),
             "balance" => "Rp" . number_format($wallet->balance, 2, ',', '.'),
-            "stock_left"=>$productLeft
+            "stock_left" => $productLeft
+        ]);
+    }
+
+    public function OrderMonthlyList()
+    {
+        $user = Auth::user();
+
+        $order = Order::with(['product', 'buyer'])
+            ->where('seller_id', $user->id)
+            ->get()
+            ->groupBy(function ($date) {
+                return \Carbon\Carbon::parse($date->created_at)->format('Y-m');
+            });
+
+        $monthsIndo = [
+            '01' => 'januari',
+            '02' => 'februari',
+            '03' => 'maret',
+            '04' => 'april',
+            '05' => 'mei',
+            '06' => 'juni',
+            '07' => 'juli',
+            '08' => 'agustus',
+            '09' => 'september',
+            '10' => 'oktober',
+            '11' => 'november',
+            '12' => 'desember'
+        ];
+
+        $ordersResult = [];
+
+        foreach ($monthsIndo as $num => $monthName) {
+            $key = date('Y') . '-' . $num;
+            $monthlyOrders = $order->get($key);
+            $orderCount = $monthlyOrders ? $monthlyOrders->count() : 0;
+            $ordersResult[$monthName] = $orderCount;
+        }
+
+        // Return response baru ✅
+        return response()->json([
+            'orders' => $ordersResult,
         ]);
     }
 }
