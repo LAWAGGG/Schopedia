@@ -7,6 +7,7 @@ import Dashboard from "./pages/buyer/dashboard";
 import ProductDetail from "./pages/buyer/ProductDetail";
 import BuyerProfile from "./pages/buyer/profileBuyyer";
 import BuyerOrders from "./pages/buyer/ordersBuyyer";
+import OrderDetail from './pages/buyer/OrderDetail';
 import BuyerWallet from "./pages/buyer/walletBuyyer";
 import Cart from "./pages/buyer/cart";
 
@@ -36,6 +37,7 @@ export default function App() {
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/profileBuyyer" element={<BuyerProfile />} />
       <Route path="/ordersBuyyer" element={<BuyerOrders />} />
+       <Route path="/ordersBuyyer/:orderId" element={<OrderDetail />} /> 
       <Route path="/walletBuyyer" element={<BuyerWallet />} />
       <Route path ="/cart" element={<Cart />} />
 
