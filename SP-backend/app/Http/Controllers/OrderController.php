@@ -191,7 +191,7 @@ class OrderController extends Controller
                     "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
                     "stock" => $order->product->stock,
                     "date_uploaded" => $order->product->created_at->format('Y-m-d H:i:s'),
-                    "image" => $order->product->image,
+                    "image" => asset($order->product->image),
                     "category" => $order->product->category->name
                 ],
                 "seller" => [

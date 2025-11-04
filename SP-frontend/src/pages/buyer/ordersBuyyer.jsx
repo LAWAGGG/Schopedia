@@ -152,13 +152,7 @@ export default function OrdersBuyyer() {
                   className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 flex-1">
-                      <img
-                        src={productImage}
-                        alt={order.product?.name}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
-                      
+                    <div className="flex items-center space-x-4 flex-1">      
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900">
                           {order.product?.name || "Produk"}
