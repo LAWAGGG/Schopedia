@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getToken } from "../../utils/utils.jsx";
-import { 
-  Package, 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle, 
+import {
+  Package,
+  ArrowLeft,
+  Clock,
+  CheckCircle,
   XCircle,
   User,
   Calendar,
-  DollarSign
+  DollarSign,
+  Truck,
+  PackageCheck
 } from "lucide-react";
 
 export default function OrderDetail() {
@@ -18,6 +20,7 @@ export default function OrderDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [canceling, setCanceling] = useState(false);
+  const [markingDelivered, setMarkingDelivered] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,6 +50,7 @@ export default function OrderDetail() {
       }
 
       const data = await response.json();
+      console.log(data)
       setOrder(data.buyer_order);
     } catch (err) {
       console.error("Error fetching order detail:", err);
@@ -85,6 +89,7 @@ export default function OrderDetail() {
         alert(data.message || "Gagal membatalkan pesanan!");
         return;
       }
+      
 
       alert("Pesanan berhasil dibatalkan!");
       navigate("/ordersBuyyer");
@@ -96,29 +101,124 @@ export default function OrderDetail() {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="w-5 h-5 text-yellow-500" />;
-      case "accepted":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case "canceled":
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return <Package className="w-5 h-5 text-gray-500" />;
+  const handleMarkDelivered = async () => {
+    if (!order || !window.confirm("Apakah Anda yakin pesanan sudah diterima dengan baik?")) {
+      return;
+    }
+
+    setMarkingDelivered(true);
+    try {
+      const token = getToken();
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}api/order/buyer/${order.id}/delivered`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Gagal menandai pesanan sebagai diterima!");
+        return;
+      }
+
+      alert("Pesanan berhasil ditandai sebagai diterima!");
+      // Refresh data order
+      await fetchOrderDetail();
+    } catch (err) {
+      console.error("Error marking order as delivered:", err);
+      alert("Terjadi kesalahan saat menandai pesanan sebagai diterima.");
+    } finally {
+      setMarkingDelivered(false);
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "accepted":
+  const getStatusIcon = (status, shippingStatus) => {
+    // Prioritaskan shipping_status terlebih dahulu
+    switch (shippingStatus) {
+      case "delivered":
+        return <PackageCheck className="w-5 h-5 text-green-500" />;
+      case "shipped":
+        return <Truck className="w-5 h-5 text-purple-500" />;
+      default:
+        // Fallback ke order status
+        switch (status) {
+          case "pending":
+            return <Clock className="w-5 h-5 text-yellow-500" />;
+          case "accepted":
+            return <CheckCircle className="w-5 h-5 text-blue-500" />;
+          case "canceled":
+            return <XCircle className="w-5 h-5 text-red-500" />;
+          case "completed":
+            return <PackageCheck className="w-5 h-5 text-green-500" />;
+          default:
+            return <Package className="w-5 h-5 text-gray-500" />;
+        }
+    }
+  };
+
+  const getStatusColor = (status, shippingStatus) => {
+    // Prioritaskan shipping_status
+    switch (shippingStatus) {
+      case "delivered":
         return "bg-green-100 text-green-800";
-      case "canceled":
-        return "bg-red-100 text-red-800";
+      case "shipped":
+        return "bg-purple-100 text-purple-800";
+      default:
+        // Fallback ke order status
+        switch (status) {
+          case "pending":
+            return "bg-yellow-100 text-yellow-800";
+          case "accepted":
+            return "bg-blue-100 text-blue-800";
+          case "canceled":
+            return "bg-red-100 text-red-800";
+          case "completed":
+            return "bg-green-100 text-green-800";
+          default:
+            return "bg-gray-100 text-gray-800";
+        }
+    }
+  };
+
+  const getShippingStatusColor = (shippingStatus) => {
+    switch (shippingStatus) {
+      case "pending":
+        return "bg-gray-100 text-gray-800";
+      case "shipped":
+        return "bg-purple-100 text-purple-800";
+      case "delivered":
+        return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusText = (status, shippingStatus) => {
+    switch (shippingStatus) {
+      case "delivered":
+        return "Telah Diterima";
+      case "shipped":
+        return "Sedang Dikirim";
+      default:
+        switch (status) {
+          case "pending":
+            return "Menunggu Konfirmasi";
+          case "accepted":
+            return "Diproses";
+          case "canceled":
+            return "Dibatalkan";
+          case "completed":
+            return "Selesai";
+          default:
+            return status;
+        }
     }
   };
 
@@ -155,8 +255,13 @@ export default function OrderDetail() {
   const productImage = order.product?.image?.startsWith("http")
     ? order.product.image
     : order.product?.image?.startsWith("/storage")
-    ? `${import.meta.env.VITE_API_URL}${order.product.image}`
-    : "/placeholder-product.jpg";
+      ? `${import.meta.env.VITE_API_URL}${order.product.image}`
+      : "/placeholder-product.jpg";
+
+  // Cek apakah bisa mark delivered
+  const canMarkDelivered = order.shipping_status === "shipped" && order.status !== "completed" && order.status !== "canceled";
+  // Cek apakah bisa cancel order
+  const canCancelOrder = order.status === "pending";
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -172,17 +277,32 @@ export default function OrderDetail() {
             </button>
             <h1 className="text-3xl font-bold text-gray-900">Detail Pesanan</h1>
           </div>
-          <div className="flex items-center space-x-2">
-            {getStatusIcon(order.status)}
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                order.status
-              )}`}
-            >
-              {order.status === "pending" && "Menunggu Konfirmasi"}
-              {order.status === "accepted" && "Diterima"}
-              {order.status === "canceled" && "Dibatalkan"}
-            </span>
+          <div className="flex items-center space-x-4">
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center space-x-2">
+                {getStatusIcon(order.status, order.shipping_status)}
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                    order.status
+                  )}`}
+                >
+                  {order.status === "pending" && "Menunggu Konfirmasi"}
+                  {order.status === "accepted" && "Diterima"}
+                  {order.status === "canceled" && "Dibatalkan"}
+                  {order.status === "completed" && "Selesai"}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Truck className="w-4 h-4 text-gray-500" />
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getShippingStatusColor(
+                    order.status,
+                    order.shipping_status
+                  )}`}
+                >
+                  {getStatusText(order.status, order.shipping_status)}                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -192,7 +312,7 @@ export default function OrderDetail() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Informasi Produk
               </h2>
-              
+
               <div className="flex space-x-4">
                 <img
                   src={productImage}
@@ -213,6 +333,34 @@ export default function OrderDetail() {
                 </div>
               </div>
             </div>
+
+            {/* Informasi Pengiriman */}
+            {(order.shipping_status === "shipped" || order.shipping_status === "delivered") && (
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                  <Truck className="w-5 h-5 mr-2" />
+                  Informasi Pengiriman
+                </h2>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Layanan Pengiriman</p>
+                      <p className="font-medium">{order.delivery_service || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Nomor Resi</p>
+                      <p className="font-medium">{order.tracking_number || "-"}</p>
+                    </div>
+                  </div>
+                  {order.location && (
+                    <div>
+                      <p className="text-sm text-gray-500">Alamat Pengiriman</p>
+                      <p className="font-medium">{order.location}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -235,18 +383,18 @@ export default function OrderDetail() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Ringkasan Pesanan
               </h2>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">ID Pesanan</span>
                   <span className="font-medium">#{order.id}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-gray-600">Jumlah</span>
                   <span className="font-medium">{order.quantity} item</span>
                 </div>
-                
+
                 <div className="flex justify-between text-lg font-bold mt-4 pt-4 border-t">
                   <span>Total Harga</span>
                   <span className="text-purple-600">{order.total_price}</span>
@@ -262,20 +410,72 @@ export default function OrderDetail() {
               </div>
             </div>
 
-            {order.status === "pending" && (
+            {/* Section Aksi */}
+            {(canCancelOrder || canMarkDelivered) && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="font-semibold text-gray-900 mb-4">Aksi</h3>
-                <button
-                  onClick={handleCancelOrder}
-                  disabled={canceling}
-                  className={`w-full ${
-                    canceling
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-red-600 hover:bg-red-700"
-                  } text-white font-semibold py-2.5 px-4 rounded-lg transition-all`}
-                >
-                  {canceling ? "Membatalkan..." : "Batalkan Pesanan"}
-                </button>
+                <div className="space-y-3">
+                  {/* Tombol Batalkan Pesanan */}
+                  {canCancelOrder && (
+                    <button
+                      onClick={handleCancelOrder}
+                      disabled={canceling}
+                      className={`w-full ${canceling
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-red-600 hover:bg-red-700"
+                        } text-white font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2`}
+                    >
+                      {canceling ? (
+                        <>
+                          <Clock className="w-4 h-4 animate-spin" />
+                          Membatalkan...
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4" />
+                          Batalkan Pesanan
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {/* Tombol Konfirmasi Diterima */}
+                  {canMarkDelivered && (
+                    <button
+                      onClick={handleMarkDelivered}
+                      disabled={markingDelivered}
+                      className={`w-full ${markingDelivered
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700"
+                        } text-white font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2`}
+                    >
+                      {markingDelivered ? (
+                        <>
+                          <Clock className="w-4 h-4 animate-spin" />
+                          Memproses...
+                        </>
+                      ) : (
+                        <>
+                          <PackageCheck className="w-4 h-4" />
+                          Konfirmasi Pesanan Diterima
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Status Completed */}
+            {(order.status === "completed" || order.shipping_status === "delivered") && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                <div className="flex items-center justify-center gap-2 text-green-700">
+                  <PackageCheck className="w-6 h-6" />
+                  <span className="font-semibold">Pesanan Telah Selesai</span>
+                </div>
+                <p className="text-green-600 text-sm text-center mt-2">
+                  Terima kasih telah berbelanja! Pesanan Anda telah selesai.
+                </p>
               </div>
             )}
           </div>
