@@ -10,10 +10,16 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $category = Category::all();
+        $category = Category::with("product")->get();
 
         return response()->json([
-            "Categories"=>$category
+            "Categories"=>$category->map(function($cat){
+                return [
+                    "id"=>$cat->id,
+                    "name"=>$cat->name,
+                    "products_count"=>$cat->product->count(),
+                ];
+            })
         ]);
     }
 
