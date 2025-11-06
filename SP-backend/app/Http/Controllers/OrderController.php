@@ -23,8 +23,8 @@ class OrderController extends Controller
             return [
                 'id' => $order->product->id,
                 'quantity' => $order->quantity,
-                'total_price' => "Rp". number_format($order->total_price, 2, ",", "."),
-                'product'=>[
+                'total_price' => "Rp" . number_format($order->total_price, 2, ",", "."),
+                'product' => [
                     'name' => $order->product->name,
                     'price' => $order->product->price,
                     'image' => "http://localhost:8000/storage" . $order->product->image,
@@ -54,12 +54,14 @@ class OrderController extends Controller
                     "quantity" => $order->quantity,
                     "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
                     "status" => $order->status,
-                    "shipping_status"=>$order->shipping_status,
+                    "shipping_status" => $order->shipping_status,
                     "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
                     "product" => [
                         "name" => $order->product->name,
                         "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
                         "seller" => $order->seller->name,
+                        "image" => asset($order->product->image) ?? null,
+                        // "image" => "http://localhost:8000/storage" . $order->product->image ?? null,
                     ],
                 ];
             })
@@ -202,9 +204,9 @@ class OrderController extends Controller
                 "quantity" => $order->quantity,
                 "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
                 "status" => $order->status,
-                "shipping_status"=>$order->shipping_status,
-                "delivery_service"=>$order->delivery_service,
-                "tracking_number"=>$order->tracking_number,
+                "shipping_status" => $order->shipping_status,
+                "delivery_service" => $order->delivery_service,
+                "tracking_number" => $order->tracking_number,
                 "date_ordered" => $order->created_at->format('Y-m-d H:i:s')
             ]
         ]);
