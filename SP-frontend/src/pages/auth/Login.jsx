@@ -3,6 +3,7 @@ import "../../styles/Login.css";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingScreen from "../../components/loading";
 import setToken from '../../utils/utils';
+import { Eye, EyeOff } from "lucide-react";
 
 
 export default function Login() {
@@ -11,6 +12,7 @@ export default function Login() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null);
     const [remember, setRemember] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
 
@@ -36,15 +38,15 @@ export default function Login() {
         if (res.status === 200 && data.user.role === "admin") {
             setLoading(false);
             navigate("/dashboardadmin");
-            setToken(data.token, remember,data.user.name);
+            setToken(data.token, remember, data.user.name);
         } else if (res.status === 200 && data.user.role === "seller") {
             setLoading(false);
             navigate("/dashboardseller");
-            setToken(data.token, remember,data.user.name);
+            setToken(data.token, remember, data.user.name);
         } else if (res.status === 200 && data.user.role === "buyer") {
             setLoading(false);
             navigate("/dashboard");
-            setToken(data.token, remember,data.user.name);
+            setToken(data.token, remember, data.user.name);
         } else if (res.status === 404) {
             setLoading(false);
             setError("Email atau password salah!");
@@ -110,23 +112,33 @@ export default function Login() {
                         />
                     </div>
 
+                    {/*tombol mata */}
                     <div className="flex flex-col">
                         <label className="text-sm mb-1 font-medium text-gray-700">
                             Password
                         </label>
-                        <input
-                            onChange={(e) => setPassword(e.target.value)}
-                            type="password"
-                            placeholder="Enter your password"
-                            className="h-11 px-3 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-[#713491] focus:border-transparent placeholder:text-gray-400 transition-all duration-200"
-                        />
+                        <div className="relative">
+                            <input
+                                onChange={(e) => setPassword(e.target.value)}
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                className="h-11 px-3 pr-10 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-[#713491] focus:border-transparent placeholder:text-gray-400 transition-all duration-200 w-full"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm mb-2">
                         <input
                             type="checkbox"
                             checked={remember}
-                            onChange={(e) => setRemember(e.target.value)}
+                            onChange={(e) => setRemember(e.target.checked)}
                             id="remember"
                             className="w-4 h-4 cursor-pointer accent-[#713491]"
                         />

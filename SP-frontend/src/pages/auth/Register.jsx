@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import LoadingScreen from "../../components/loading";
 import Policy from "../../components/policy";
 import Terms from "../../components/terms";
+import { Eye, EyeOff } from "lucide-react";
+
 
 export default function Register() {
     const [name, setName] = useState("");
@@ -16,6 +18,8 @@ export default function Register() {
     const [loading, setLoading] = useState(false)
     const [policyOpen, setPolicyOpen] = useState(false);
     const [termsOpen, setTermsOpen] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
 
     async function handleRegister(e) {
         e.preventDefault();
@@ -120,15 +124,25 @@ export default function Register() {
                     {/* Password */}
                     <div className="flex flex-col w-full">
                         <label className="text-sm mb-1 text-gray-700">Password</label>
-                        <input
-                            onChange={(e) => setPassword(e.target.value)}
-                            type="password"
-                            placeholder="Enter your password"
-                            className="h-11 px-3 text-sm border border-gray-300 rounded-md 
-                                    focus:ring-2 focus:ring-[#713491] focus:border-transparent 
-                                    placeholder:text-gray-400 transition-all duration-200"
-                        />
+                        <div className="relative">
+                            <input
+                                onChange={(e) => setPassword(e.target.value)}
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                className="h-11 px-3 pr-10 text-sm border border-gray-300 rounded-md 
+                                focus:ring-2 focus:ring-[#713491] focus:border-transparent 
+                                placeholder:text-gray-400 transition-all duration-200 w-full"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
                     </div>
+
 
                     {/* Phone Number */}
                     <div className="flex flex-col w-full">
