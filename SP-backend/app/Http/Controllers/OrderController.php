@@ -45,7 +45,7 @@ class OrderController extends Controller
 
     public function getOrdersAsBuyer()
     {
-        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->where("status", '!=', "accepted")->get();
+        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             "buyer_orders" => $orders->map(function ($order) {
@@ -202,6 +202,9 @@ class OrderController extends Controller
                 "quantity" => $order->quantity,
                 "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
                 "status" => $order->status,
+                "shipping_status"=>$order->shipping_status,
+                "delivery_service"=>$order->delivery_service,
+                "tracking_number"=>$order->tracking_number,
                 "date_ordered" => $order->created_at->format('Y-m-d H:i:s')
             ]
         ]);
@@ -491,7 +494,7 @@ class OrderController extends Controller
 
     public function markDelivered($order_id)
     {
-        $order = Order::where('seller_id', Auth::id())->where('id', $order_id)->first();
+        $order = Order::where('user_id', Auth::id())->where('id', $order_id)->first();
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
