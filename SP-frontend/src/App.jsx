@@ -10,6 +10,8 @@ import BuyerOrders from "./pages/buyer/ordersBuyyer";
 import OrderDetail from './pages/buyer/OrderDetail';
 import BuyerWallet from "./pages/buyer/walletBuyyer";
 import Cart from "./pages/buyer/cart";
+import Topup from "./pages/buyer/Topup";
+import History from "./pages/buyer/history";
 
 // Admin
 import DashboardAdmin from "./pages/admin/dashboardAdmin";
@@ -37,9 +39,11 @@ export default function App() {
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/profileBuyyer" element={<BuyerProfile />} />
       <Route path="/ordersBuyyer" element={<BuyerOrders />} />
-       <Route path="/ordersBuyyer/:orderId" element={<OrderDetail />} /> 
+      <Route path="/ordersBuyyer/:orderId" element={<OrderDetail />} /> 
       <Route path="/walletBuyyer" element={<BuyerWallet />} />
       <Route path ="/cart" element={<Cart />} />
+      <Route path="/topup" element={<Topup />} />
+      <Route path="/buyerhistory" element={<History />} />
 
       {/* Admin */}
       <Route path="/dashboardadmin" element={<DashboardAdmin />} />
