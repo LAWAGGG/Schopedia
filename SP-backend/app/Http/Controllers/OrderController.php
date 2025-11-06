@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Wallet;
@@ -27,7 +28,7 @@ class OrderController extends Controller
                 'product' => [
                     'name' => $order->product->name,
                     'price' => $order->product->price,
-                    'image' => "http://localhost:8000/storage" . $order->product->image,
+                    'image' => asset($order->product->image),
                 ],
                 'seller' => [
                     'id' => $order->seller->id,
@@ -80,7 +81,7 @@ class OrderController extends Controller
                 return [
                     "id" => $order->id,
                     "quantity" => $order->quantity,
-                    "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
+                    "total_price" => number_format($order->total_price, 2, ',', '.'),
                     "status" => ucfirst($order->status),
                     "shipping_status" => ucfirst($order->shipping_status),
                     "delivery_service" => $order->delivery_service ?? '-',
@@ -530,6 +531,101 @@ class OrderController extends Controller
                     "email" => $order->buyer->email
                 ],
             ]
+        ]);
+    }
+
+    public function checkout(Request $request)
+    {
+        $val = Validator::make($request->all(), [
+            'location' => 'required|string',
+            'notes' => 'nullable|string'
+        ]);
+
+        if ($val->fails()) {
+            return response()->json(['errors' => $val->errors()], 422);
+        }
+
+        $user = Auth::user();
+
+        $cartItems = Cart::with(['product.user'])
+            ->where('user_id', $user->id)
+            ->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['message' => 'Cart is empty'], 400);
+        }
+
+        foreach ($cartItems as $item) {
+            if (!$item->quantity) {
+                return response()->json([
+                    'message' => 'Invalid quantity in cart for product: ' . $item->product->name
+                ], 400);
+            }
+
+            if (!$item->product->user_id) {
+                return response()->json([
+                    'message' => 'Seller not found for product: ' . $item->product->name
+                ], 400);
+            }
+        }
+
+        $grandTotal = 0;
+        foreach ($cartItems as $item) {
+            $productPrice = $item->product->price;
+            $grandTotal += $productPrice * $item->quantity;
+        }
+
+        $wallet = Wallet::where('user_id', $user->id)->first();
+        if (!$wallet || $wallet->balance < $grandTotal) {
+            return response()->json([
+                'message' => 'Insufficient wallet balance'
+            ], 400);
+        }
+
+        foreach ($cartItems as $item) {
+            if ($item->quantity > $item->product->stock) {
+                return response()->json([
+                    'message' => "Not enough stock for product: " . $item->product->name
+                ], 400);
+            }
+        }
+
+        // PERBAIKAN: Group by user_id (seller_id)
+        $groups = $cartItems->groupBy(function ($item) {
+            return $item->product->user_id; // Gunakan user_id sebagai seller_id
+        });
+
+        $orders = [];
+
+        foreach ($groups as $sellerId => $items) {
+            foreach ($items as $item) {
+                $productPrice = $item->product->price;
+                $totalPrice = $productPrice * $item->quantity;
+
+                $order = Order::create([
+                    'user_id' => $user->id,
+                    'product_id' => $item->product_id,
+                    'seller_id' => $sellerId, // ← Sekarang ini harus ada nilai
+                    'quantity' => $item->quantity,
+                    'total_price' => $totalPrice,
+                    'location' => $request->location,
+                    'notes' => $request->notes ?? 'Pembelian dari cart',
+                    'status' => 'pending',
+                    'shipping_status' => 'pending',
+                ]);
+
+                $orders[] = $order;
+            }
+        }
+
+        // Clear cart setelah order berhasil dibuat
+        Cart::where('user_id', $user->id)->delete();
+
+        return response()->json([
+            'message' => 'Checkout succesfully created',
+            'total_orders' => count($orders),
+            'total_all_price' => 'Rp' . number_format($grandTotal, 0, ',', '.'),
+            'orders' => $orders,
         ]);
     }
 }

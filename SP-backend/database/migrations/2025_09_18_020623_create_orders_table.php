@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
             $table->integer('quantity');
-            $table->decimal('total_price');
+            $table->decimal('total_price', 15,2);
             $table->text('location');
             $table->text('notes')->nullable();
             $table->enum("status", ['pending', 'accepted', 'canceled', 'completed'])->default('pending');

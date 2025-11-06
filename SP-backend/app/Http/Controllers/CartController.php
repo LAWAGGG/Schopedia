@@ -12,15 +12,41 @@ class CartController extends Controller
 {
     public function showOwnCart()
     {
-        $cart = Cart::where("user_id", Auth::user()->id)->get();
+        $cart = Cart::where("user_id", Auth::user()->id)->with(["product"])->get();
 
         return response()->json([
-            "cart" => $cart
+            "cart" => $cart->map(function ($item) {
+                return [
+                    "id" => $item->id,
+                    "quantity" => $item->quantity,
+                    "product" => [
+                        "id" => $item->product->id,
+                        "name" => $item->product->name,
+                        "image" => url($item->product->image),
+                        // "image" => "http://localhost:8000/storage/" . $item->product->image,
+                        "price" => $item->product->price,
+                        "stock" => $item->product->stock,
+                        "seller_id" => $item->product->user->id,
+                    ],
+                    "added_at" => $item->created_at->toDateTimeString()
+                ];
+            })
         ]);
     }
 
     public function store(Request $request, $product_id)
     {
+        $val = Validator::make($request->all(), [
+            'quantity' => 'integer|min:1'
+        ]);
+
+        if ($val->fails()) {
+            return response()->json([
+                "message" => "Invalid fields",
+                "errors" => $val->errors()
+            ], 422);
+        }
+
         $product = Product::find($product_id);
 
         if (!$product) {
@@ -42,6 +68,7 @@ class CartController extends Controller
         $cart = Cart::create([
             "product_id" => $product->id,
             "user_id" => Auth::user()->id,
+            "quantity" => $request->quantity
         ]);
 
         $cart->load('product');
@@ -49,7 +76,7 @@ class CartController extends Controller
         return response()->json([
             "message" => "product added to cart succesfully",
             "cart" => $cart
-        ],201);
+        ], 201);
     }
 
     public function destroy($product_id)

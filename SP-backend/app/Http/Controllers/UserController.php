@@ -19,6 +19,14 @@ class UserController extends Controller
         ]);
     }
 
+    public function userProfile($id){
+        $user = User::where("id", $id)->with("products")->get();
+        
+        return response()->json([
+            "user"=>$user
+        ]);
+    }
+
     public function update(Request $request)
     {
         $user = User::where("id", Auth::user()->id)->first();

@@ -19,6 +19,7 @@ class CartSeeder extends Seeder
                 Cart::create([
                     'user_id' => $buyer->id,
                     'product_id' => $product->id,
+                    'quantity'=>rand(1,3)
                 ]);
             }
         }

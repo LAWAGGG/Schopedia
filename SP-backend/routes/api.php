@@ -28,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users/update', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::get("/user/{id}/profile", [UserController::class, "userProfile"]);
 
     //wallet
     Route::get('/wallet', [WalletController::class, "index"]);
@@ -78,7 +79,8 @@ Route::middleware('auth:sanctum')->group(function () {
         //cart
         Route::get('/cart', [CartController::class, "showOwnCart"]);
         Route::post('/cart/{product_id}/add', [CartController::class, "store"]);
-        Route::delete('cart/{product_id}/delete', [CartController::class, "destroy"]);
+        Route::delete('/cart/{product_id}/delete', [CartController::class, "destroy"]);
+        Route::post('/cart/checkout/all', [OrderController::class, "checkout"]);
     });
 
     Route::middleware("admin")->group(function () {
