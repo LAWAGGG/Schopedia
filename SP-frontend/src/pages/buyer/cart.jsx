@@ -11,6 +11,7 @@ export default function Cart() {
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
     const [location, setLocation] = useState("");
     const [notes, setNotes] = useState("");
+    const [updatingQuantity, setUpdatingQuantity] = useState(null);
 
     const fetchCart = async () => {
         try {
@@ -52,7 +53,6 @@ export default function Cart() {
                 throw new Error(`Gagal menghapus item (status ${res.status})`);
             }
             
-            // Refresh cart data setelah delete
             await fetchCart();
         } catch (error) {
             console.error("Gagal menghapus item:", error);
@@ -60,11 +60,51 @@ export default function Cart() {
         }
     };
 
+    // Function untuk update quantity
+    const updateQuantity = async (cartItemId, newQuantity) => {
+        if (newQuantity < 1) return;
+        
+        setUpdatingQuantity(cartItemId);
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}api/cart/${cartItemId}/update`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${getToken()}`,
+                    Accept: "application/json"
+                },
+                body: JSON.stringify({
+                    quantity: newQuantity
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.message || `Gagal update quantity (status ${res.status})`);
+            }
+
+            // Update local state
+            setCartData(prev => prev.map(item => 
+                item.id === cartItemId ? { ...item, quantity: newQuantity } : item
+            ));
+
+            fetchCart()
+
+        } catch (error) {
+            console.error("Error updating quantity:", error);
+            alert(error.message || "Terjadi kesalahan saat mengupdate quantity");
+            await fetchCart();
+        } finally {
+            setUpdatingQuantity(null);
+        }
+    };
+
     // Function untuk handle checkout
     const handleCheckout = async () => {
         if (checkoutLoading) return;
 
-        // Validasi
         if (!location.trim()) {
             alert("Alamat pengiriman harus diisi!");
             return;
@@ -92,15 +132,10 @@ export default function Cart() {
                 throw new Error(data.message || `Checkout gagal (status ${res.status})`);
             }
 
-            // Checkout berhasil
-            console.log("Checkout response:", data);
-            
-            // Tampilkan modal sukses
             setShowCheckoutModal(false);
             setLocation("");
             setNotes("");
             
-            // Redirect ke halaman orders setelah 2 detik
             setTimeout(() => {
                 navigate("/ordersBuyyer");
             }, 2000);
@@ -187,6 +222,7 @@ export default function Cart() {
                         const price = parseFloat(item.product?.price) || 0;
                         const qty = item.quantity || 1;
                         const subtotal = price * qty;
+                        const isUpdating = updatingQuantity === item.id;
 
                         return (
                             <div
@@ -204,11 +240,28 @@ export default function Cart() {
                                         Rp {formatPrice(price)}
                                     </p>
 
-                                    {/* Quantity display */}
+                                    {/* Quantity Control dengan tombol (- ... +) */}
                                     <div className="flex items-center gap-4 mt-3">
-                                        <p className="text-gray-700 font-medium">
-                                            Jumlah: <span className="font-bold">{qty}</span>
-                                        </p>
+                                        <div className="flex items-center border border-gray-300 rounded-full bg-white">
+                                            <button
+                                                onClick={() => updateQuantity(item.product.id, qty - 1)}
+                                                disabled={isUpdating || qty <= 1}
+                                                className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-l-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                -
+                                            </button>
+                                            <span className="w-8 text-center font-medium text-gray-800">
+                                                {isUpdating ? "..." : qty}
+                                            </span>
+                                            <button
+                                                onClick={() => updateQuantity(item.product.id, qty + 1)}
+                                                disabled={isUpdating || qty >= item.product?.stock}
+                                                className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-r-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                        
                                         <p className="text-gray-700 font-medium">
                                             Subtotal: <span className="font-bold text-green-600">Rp {formatPrice(subtotal)}</span>
                                         </p>
@@ -220,8 +273,9 @@ export default function Cart() {
                                     </p>
                                 </div>
                                 <button 
-                                    onClick={() => removeItem(item.id)}
-                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                                    onClick={() => removeItem(item.product.id)}
+                                    disabled={isUpdating}
+                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50"
                                 >
                                     <X className="w-6 h-6 text-gray-600" />
                                 </button>
