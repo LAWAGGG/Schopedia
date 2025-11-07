@@ -87,5 +87,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware("admin")->group(function () {
         //category route (CRUD)
         Route::resource("category", CategoryController::class);
+        Route::post('/users/{user_id}/update', [UserController::class, "updateOtherProfile"]);
     });
 });

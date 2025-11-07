@@ -19,11 +19,12 @@ class UserController extends Controller
         ]);
     }
 
-    public function userProfile($id){
+    public function userProfile($id)
+    {
         $user = User::where("id", $id)->with("products")->get();
-        
+
         return response()->json([
-            "user"=>$user
+            "user" => $user
         ]);
     }
 
@@ -73,7 +74,70 @@ class UserController extends Controller
             $slug = str($request->name ?? $user->name)->slug();
             $ext  = $file->extension();
 
-            // pengecekan eksistensi image
+            if ($user->image) {
+                $oldDir = dirname(str_replace("storage/", "", $user->image));
+                if (Storage::disk("public")->exists($oldDir)) {
+                    Storage::disk("public")->deleteDirectory($oldDir);
+                }
+            }
+            $path = $file->storeAs("profiles/$slug", "image.$ext", "public");
+            $input["image"] = "storage/" . $path;
+        }
+
+        $user->update($input);
+
+        return response()->json([
+            "message" => "User updated successfully",
+            "user"    => $user
+        ]);
+    }
+
+    public function updateOtherProfile(Request $request, $user_id)
+    {
+        $user = User::where("id", $user_id)->first();
+
+        if (Auth::user()->role != "admin") {
+            return response()->json([
+                "message" => "Access denied"
+            ], 403);
+        }
+
+        $val = Validator::make($request->all(), [
+            'name' => "nullable|string",
+            'password' => 'nullable|max:20',
+            'email' => 'nullable|unique:users,email',
+            'image' => 'nullable|image|mimes:png,jpg,jpeg|max:5120'
+        ], [
+            'image.max' => 'Image size should not exceed 5MB',
+            'image.mimes' => 'Image must be JPEG, PNG, or JPG format'
+        ]);
+
+        if ($val->fails()) {
+            return response()->json([
+                'message' => 'invalid fields',
+                'errors' => $val->errors()
+            ], 422);
+        }
+
+        $input = request()->only(['name', 'email']);
+
+        if ($request->password) {
+            $input['password'] = bcrypt($request->password);
+        }
+
+        if ($request->hasFile("image")) {
+            $file = $request->file("image");
+
+            if ($file->getSize() > 5242880) {
+                return response()->json([
+                    'message' => 'Image too large',
+                    'errors' => ['image' => ['Image size should not exceed 5MB']]
+                ], 422);
+            }
+
+            $slug = str($request->name ?? $user->name)->slug();
+            $ext  = $file->extension();
+
             if ($user->image) {
                 $oldDir = dirname(str_replace("storage/", "", $user->image));
                 if (Storage::disk("public")->exists($oldDir)) {
