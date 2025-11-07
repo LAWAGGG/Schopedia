@@ -37,7 +37,7 @@ class CartController extends Controller
     public function store(Request $request, $product_id)
     {
         $val = Validator::make($request->all(), [
-            'quantity' => 'integer|min:1'
+            'quantity' => 'required|integer|min:1'
         ]);
 
         if ($val->fails()) {
