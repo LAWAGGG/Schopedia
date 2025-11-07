@@ -16,14 +16,18 @@ export default function ProductDetail() {
   async function handleAddCart() {
     setAddingToCart(true);
     setCartMessage({ type: '', text: '' });
-    
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}api/cart/${product.id}/add`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json', 
           Accept: "application/json"
         },
+        body: JSON.stringify({
+          "quantity": 1 //nanti diganti lagi pake input asli
+        }),
       });
 
       const data = await res.json();
@@ -215,14 +219,13 @@ export default function ProductDetail() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <button 
+              <button
                 onClick={handleAddCart}
                 disabled={addingToCart || stok < 1}
-                className={`flex items-center justify-center gap-2 ${
-                  addingToCart || stok < 1
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-purple-600 hover:bg-purple-700"
-                } text-white font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-md transition-all`}
+                className={`flex items-center justify-center gap-2 ${addingToCart || stok < 1
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-purple-600 hover:bg-purple-700"
+                  } text-white font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-md transition-all`}
               >
                 {addingToCart ? (
                   <>
@@ -240,13 +243,12 @@ export default function ProductDetail() {
               <button
                 onClick={handleBuyNow}
                 disabled={buying || stok < 1}
-                className={`flex items-center justify-center gap-2 ${
-                  buying
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : stok < 1
+                className={`flex items-center justify-center gap-2 ${buying
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : stok < 1
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700"
-                } text-white font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-md transition-all`}
+                  } text-white font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-md transition-all`}
               >
                 {buying ? "Memproses..." : stok < 1 ? "Stok Habis" : "Beli Sekarang"}
               </button>
