@@ -79,6 +79,54 @@ class CartController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, $product_id)
+    {
+        $val = Validator::make($request->all(), [
+            'quantity' => 'required|integer|min:1'
+        ]);
+
+        if ($val->fails()) {
+            return response()->json([
+                "message" => "Invalid fields",
+                "errors" => $val->errors()
+            ], 422);
+        }
+
+        $product = Product::find($product_id);
+
+        if (!$product) {
+            return response()->json([
+                "message" => "Product not found"
+            ], 404);
+        }
+
+        $existingCart = Cart::where('user_id', Auth::id())
+            ->where('product_id', $product_id)
+            ->first();
+
+        if (!$existingCart) {
+            return response()->json([
+                "message" => "Product not found in cart"
+            ], 404);
+        }
+
+        if ($product->stock < $request->quantity) {
+            return response()->json(['message' => "Only {$product->stock} items available"], 400);
+        }
+
+        $existingCart->update([
+            "quantity" => $request->quantity
+        ]);
+
+        $existingCart->load('product');
+
+
+        return response()->json([
+            "message" => "product quantity updated to cart succesfully",
+            "cart" => $existingCart
+        ], 201);
+    }
+
     public function destroy($product_id)
     {
         $product = Product::find($product_id);

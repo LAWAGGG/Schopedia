@@ -80,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/cart', [CartController::class, "showOwnCart"]);
         Route::post('/cart/{product_id}/add', [CartController::class, "store"]);
         Route::delete('/cart/{product_id}/delete', [CartController::class, "destroy"]);
+        Route::put('/cart/{product_id}/update', [CartController::class, "update"]);
         Route::post('/cart/checkout/all', [OrderController::class, "checkout"]);
     });
 
