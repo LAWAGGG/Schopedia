@@ -7,15 +7,24 @@ import { Eye, X, CalendarDays, Filter, Truck, Loader2 } from "lucide-react";
 const API_URL = import.meta.env.VITE_API_URL;
 
 function formatRp(n) {
-    if (typeof n === 'string' && n.startsWith('Rp')) {
-        return n;
+    if (!n) return "Rp0";
+
+    if (typeof n === "string") {
+        // Hilangkan 'Rp', titik, dan koma desimal di akhir
+        n = n.replace(/[Rp\s]/g, "").replace(/\./g, "").replace(/,00$/, "");
     }
+
+    const value = parseInt(n, 10);
+    if (isNaN(value)) return "Rp0";
+
     return new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
         maximumFractionDigits: 0,
-    }).format(n);
+    }).format(value);
 }
+
+
 
 export default function Orders() {
     const [orders, setOrders] = useState([]);
