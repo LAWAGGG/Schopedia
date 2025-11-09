@@ -24,7 +24,7 @@ class SellingController extends Controller
                         "id" => $order->product->id,
                         "name" => $order->product->name,
                         "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
-                        "image" => $order->product->image,
+                        "image" => url($order->product->image),
                     ],
                     "buyer" => [
                         "id" => $order->buyer->id,

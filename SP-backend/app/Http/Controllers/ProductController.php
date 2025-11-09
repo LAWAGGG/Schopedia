@@ -29,7 +29,7 @@ class ProductController extends Controller
                         "id" => $product->user->id,
                         "name" => $product->user->name,
                     ],
-                    "category_id"=>$product->category_id
+                    "category_id" => $product->category_id
                 ];
             })
         ]);
@@ -45,7 +45,7 @@ class ProductController extends Controller
                     "id" => $product->id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
-                    "image" => asset($product->image),
+                    "image" => url($product->image),
                     // "image" => "http://localhost:8000/storage/" .$product->image,
                 ];
             })
@@ -84,7 +84,7 @@ class ProductController extends Controller
                 'public' // disk storage
             );
             // simpan path ke database
-            $input['image'] = $path;
+            $input["image"] = "storage/" . $path;
         }
 
         $input['user_id'] = Auth::user()->id;
@@ -129,7 +129,7 @@ class ProductController extends Controller
                 // "image" => "http://localhost:8000/storage/" .$product->image,
                 "image" => asset($product->image),
                 "date_uploaded" => $product->created_at->format('Y-m-d H:i:s'),
-                "category" =>$product->category->name
+                "category" => $product->category->name
             ]
         ]);
     }
@@ -139,10 +139,10 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        if(!$product){
+        if (!$product) {
             return response()->json([
-                "message"=>"product not found"
-            ],422);
+                "message" => "product not found"
+            ], 422);
         }
 
         if ($product->user_id != Auth::user()->id) {

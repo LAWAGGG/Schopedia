@@ -28,7 +28,7 @@ class OrderController extends Controller
                 'product' => [
                     'name' => $order->product->name,
                     'price' => $order->product->price,
-                    'image' => asset($order->product->image),
+                    'image' => url($order->product->image),
                 ],
                 'seller' => [
                     'id' => $order->seller->id,
@@ -61,7 +61,7 @@ class OrderController extends Controller
                         "name" => $order->product->name,
                         "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
                         "seller" => $order->seller->name,
-                        "image" => asset($order->product->image) ?? null,
+                        "image" => url($order->product->image) ?? null,
                         // "image" => "http://localhost:8000/storage" . $order->product->image ?? null,
                     ],
                 ];
@@ -194,7 +194,7 @@ class OrderController extends Controller
                     "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
                     "stock" => $order->product->stock,
                     "date_uploaded" => $order->product->created_at->format('Y-m-d H:i:s'),
-                    "image" => asset($order->product->image),
+                    "image" => url($order->product->image),
                     "category" => $order->product->category->name
                 ],
                 "seller" => [
