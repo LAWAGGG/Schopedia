@@ -1,17 +1,12 @@
 // src/pages/Wallet.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../../components/sideBar";
 import Navbar from "../../components/profileNav";
-import { Wallet, History } from "lucide-react"; // ikon dari lucide-react
-
-const transactionsDummy = [
-    { id: 1, product: "Produk A", date: "2025-10-20", amount: 150000 },
-    { id: 2, product: "Produk B", date: "2025-10-18", amount: 75000 },
-    { id: 3, product: "Produk C", date: "2025-10-15", amount: 200000 },
-    { id: 4, product: "Produk D", date: "2025-10-10", amount: 125000 },
-];
+import { Wallet, History, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import { getToken } from "../../utils/utils";
 
 function formatRp(n) {
+    if (typeof n !== "number") return n;
     return new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
@@ -19,9 +14,107 @@ function formatRp(n) {
     }).format(n);
 }
 
+const SkeletonItem = () => (
+    <div className="flex justify-between items-center p-4 bg-gray-100 rounded-lg animate-pulse mb-3">
+        <div className="space-y-2">
+            <div className="h-3 w-32 bg-gray-300 rounded"></div>
+            <div className="h-2 w-20 bg-gray-200 rounded"></div>
+        </div>
+        <div className="h-3 w-16 bg-gray-300 rounded"></div>
+    </div>
+);
+
 export default function WalletPage() {
-    const [tab, setTab] = useState("wallet"); // default langsung wallet aktif
-    const totalIncome = transactionsDummy.reduce((s, t) => s + t.amount, 0);
+    const [tab, setTab] = useState("wallet");
+    const [walletData, setWalletData] = useState(null);
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchWallet = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}api/wallet`, {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`,
+                        Accept: "application/json"
+                    },
+                });
+                if (!res.ok) throw new Error("Gagal memuat data wallet");
+                const data = await res.json();
+                setWalletData(data.my_wallet);
+            } catch (err) {
+                console.error("Gagal memuat wallet:", err);
+            }
+        };
+
+        const fetchHistory = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}api/wallet/transaction/history`, {
+                    headers: {
+                        Authorization: `Bearer ${getToken()}`,
+                        Accept: "application/json"
+                    },
+                });
+                if (!res.ok) throw new Error("Gagal memuat history");
+                const data = await res.json();
+                setTransactions(data["Transaction history"] || []);
+            } catch (err) {
+                console.error("Gagal memuat history:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchWallet();
+        fetchHistory();
+    }, []);
+
+    // Urutkan transaksi berdasarkan tanggal terbaru
+    const sortedTransactions = [...transactions].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
+
+    // Ambil 3 transaksi paling baru
+    const latestTransactions = sortedTransactions.slice(0, 3);
+
+    const parseBalance = (balance) => {
+        const clean = parseInt(balance.replace(/[^\d]/g, "")) || 0;
+        return clean / 100; // perbaiki jadi rupiah sebenarnya
+    };
+
+    const renderTransaction = (tx) => {
+        const isPayment = tx.type === "payment";
+        const icon = isPayment ? (
+            <ArrowUpCircle className="w-6 h-6 text-red-500" />
+        ) : (
+            <ArrowDownCircle className="w-6 h-6 text-green-500" />
+        );
+
+        return (
+            <div
+                key={tx.id}
+                className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm mb-4"
+            >
+                <div className="flex items-center space-x-3">
+                    <div className={`p-3 rounded-full ${isPayment ? "bg-red-100" : "bg-green-100"}`}>
+                        {icon}
+                    </div>
+                    <div>
+                        <p className="font-medium capitalize">{tx.type || "Transaksi"}</p>
+                        <p className="text-sm text-gray-500">{tx.note || "Tanpa keterangan"}</p>
+                        <p className="text-xs text-gray-400">
+                            {new Date(tx.created_at).toLocaleDateString("id-ID")}
+                        </p>
+                    </div>
+                </div>
+                <p
+                    className={`font-semibold ${isPayment ? "text-red-500" : "text-green-500"}`}
+                >
+                    {isPayment ? "-" : "+"}{tx.amount}
+                </p>
+            </div>
+        );
+    };
 
     return (
         <div className="min-h-screen flex bg-gray-50">
@@ -62,35 +155,30 @@ export default function WalletPage() {
                     {/* Wallet Tab */}
                     {tab === "wallet" && (
                         <div className="max-w-3xl mx-auto">
-                            {/* Kartu saldo */}
                             <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white p-6 relative overflow-hidden">
-                                <h3 className="text-lg font-semibold">Student</h3>
+                                <h3 className="text-lg font-semibold">{walletData?.user?.name || "User"}</h3>
                                 <p className="mt-1 text-sm opacity-80">Saldo</p>
-                                <div className="text-4xl font-bold mt-1">{formatRp(totalIncome)}</div>
+                                <div className="text-4xl font-bold mt-1">
+                                    {walletData
+                                        ? formatRp(parseBalance(walletData.balance))
+                                        : "Loading..."}
+                                </div>
                                 <img
                                     src="/s_logo.png"
                                     alt="logo"
-                                    className="absolute right-1 top-1/2 -translate-y-1/2   w-60 select-none pointer-events-none"
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 w-60 select-none pointer-events-none"
                                 />
                             </div>
 
-                            {/* History Preview */}
                             <div className="mt-6">
-                                <h4 className="text-sm text-gray-600 mb-3">Transaction History</h4>
-                                <div className="bg-white rounded-lg shadow divide-y">
-                                    <div className="flex justify-between p-4">
-                                        <span className="text-sm text-gray-700">Top up</span>
-                                        <span className="text-sm text-green-600 font-semibold">
-                                            {formatRp(100000)}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between p-4">
-                                        <span className="text-sm text-gray-700">Top up</span>
-                                        <span className="text-sm text-green-600 font-semibold">
-                                            {formatRp(50000)}
-                                        </span>
-                                    </div>
-                                </div>
+                                <h4 className="text-sm text-gray-600 mb-3">Transaksi Terbaru</h4>
+                                {loading ? (
+                                    [...Array(3)].map((_, i) => <SkeletonItem key={i} />)
+                                ) : latestTransactions.length === 0 ? (
+                                    <p className="text-gray-500 text-sm text-center">Belum ada transaksi.</p>
+                                ) : (
+                                    latestTransactions.map(renderTransaction)
+                                )}
                             </div>
                         </div>
                     )}
@@ -98,39 +186,29 @@ export default function WalletPage() {
                     {/* History Tab */}
                     {tab === "history" && (
                         <div className="max-w-3xl mx-auto">
-                            {/* Quick Summary */}
                             <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white p-6 relative overflow-hidden">
-                                <h3 className="text-lg font-semibold">Quick Summary</h3>
-                                <p className="mt-1 text-sm opacity-80">Total Pendapatan</p>
-                                <div className="text-4xl font-bold mt-1">{formatRp(totalIncome)}</div>
+                                <h3 className="text-lg font-semibold">{walletData?.user?.name || "User"}</h3>
+                                <p className="mt-1 text-sm opacity-80">Saldo</p>
+                                <div className="text-4xl font-bold mt-1">
+                                    {walletData
+                                        ? formatRp(parseBalance(walletData.balance))
+                                        : "Loading..."}
+                                </div>
                                 <img
                                     src="/s_logo.png"
                                     alt="logo"
-                                    className="absolute right-6 bottom-4 w-24 opacity-20 select-none pointer-events-none"
-                                />
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 w-60 select-none pointer-events-none" />
                             </div>
 
-                            {/* Riwayat Pendapatan */}
                             <div className="mt-6">
-                                <h4 className="text-sm text-gray-600 mb-3">Riwayat Pendapatan</h4>
-                                <div className="bg-white rounded-lg shadow divide-y">
-                                    {transactionsDummy.map((tx) => (
-                                        <div
-                                            key={tx.id}
-                                            className="flex justify-between items-center p-4"
-                                        >
-                                            <div>
-                                                <div className="text-sm font-medium text-gray-800">
-                                                    Pendapatan dari {tx.product}
-                                                </div>
-                                                <div className="text-xs text-gray-400">{tx.date}</div>
-                                            </div>
-                                            <div className="text-sm text-green-600 font-semibold">
-                                                {formatRp(tx.amount)}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                <h4 className="text-sm text-gray-600 mb-3">Riwayat Transaksi</h4>
+                                {loading ? (
+                                    [...Array(5)].map((_, i) => <SkeletonItem key={i} />)
+                                ) : transactions.length === 0 ? (
+                                    <p className="text-gray-500 text-sm text-center">Belum ada transaksi.</p>
+                                ) : (
+                                    transactions.map(renderTransaction)
+                                )}
                             </div>
                         </div>
                     )}
