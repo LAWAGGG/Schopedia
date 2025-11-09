@@ -1,5 +1,5 @@
 // src/pages/DashboardAdmin.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Phone, Mail, Edit2, Users, Grid2X2, Trash2, Search, Filter, Plus } from "lucide-react";
 
 export default function DashboardAdmin() {
@@ -7,6 +7,8 @@ export default function DashboardAdmin() {
     const [showModal, setShowModal] = useState(false);
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState("All Roles");
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const roles = ["All Roles", "Buyer", "Seller", "Admin"];
 
@@ -76,52 +78,98 @@ export default function DashboardAdmin() {
         },
     ];
 
-    const [categories, setCategories] = useState([
-        {
-            name: "Electronics",
-            desc: "Smartphones, laptops, tablets, and electronic accessories",
-            products: "1,245",
-            created: "2023-01-15",
-        },
-        {
-            name: "Fashion & Apparel",
-            desc: "Clothing, shoes, and fashion accessories for all ages",
-            products: "2,890",
-            created: "2023-01-15",
-        },
-    ]);
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editData, setEditData] = useState(null);
     const [form, setForm] = useState({ name: "", desc: "" });
 
-    const handleAdd = () => {
-        if (!form.name || !form.desc) return alert("Lengkapi semua field.");
-        const newCategory = {
-            name: form.name,
-            desc: form.desc,
-            products: "0",
-            created: new Date().toISOString().split("T")[0],
+    // Fetch kategori dari API
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}api/category/get`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                });
+                const data = await res.json();
+                setCategories(data.Categories || []);
+            } catch (err) {
+                console.error("Gagal fetch kategori:", err);
+            } finally {
+                setLoading(false);
+            }
         };
-        setCategories([...categories, newCategory]);
-        setForm({ name: "", desc: "" });
-        setShowAddModal(false);
+        fetchCategories();
+    }, []);
+
+    // Tambah kategori
+    const handleAdd = async () => {
+        if (!form.name) return alert("Nama kategori wajib diisi.");
+        try {
+            const res = await fetch(
+                `${import.meta.env.VITE_API_URL}api/category?name=${encodeURIComponent(form.name)}`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+            if (!res.ok) throw new Error("Gagal tambah kategori");
+            setForm({ name: "" });
+            setShowAddModal(false);
+            // Refresh data
+            const refresh = await fetch(`${import.meta.env.VITE_API_URL}api/category/get`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            });
+            const newData = await refresh.json();
+            setCategories(newData.Categories || []);
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    const handleEdit = () => {
-        if (!form.name || !form.desc) return alert("Lengkapi semua field.");
-        setCategories(
-            categories.map((cat) =>
-                cat.name === editData.name ? { ...cat, ...form } : cat
-            )
-        );
-        setShowEditModal(false);
+    // Edit kategori
+    const handleEdit = async () => {
+        if (!form.name) return alert("Nama wajib diisi.");
+        try {
+            const res = await fetch(
+                `${import.meta.env.VITE_API_URL}api/category/${editData.id}?name=${encodeURIComponent(form.name)}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                }
+            );
+            if (!res.ok) throw new Error("Gagal edit kategori");
+            setShowEditModal(false);
+            const refresh = await fetch(`${import.meta.env.VITE_API_URL}api/category/get`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            });
+            const newData = await refresh.json();
+            setCategories(newData.Categories || []);
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    const handleDelete = (name) => {
-        if (confirm(`Yakin ingin menghapus kategori "${name}"?`)) {
-            setCategories(categories.filter((c) => c.name !== name));
+    // Hapus kategori
+    const handleDelete = async (id, name) => {
+        if (!confirm(`Yakin ingin menghapus kategori "${name}"?`)) return;
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}api/category/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+            if (!res.ok) throw new Error("Gagal hapus kategori");
+            setCategories(categories.filter((c) => c.id !== id));
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -357,55 +405,65 @@ export default function DashboardAdmin() {
                             </button>
                         </div>
 
-                        {/* Grid kategori */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {categories.map((category, index) => (
-                                <div
-                                    key={index}
-                                    className="bg-white border rounded-lg p-4 flex flex-col justify-between hover:shadow-sm transition"
-                                >
-                                    <div>
-                                        <h3 className="font-medium text-gray-800 flex items-center gap-2">
-                                            <Grid2X2 size={16} className="text-gray-600" />
-                                            {category.name}
-                                        </h3>
-                                        <p className="text-sm text-gray-500 mt-1">{category.desc}</p>
-                                        <div className="mt-3 text-sm">
-                                            <p className="text-gray-600">
-                                                <span className="font-medium">Products:</span>{" "}
-                                                {category.products}
-                                            </p>
-                                            <p className="text-gray-600">
-                                                <span className="font-medium">Created:</span>{" "}
-                                                {category.created}
-                                            </p>
+                        {/* Skeleton Loading */}
+                        {loading ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {[...Array(6)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="bg-white border rounded-lg p-4 animate-pulse space-y-3"
+                                    >
+                                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                        <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                                        <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {categories.map((category) => (
+                                    <div
+                                        key={category.id}
+                                        className="bg-white border rounded-lg p-4 flex flex-col justify-between hover:shadow-sm transition"
+                                    >
+                                        <div>
+                                            <h3 className="font-medium text-gray-800 flex items-center gap-2">
+                                                <Grid2X2 size={16} className="text-gray-600" />
+                                                {category.name}
+                                            </h3>
+                                            <div className="mt-3 text-sm">
+                                                <p className="text-gray-600">
+                                                    <span className="font-medium">Products:</span>{" "}
+                                                    {category.products_count}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center mt-4">
+                                            <button
+                                                onClick={() => {
+                                                    setEditData(category);
+                                                    setForm({ name: category.name });
+                                                    setShowEditModal(true);
+                                                }}
+                                                className="flex items-center gap-1 text-sm bg-gray-100 px-3 py-1.5 rounded-md hover:bg-gray-200 transition"
+                                            >
+                                                <Edit2 size={14} /> Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(category.id, category.name)}
+                                                className="text-red-500 hover:text-red-700"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="flex justify-between items-center mt-4">
-                                        <button
-                                            onClick={() => {
-                                                setEditData(category);
-                                                setForm({ name: category.name, desc: category.desc });
-                                                setShowEditModal(true);
-                                            }}
-                                            className="flex items-center gap-1 text-sm bg-gray-100 px-3 py-1.5 rounded-md hover:bg-gray-200 transition"
-                                        >
-                                            <Edit2 size={14} /> Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(category.name)}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Modal Add */}
                         {showAddModal && (
-                            <div className="fixed inset-0 bg-black/40 bg-opacity-40 flex justify-center items-center z-50">
+                            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
                                 <div className="bg-white rounded-lg shadow-lg p-6 w-96">
                                     <h2 className="text-lg font-semibold mb-4">Add Category</h2>
                                     <input
@@ -413,12 +471,6 @@ export default function DashboardAdmin() {
                                         placeholder="Category Name"
                                         value={form.name}
                                         onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                        className="w-full border p-2 rounded mb-3 text-sm"
-                                    />
-                                    <textarea
-                                        placeholder="Description"
-                                        value={form.desc}
-                                        onChange={(e) => setForm({ ...form, desc: e.target.value })}
                                         className="w-full border p-2 rounded mb-3 text-sm"
                                     />
                                     <div className="flex justify-end gap-2">
@@ -441,7 +493,7 @@ export default function DashboardAdmin() {
 
                         {/* Modal Edit */}
                         {showEditModal && (
-                            <div className="fixed inset-0 bg-black/40 bg-opacity-40 flex justify-center items-center z-50">
+                            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
                                 <div className="bg-white rounded-lg shadow-lg p-6 w-96">
                                     <h2 className="text-lg font-semibold mb-4">Edit Category</h2>
                                     <input
@@ -449,12 +501,6 @@ export default function DashboardAdmin() {
                                         placeholder="Category Name"
                                         value={form.name}
                                         onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                        className="w-full border p-2 rounded mb-3 text-sm"
-                                    />
-                                    <textarea
-                                        placeholder="Description"
-                                        value={form.desc}
-                                        onChange={(e) => setForm({ ...form, desc: e.target.value })}
                                         className="w-full border p-2 rounded mb-3 text-sm"
                                     />
                                     <div className="flex justify-end gap-2">
@@ -478,53 +524,6 @@ export default function DashboardAdmin() {
                 )}
 
             </div>
-
-            {/* Modal Edit */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-[400px] shadow-lg">
-                        <h2 className="text-lg font-semibold mb-4">Edit Profile</h2>
-                        <div className="space-y-3">
-                            <div>
-                                <label className="text-sm font-medium">Nama</label>
-                                <input
-                                    type="text"
-                                    defaultValue="Erzy Ahmad Rifa’i"
-                                    className="w-full mt-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Nomor Telepon</label>
-                                <input
-                                    type="text"
-                                    defaultValue="+62 858–7254–3310"
-                                    className="w-full mt-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Email</label>
-                                <input
-                                    type="email"
-                                    defaultValue="erzy.ahmadrifai@schopedia.com"
-                                    className="w-full mt-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-2 mt-5">
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="text-sm px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
-                            >
-                                Batal
-                            </button>
-                            <button className="text-sm px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700">
-                                Simpan
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

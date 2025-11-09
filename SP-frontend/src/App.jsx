@@ -15,6 +15,7 @@ import History from "./pages/buyer/history";
 
 // Admin
 import DashboardAdmin from "./pages/admin/dashboardAdmin";
+import Categories from "./pages/admin/categories";
 
 // Seller
 import DashboardSeller from "./pages/seller/dashboardSeller";
@@ -47,6 +48,7 @@ export default function App() {
 
       {/* Admin */}
       <Route path="/dashboardadmin" element={<DashboardAdmin />} />
+      <Route path="/categories" element={<Categories />} />
 
       {/* Seller */}
       <Route path="/dashboardseller" element={<DashboardSeller />} />
