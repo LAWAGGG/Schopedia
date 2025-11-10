@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getToken } from "../../utils/utils";
 import CardBuyer from "../../components/cardBuyer";
-import Sidebarbuyyer from "../../components/sidebarBuyyer.jsx";
+import Sidebarbuyyer from "../../components/sidebarBuyyer";
 import SearchBar from "../../components/searchBar";
 import { LayoutDashboard, Truck, Wallet, User, ShoppingCart } from "lucide-react";
 import banner from "../../../public/banner2.svg";
