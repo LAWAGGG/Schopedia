@@ -2,12 +2,12 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 
-// Buyer
+// Buyer  
 import Dashboard from "./pages/buyer/dashboard";
 import ProductDetail from "./pages/buyer/ProductDetail";
 import BuyerProfile from "./pages/buyer/profileBuyyer";
 import BuyerOrders from "./pages/buyer/ordersBuyyer";
-import OrderDetail from './pages/buyer/OrderDetail';
+import OrderDetail from "./pages/buyer/orderDetail";
 import BuyerWallet from "./pages/buyer/walletBuyyer";
 import Cart from "./pages/buyer/cart";
 import Topup from "./pages/buyer/Topup";
