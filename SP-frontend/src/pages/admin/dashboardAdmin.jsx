@@ -19,7 +19,8 @@ export default function ProfileAdmin() {
                     },
                 });
                 const data = await res.json();
-                setProfile(data);
+                setProfile(data.own_profile);
+                console.log(data)
             } catch (err) {
                 console.error("Gagal fetch profile:", err);
             } finally {
@@ -106,7 +107,7 @@ export default function ProfileAdmin() {
                                 {/* Left info */}
                                 <div className="flex items-start gap-6">
                                     <img
-                                        src={//profile.image || 
+                                        src={profile.image || 
                                             "default.png"}
                                         alt="profile"
                                         className="w-24 h-24 rounded-full object-cover"
@@ -125,12 +126,12 @@ export default function ProfileAdmin() {
                                                 <Phone size={14} className="mr-2 text-gray-600" />
                                                 Phone
                                             </div>
-                                            <p className="text-gray-700 text-sm">Null</p>
+                                            <p className="text-gray-700 text-sm">{profile.phone_number}</p>
                                         </div>
 
                                         <div>
                                             <p className="text-sm font-medium mb-1">Permissions</p>
-                                            <p className="text-gray-700 text-sm">Null</p>
+                                            <p className="text-gray-700 text-sm">Full Access</p>
                                         </div>
                                     </div>
                                 </div>

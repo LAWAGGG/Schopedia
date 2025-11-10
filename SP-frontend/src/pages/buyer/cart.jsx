@@ -311,7 +311,7 @@ export default function Cart() {
                                             <div className="flex items-center gap-4 mt-2">
                                                 <div className="flex items-center border border-gray-300 rounded-full bg-white">
                                                     <button
-                                                        onClick={() => updateQuantity(item.id, qty - 1)}
+                                                        onClick={() => updateQuantity(item.product.id, qty - 1)}
                                                         disabled={isUpdating || qty <= 1}
                                                         className="w-8 h-8 flex items-center justify-center text-lg text-gray-600 hover:bg-gray-100 rounded-l-full disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
@@ -321,7 +321,7 @@ export default function Cart() {
                                                         {isUpdating ? "..." : qty}
                                                     </span>
                                                     <button
-                                                        onClick={() => updateQuantity(item.id, qty + 1)}
+                                                        onClick={() => updateQuantity(item.product.id, qty + 1)}
                                                         disabled={isUpdating || qty >= stock}
                                                         className="w-8 h-8 flex items-center justify-center text-lg text-gray-600 hover:bg-gray-100 rounded-r-full disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
@@ -335,7 +335,7 @@ export default function Cart() {
                                         </div>
 
                                         <button
-                                            onClick={() => removeItem(item.id)}
+                                            onClick={() => removeItem(item.product.id)}
                                             disabled={isUpdating}
                                             className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
                                             aria-label="Hapus item"

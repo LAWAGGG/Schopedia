@@ -61,14 +61,14 @@ export default function Profile() {
         });
         if (!res.ok) throw new Error("Gagal mengambil data profil.");
         const data = await res.json();
-        console.log(data);
+        console.log(data.own_profile);
 
         setUser({
-          id: data.id || "",
-          name: data.name || "",
-          email: data.email || "",
-          image: data.image
-            ? `${BASE_URL}/${data.image.replace(/^\/?storage\//, 'storage/')}`
+          id: data.own_profile.id || "",
+          name: data.own_profile.name || "",
+          email: data.own_profile.email || "",
+          image: data.own_profile.image
+            ? `${BASE_URL}/${data.own_profile.image.replace(/^\/?storage\//, 'storage/')}`
             : "/default-profile.jpg",
         });
       } catch (err) {
@@ -123,8 +123,8 @@ export default function Profile() {
           email: form.email || prev.email,
           image: form.imageFile
             ? preview
-            : data.image
-              ? `${BASE_URL}/${data.image.replace(/^\/?storage\//, 'storage/')}`
+            : data.own_profile.image
+              ? `${BASE_URL}/${data.own_profile.image.replace(/^\/?storage\//, 'storage/')}`
               : prev.image,
         }));
         setForm(prev => ({ ...prev, password: "" }));

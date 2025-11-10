@@ -309,7 +309,7 @@ export default function Orders() {
                                         <th className="px-6 py-3 font-medium">Product Name</th>
                                         <th className="px-6 py-3 font-medium">Buyer Name</th>
                                         <th className="px-6 py-3 font-medium">Date</th>
-                                        <th className="px-6 py-3 font-medium">Items</th>
+                                        <th className="px-6 py-3 font-medium">Quantity</th>
                                         <th className="px-6 py-3 font-medium">Total</th>
                                         <th className="px-6 py-3 font-medium">Status</th>
                                         <th className="px-6 py-3 font-medium text-right">Action</th>
@@ -331,7 +331,7 @@ export default function Orders() {
                                                         minute: '2-digit'
                                                     })}
                                                 </td>
-                                                <td className="px-6 py-3">{order.quantity} item</td>
+                                                <td className="px-6 py-3">{order.quantity}</td>
                                                 <td className="px-6 py-3">{formatRp(order.total_price)}</td>
                                                 <td className="px-6 py-3">
                                                     <span className={`text-xs px-3 py-1 rounded-full ${statusColor(displayStatus.type)}`}>
