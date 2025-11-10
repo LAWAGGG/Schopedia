@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, Grid2X2, Loader2 } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { Plus, Edit2, Trash2, Grid2X2, Loader2, User, Users } from "lucide-react";
 import { getToken } from "../../utils/utils";
 
 export default function Categories() {
@@ -68,38 +69,34 @@ export default function Categories() {
 
     // Edit kategori
     const handleEdit = async () => {
-    if (!editData || !form.name.trim()) return;
-    setProcessing(true);
-    try {
-        const res = await fetch(`${API_URL}api/category/${editData.id}?name=${encodeURIComponent(form.name)}`, {
-            method: "PUT",
-            headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${getToken()}`,
-            },
-        });
+        if (!editData || !form.name.trim()) return;
+        setProcessing(true);
+        try {
+            const res = await fetch(`${API_URL}api/category/${editData.id}?name=${encodeURIComponent(form.name)}`, {
+                method: "PUT",
+                headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${getToken()}`,
+                },
+            });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Gagal mengedit kategori");
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Gagal mengedit kategori");
 
-        // Update tampilan tanpa reload
-        setCategories((prev) =>
-            prev.map((cat) =>
-                cat.id === editData.id ? { ...cat, name: form.name } : cat
-            )
-        );
+            setCategories((prev) =>
+                prev.map((cat) => (cat.id === editData.id ? { ...cat, name: form.name } : cat))
+            );
 
-        setShowEditModal(false);
-        setForm({ name: "" });
-        setEditData(null);
-    } catch (err) {
-        console.error(err);
-        alert("Gagal memperbarui kategori. Cek endpoint API.");
-    } finally {
-        setProcessing(false);
-    }
-};
-
+            setShowEditModal(false);
+            setForm({ name: "" });
+            setEditData(null);
+        } catch (err) {
+            console.error(err);
+            alert("Gagal memperbarui kategori. Cek endpoint API.");
+        } finally {
+            setProcessing(false);
+        }
+    };
 
     // Hapus kategori
     const handleDelete = async (id, name) => {
@@ -129,7 +126,8 @@ export default function Categories() {
 
     return (
         <div className="bg-gray-50 rounded-lg p-8 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
+            {/* Judul Halaman */}
+            <div className="flex justify-between items-center mb-2">
                 <div>
                     <h2 className="text-sm font-semibold mb-1">Product Categories</h2>
                     <p className="text-sm text-gray-500">
@@ -144,7 +142,48 @@ export default function Categories() {
                 </button>
             </div>
 
-            {/* Skeleton */}
+            {/* Tabs di bawah judul */}
+            <div className="mt-4 mb-6">
+                <div className="bg-gray-200 rounded-full p-1 flex items-center gap-2 w-fit">
+                    <NavLink
+                        to="/dashboardadmin"
+                        className={({ isActive }) =>
+                            `flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all ${isActive
+                                ? "bg-white shadow-sm text-black"
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`
+                        }
+                    >
+                        <User size={16} /> Profile
+                    </NavLink>
+
+                    <NavLink
+                        to="/allaccount"
+                        className={({ isActive }) =>
+                            `flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all ${isActive
+                                ? "bg-white shadow-sm text-black"
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`
+                        }
+                    >
+                        <Users size={16} /> All Account
+                    </NavLink>
+
+                    <NavLink
+                        to="/categories"
+                        className={({ isActive }) =>
+                            `flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all ${isActive
+                                ? "bg-white shadow-sm text-black"
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`
+                        }
+                    >
+                        <Grid2X2 size={16} /> Categories
+                    </NavLink>
+                </div>
+            </div>
+
+            {/* Konten Kategori */}
             {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[...Array(6)].map((_, i) => (
@@ -204,7 +243,7 @@ export default function Categories() {
                 </div>
             )}
 
-            {/* Modal Tambah */}
+            {/* Modal Tambah/Edit */}
             {showAddModal && (
                 <Modal
                     title="Add Category"
@@ -216,8 +255,6 @@ export default function Categories() {
                     submitText="Save"
                 />
             )}
-
-            {/* Modal Edit */}
             {showEditModal && (
                 <Modal
                     title="Edit Category"
@@ -248,7 +285,7 @@ export default function Categories() {
     );
 }
 
-// Komponen Modal Tambah/Edit
+// Modal Tambah/Edit
 function Modal({ title, form, setForm, onCancel, onSubmit, processing, submitText }) {
     return (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">

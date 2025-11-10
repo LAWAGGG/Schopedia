@@ -16,6 +16,7 @@ import History from "./pages/buyer/history";
 // Admin
 import DashboardAdmin from "./pages/admin/dashboardAdmin";
 import Categories from "./pages/admin/categories";
+import AllAccount from "./pages/admin/allaccount";
 
 // Seller
 import DashboardSeller from "./pages/seller/dashboardSeller";
@@ -49,6 +50,7 @@ export default function App() {
       {/* Admin */}
       <Route path="/dashboardadmin" element={<DashboardAdmin />} />
       <Route path="/categories" element={<Categories />} />
+      <Route path="/allaccount" element={<AllAccount />} />
 
       {/* Seller */}
       <Route path="/dashboardseller" element={<DashboardSeller />} />
