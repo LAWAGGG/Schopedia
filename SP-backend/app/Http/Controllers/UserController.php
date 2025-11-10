@@ -19,6 +19,42 @@ class UserController extends Controller
         ]);
     }
 
+    public function ownProfile()
+    {
+        $user = User::where("id", Auth::user()->id)->first();
+
+        if ($user->role == "seller") {
+            return response()->json([
+                "own_profile" => [
+                    "id" => $user->id,
+                    "name" => $user->name,
+                    "email" => $user->email,
+                    "phone_number" => $user->wallet->phone_number,
+                    "role" => $user->role,
+                    "products" => $user->products->map(function ($product) {
+                        return [
+                            "id" => $product->id,
+                            "name" => $product->name,
+                            "category_id" => $product->category_id,
+                            "price" => $product->price,
+                            "image" => url($product->image)
+                        ];
+                    }),
+                ]
+            ]);
+        }
+
+        return response()->json([
+            "own_profile" => [
+                "id" => $user->id,
+                "name" => $user->name,
+                "email" => $user->email,
+                "phone_number" => $user->wallet->phone_number,
+                "role" => $user->role,
+            ]
+        ]);
+    }
+
     public function userProfile($id)
     {
         $user = User::where("id", $id)->with("products")->get();

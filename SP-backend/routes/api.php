@@ -11,9 +11,7 @@ use App\Http\Controllers\WalletController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('api')->get('/user', function (Request $request) {
-    return $request->user();
-})->middleware("auth:sanctum");
+Route::middleware('api')->get('/user', [UserController::class, "ownProfile"])->middleware("auth:sanctum");
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

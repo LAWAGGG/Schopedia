@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
@@ -13,11 +14,11 @@ class CategoryController extends Controller
         $category = Category::with("product")->get();
 
         return response()->json([
-            "Categories"=>$category->map(function($cat){
+            "Categories" => $category->map(function ($cat) {
                 return [
-                    "id"=>$cat->id,
-                    "name"=>$cat->name,
-                    "products_count"=>$cat->product->count(),
+                    "id" => $cat->id,
+                    "name" => $cat->name,
+                    "products_count" => $cat->product->count(),
                 ];
             })
         ]);
@@ -44,31 +45,44 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        if(!$category){
+        if (!$category) {
             return response()->json([
-                'message'=>'category not found'
-            ],404);
+                'message' => 'category not found'
+            ], 404);
         }
 
-        $category->update();
+        $val = Validator::make($request->all(), [
+            "name" => "nullable|string"
+        ]);
+
+        if ($val->fails()) {
+            return response()->json([
+                "message" => "Invalid fields",
+                "errors" => $val->errors()
+            ], 422);
+        }
+
+        $category->update([
+            "name"=>$request->name
+        ]);
 
         return response()->json([
-            "Category"=>$category
+            "Category" => $category
         ]);
     }
 
     public function destroy(Category $category)
     {
-        if(!$category){
+        if (!$category) {
             return response()->json([
-                'message'=>'category not found'
-            ],404);
+                'message' => 'category not found'
+            ], 404);
         }
 
         $category->delete();
 
         return response()->json([
-            "message"=>"category deleted succesfully"
+            "message" => "category deleted succesfully"
         ]);
     }
 }
