@@ -306,7 +306,7 @@ export default function Orders() {
                             <table className="min-w-full text-sm text-gray-600">
                                 <thead className="bg-gray-100 text-gray-700 text-left">
                                     <tr>
-                                        <th className="px-6 py-3 font-medium">Order ID</th>
+                                        <th className="px-6 py-3 font-medium">Product Name</th>
                                         <th className="px-6 py-3 font-medium">Buyer Name</th>
                                         <th className="px-6 py-3 font-medium">Date</th>
                                         <th className="px-6 py-3 font-medium">Items</th>
@@ -320,7 +320,7 @@ export default function Orders() {
                                         const displayStatus = getOrderDisplayStatus(order);
                                         return (
                                             <tr key={order.id} className="border-t hover:bg-gray-50">
-                                                <td className="px-6 py-3">#{order.id}</td>
+                                                <td className="px-6 py-3">{order.product.name}</td>
                                                 <td className="px-6 py-3">{order.buyer?.name || 'N/A'}</td>
                                                 <td className="px-6 py-3">
                                                     {new Date(order.date_ordered).toLocaleDateString('en-US', {
