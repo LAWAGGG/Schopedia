@@ -11,7 +11,9 @@ import {
   Calendar,
   DollarSign,
   Truck,
-  PackageCheck
+  PackageCheck,
+  MapPin,
+  FileText
 } from "lucide-react";
 
 export default function OrderDetail() {
@@ -50,8 +52,10 @@ export default function OrderDetail() {
       }
 
       const data = await response.json();
-      console.log(data)
-      setOrder(data.buyer_order);
+      console.log("Order detail data:", data); // Debug log
+      
+      // Cek struktur response yang benar
+      setOrder(data.buyer_order || data.order || data.data || data);
     } catch (err) {
       console.error("Error fetching order detail:", err);
       setError(err.message);
@@ -283,24 +287,24 @@ export default function OrderDetail() {
                 {getStatusIcon(order.status, order.shipping_status)}
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                    order.status
+                    order.status,
+                    order.shipping_status
                   )}`}
                 >
-                  {order.status === "pending" && "Menunggu Konfirmasi"}
-                  {order.status === "accepted" && "Diterima"}
-                  {order.status === "canceled" && "Dibatalkan"}
-                  {order.status === "completed" && "Selesai"}
+                  {getStatusText(order.status, order.shipping_status)}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
                 <Truck className="w-4 h-4 text-gray-500" />
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getShippingStatusColor(
-                    order.status,
                     order.shipping_status
                   )}`}
                 >
-                  {getStatusText(order.status, order.shipping_status)}                </span>
+                  {order.shipping_status === "pending" && "Menunggu Pengiriman"}
+                  {order.shipping_status === "shipped" && "Sedang Dikirim"}
+                  {order.shipping_status === "delivered" && "Telah Diterima"}
+                </span>
               </div>
             </div>
           </div>
@@ -334,33 +338,53 @@ export default function OrderDetail() {
               </div>
             </div>
 
-            {/* Informasi Pengiriman */}
-            {(order.shipping_status === "shipped" || order.shipping_status === "delivered") && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                  <Truck className="w-5 h-5 mr-2" />
-                  Informasi Pengiriman
-                </h2>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Layanan Pengiriman</p>
-                      <p className="font-medium">{order.delivery_service || "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Nomor Resi</p>
-                      <p className="font-medium">{order.tracking_number || "-"}</p>
+            {/* Informasi Pengiriman & Catatan */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <MapPin className="w-5 h-5 mr-2" />
+                Informasi Pengiriman & Catatan
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Alamat Pengiriman */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2 flex items-center">
+                    <MapPin className="w-4 h-4 mr-2 text-blue-500" />
+                    Alamat Pengiriman
+                  </h3>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-gray-800">{order.location || "Alamat tidak tersedia"}</p>
+                  </div>
+                </div>
+
+                {/* Catatan */}
+                {order.notes && (
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-2 flex items-center">
+                      <FileText className="w-4 h-4 mr-2 text-green-500" />
+                      Catatan Pesanan
+                    </h3>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-gray-800">{order.notes}</p>
                     </div>
                   </div>
-                  {order.location && (
+                )}
+
+                {/* Informasi Pengiriman (jika sudah dikirim) */}
+                {(order.shipping_status === "shipped" || order.shipping_status === "delivered") && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                     <div>
-                      <p className="text-sm text-gray-500">Alamat Pengiriman</p>
-                      <p className="font-medium">{order.location}</p>
+                      <p className="text-sm text-gray-500 font-medium">Layanan Pengiriman</p>
+                      <p className="font-medium text-gray-900">{order.delivery_service || "Belum tersedia"}</p>
                     </div>
-                  )}
-                </div>
+                    <div>
+                      <p className="text-sm text-gray-500 font-medium">Nomor Resi</p>
+                      <p className="font-medium text-gray-900">{order.tracking_number || "Belum tersedia"}</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -369,10 +393,10 @@ export default function OrderDetail() {
               </h2>
               <div className="space-y-2">
                 <p>
-                  <span className="font-medium">Nama:</span> {order.seller?.name}
+                  <span className="font-medium">Nama:</span> {order.seller?.name || "Tidak tersedia"}
                 </p>
                 <p>
-                  <span className="font-medium">Email:</span> {order.seller?.email}
+                  <span className="font-medium">Email:</span> {order.seller?.email || "Tidak tersedia"}
                 </p>
               </div>
             </div>
@@ -395,6 +419,11 @@ export default function OrderDetail() {
                   <span className="font-medium">{order.quantity} item</span>
                 </div>
 
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Harga Satuan</span>
+                  <span className="font-medium">{order.product?.price || order.unit_price}</span>
+                </div>
+
                 <div className="flex justify-between text-lg font-bold mt-4 pt-4 border-t">
                   <span>Total Harga</span>
                   <span className="text-purple-600">{order.total_price}</span>
@@ -406,7 +435,9 @@ export default function OrderDetail() {
                   <Calendar className="w-4 h-4 mr-2" />
                   <span className="text-sm">Tanggal Pesan</span>
                 </div>
-                <p className="text-gray-900">{order.date_ordered}</p>
+                <p className="text-gray-900">
+                  {order.date_ordered || order.created_at || "Tidak tersedia"}
+                </p>
               </div>
             </div>
 

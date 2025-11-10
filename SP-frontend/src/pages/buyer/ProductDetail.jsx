@@ -1,73 +1,149 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getToken } from "../../utils/utils.jsx";
-import { ShoppingCart, ArrowLeft, Check, AlertCircle } from "lucide-react";
+import {
+  ShoppingCart,
+  ArrowLeft,
+  Check,
+  AlertCircle,
+  Plus,
+  Minus,
+  X,
+} from "lucide-react";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [buying, setBuying] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [cartMessage, setCartMessage] = useState({ type: '', text: '' });
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [quantity, setQuantity] = useState(1);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [location, setLocation] = useState("");
   const navigate = useNavigate();
+  const modalRef = useRef(null);
 
-  async function handleAddCart() {
+  // Tutup modal saat klik di luar
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        setShowOrderModal(false);
+      }
+    };
+    if (showOrderModal) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showOrderModal]);
+
+  const increaseQuantity = () => {
+    if (product && quantity < product.stock) setQuantity((prev) => prev + 1);
+  };
+  const decreaseQuantity = () => {
+    if (quantity > 1) setQuantity((prev) => prev - 1);
+  };
+
+  useEffect(() => setQuantity(1), [product]);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
     setAddingToCart(true);
-    setCartMessage({ type: '', text: '' });
+    setMessage({ type: "", text: "" });
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}api/cart/${product.id}/add`, {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}api/cart/${product.id}/add`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ quantity }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Gagal menambahkan ke keranjang");
+      setMessage({ type: "success", text: "Produk ditambahkan ke keranjang!" });
+      setQuantity(1);
+    } catch (err) {
+      setMessage({ type: "error", text: err.message || "Terjadi kesalahan" });
+    } finally {
+      setAddingToCart(false);
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    }
+  };
+
+  const handleOrderNow = () => {
+    const token = getToken();
+    if (!token) {
+      alert("Silakan login terlebih dahulu.");
+      navigate("/");
+      return;
+    }
+    if (!product || product.stock < 1) return;
+    setShowOrderModal(true);
+  };
+
+  const handleConfirmOrder = async () => {
+    if (!location.trim()) {
+      setMessage({ type: "error", text: "Lokasi pengiriman wajib diisi!" });
+      return;
+    }
+
+    setOrderLoading(true);
+    setMessage({ type: "", text: "" });
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}api/order/${product.id}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json', 
-          Accept: "application/json"
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
-          "quantity": 1 //nanti diganti lagi pake input asli
+          quantity: quantity,
+          location: location.trim(),
+          notes: notes.trim() || null,
         }),
       });
 
       const data = await res.json();
-      console.log(data);
 
       if (!res.ok) {
-        if (data.message === "Product already in cart") {
-          setCartMessage({
-            type: 'warning',
-            text: 'Produk sudah ada di keranjang!'
-          });
-        } else {
-          throw new Error(data.message || `Gagal menambahkan ke keranjang (${res.status})`);
-        }
-      } else {
-        setCartMessage({
-          type: 'success',
-          text: 'Produk berhasil ditambahkan ke keranjang!'
-        });
+        throw new Error(data.message || "Gagal membuat pesanan");
       }
+
+      setMessage({
+        type: "success",
+        text: "Pesanan berhasil dikirim! Mengarahkan ke riwayat pesanan...",
+      });
+
+      setTimeout(() => {
+        setShowOrderModal(false);
+        navigate("/ordersBuyyer");
+      }, 2000);
     } catch (err) {
-      console.error("Error adding to cart:", err);
-      setCartMessage({
-        type: 'error',
-        text: err.message || 'Terjadi kesalahan saat menambahkan ke keranjang'
+      console.error("Order error:", err);
+      setMessage({ 
+        type: "error", 
+        text: err.message || "Gagal mengirim pesanan" 
       });
     } finally {
-      setAddingToCart(false);
-      // Hapus pesan setelah 3 detik
-      setTimeout(() => {
-        setCartMessage({ type: '', text: '' });
-      }, 3000);
+      setOrderLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    const fetchProductDetail = async () => {
+    const fetchProduct = async () => {
       try {
         const token = getToken();
-        const response = await fetch(
+        const res = await fetch(
           `${import.meta.env.VITE_API_URL}api/product/${id}`,
           {
             headers: {
@@ -76,91 +152,37 @@ export default function ProductDetail() {
             },
           }
         );
-
-        if (!response.ok)
-          throw new Error(`Gagal ambil produk (status ${response.status})`);
-
-        const res = await response.json();
-        const data = res.data || res.product || (Array.isArray(res) ? res[0] : res);
-        setProduct(data);
+        if (!res.ok) throw new Error(`Gagal memuat produk (status ${res.status})`);
+        const data = await res.json();
+        setProduct(data.data || data.product || data);
       } catch (err) {
-        console.error("Fetch produk error:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchProductDetail();
+    fetchProduct();
   }, [id]);
 
-  const handleBuyNow = async () => {
-    if (!product) return;
-    const token = getToken();
-
-    if (!token) {
-      alert("Kamu harus login terlebih dahulu untuk melakukan pembelian.");
-      navigate("/");
-      return;
-    }
-
-    setBuying(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}api/order/${product.id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            quantity: 1,
-            location: "Jakarta",
-            notes: "Pembelian langsung dari halaman produk",
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message || "Gagal membuat pesanan!");
-        return;
-      }
-
-      alert("Pesanan berhasil dibuat!");
-      navigate("/ordersBuyyer");
-    } catch (err) {
-      console.error("Error waktu beli:", err);
-      alert("Terjadi kesalahan saat membeli produk.");
-    } finally {
-      setBuying(false);
-    }
-  };
-
-  // Fungsi untuk mendapatkan kelas CSS berdasarkan tipe pesan
   const getMessageClass = (type) => {
     switch (type) {
-      case 'success':
-        return 'bg-green-50 border border-green-200 text-green-700';
-      case 'warning':
-        return 'bg-yellow-50 border border-yellow-200 text-yellow-700';
-      case 'error':
-        return 'bg-red-50 border border-red-200 text-red-700';
+      case "success":
+        return "bg-green-50 border border-green-200 text-green-700";
+      case "error":
+        return "bg-red-50 border border-red-200 text-red-700";
+      case "warning":
+        return "bg-yellow-50 border border-yellow-200 text-yellow-700";
       default:
-        return 'bg-gray-50 border border-gray-200 text-gray-700';
+        return "bg-gray-50 border border-gray-200 text-gray-700";
     }
   };
 
-  // Fungsi untuk mendapatkan ikon berdasarkan tipe pesan
   const getMessageIcon = (type) => {
     switch (type) {
-      case 'success':
+      case "success":
         return <Check className="w-4 h-4" />;
-      case 'warning':
-      case 'error':
+      case "error":
+      case "warning":
         return <AlertCircle className="w-4 h-4" />;
       default:
         return null;
@@ -168,94 +190,201 @@ export default function ProductDetail() {
   };
 
   if (loading)
-    return <p className="text-center mt-10 text-gray-600 animate-pulse">Memuat detail produk...</p>;
+    return <p className="text-center mt-10 text-gray-600 animate-pulse">Memuat produk...</p>;
   if (error)
-    return <p className="text-center mt-10 text-red-500 font-medium">Error: {error}</p>;
+    return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
   if (!product)
     return <p className="text-center mt-10 text-gray-500">Produk tidak ditemukan</p>;
 
-  const nama = product.name || "Tanpa Nama";
-  const deskripsi = product.description || "Tidak ada deskripsi";
-  const harga = product.price || 0;
-  const stok = product.stock || "Tidak diketahui";
-  const gambar =
-    product.image?.startsWith("http")
-      ? product.image
-      : `${import.meta.env.VITE_API_URL}${product.image}`;
+  const { name, description, price, stock, image } = product;
+  const gambar = image?.startsWith("http")
+    ? image
+    : `${import.meta.env.VITE_API_URL}${image}`;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center items-start py-8 px-4 sm:px-6">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl overflow-hidden">
-        <div className="relative w-full h-64 sm:h-80 md:h-96">
-          <img src={gambar} alt={nama} className="object-cover w-full h-full" />
-          <button
-            onClick={() => navigate(-1)}
-            className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-white/80 hover:bg-white rounded-full p-2 sm:p-3 shadow-md transition"
-          >
-            <ArrowLeft className="text-gray-800 w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header gambar */}
+      <div className="relative w-full h-48 sm:h-64 bg-gray-100 flex-shrink-0">
+        <img
+          src={gambar}
+          alt={name}
+          className="object-contain w-full h-full p-4"
+        />
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 bg-white/80 hover:bg-white rounded-full p-2.5 shadow-md transition"
+        >
+          <ArrowLeft className="text-gray-800 w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Konten utama — mengisi ruang tengah */}
+      <div className="flex-grow bg-white p-4 sm:p-6">
+        <div className="flex justify-between items-start mb-2">
+          <h2 className="text-2xl font-extrabold text-purple-600">{price}</h2>
+          <p className="text-xs text-gray-500">Stock: {stock}</p>
         </div>
 
-        <div className="p-5 sm:p-7 md:p-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">{nama}</h1>
-          <p className="text-purple-700 text-lg sm:text-xl md:text-2xl font-semibold mb-4">
-            {harga.toLocaleString("id-ID")}
-          </p>
-          <p className="text-gray-700 text-sm sm:text-base leading-relaxed mb-6">{deskripsi}</p>
+        <h1 className="text-xl font-bold text-gray-900 mb-3">{name}</h1>
+        <p className="text-gray-700 text-sm mb-5 leading-relaxed">
+          {description || "Tidak ada deskripsi tersedia."}
+        </p>
 
-          {/* Notifikasi untuk keranjang */}
-          {cartMessage.text && (
-            <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 ${getMessageClass(cartMessage.type)}`}>
-              {getMessageIcon(cartMessage.type)}
-              <span className="text-sm font-medium">{cartMessage.text}</span>
-            </div>
-          )}
+        {message.text && (
+          <div
+            className={`mb-4 p-3 rounded-lg border flex items-center gap-2 ${getMessageClass(
+              message.type
+            )}`}
+          >
+            {getMessageIcon(message.type)}
+            <span className="text-sm font-medium">{message.text}</span>
+          </div>
+        )}
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <p className="text-gray-600 text-sm sm:text-base">
-              Stok: <span className={`font-semibold ${stok < 1 ? 'text-red-500' : 'text-gray-800'}`}>
-                {stok < 1 ? 'Habis' : stok}
-              </span>
-            </p>
+        {/* Quantity */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Jumlah Pembelian:
+          </label>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={decreaseQuantity}
+              disabled={quantity <= 1}
+              className={`p-2 rounded-full border ${
+                quantity <= 1
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+            <span className="text-lg font-semibold min-w-[2rem] text-center">
+              {quantity}
+            </span>
+            <button
+              onClick={increaseQuantity}
+              disabled={quantity >= stock}
+              className={`p-2 rounded-full border ${
+                quantity >= stock
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <button
-                onClick={handleAddCart}
-                disabled={addingToCart || stok < 1}
-                className={`flex items-center justify-center gap-2 ${addingToCart || stok < 1
-                  ? "bg-gray-400 cursor-not-allowed"
+      {/* ✅ TOMBOL DI POLENG BAWAH — BERDAMPINGAN TANPA JARAK */}
+      <div className="bg-white border-t border-gray-200 flex-shrink-0">
+        <div className="max-w-4xl mx-auto px-0 py-0">
+          <div className="flex w-full gap-0">
+            {/* Button Keranjang (biru, ikon saja) */}
+            <button
+              onClick={handleAddToCart}
+              disabled={addingToCart || stock < 1}
+              className={`flex-1 flex items-center justify-center py-3 ${
+                addingToCart || stock < 1
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
+            >
+              {addingToCart ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <ShoppingCart className="w-5 h-5" />
+              )}
+            </button>
+
+            {/* Button Checkout Sekarang (ungu, teks putih) */}
+            <button
+              onClick={handleOrderNow}
+              disabled={stock < 1}
+              className={`flex-1 py-3 font-medium text-white ${
+                stock < 1
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-purple-600 hover:bg-purple-700"
-                  } text-white font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-md transition-all`}
+              }`}
+            >
+              Checkout Sekarang
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal */}
+      {showOrderModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div
+            ref={modalRef}
+            className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 relative"
+          >
+            <button
+              onClick={() => setShowOrderModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Pesan Sekarang</h3>
+
+            <div className="mb-5">
+              <label className="block text-sm text-gray-600 mb-1">
+                Lokasi Pengiriman *
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Jl. Contoh No. 123, Kota"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm text-gray-600 mb-1">
+                Catatan (Opsional)
+              </label>
+              <input
+                type="text"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Contoh: Kirim jam 5 sore, tinggalkan di depan"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowOrderModal(false)}
+                className="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium text-gray-700"
               >
-                {addingToCart ? (
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmOrder}
+                disabled={orderLoading || !location.trim()}
+                className={`flex-1 py-2.5 rounded-lg font-medium text-white ${
+                  orderLoading || !location.trim()
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                }`}
+              >
+                {orderLoading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Menambahkan...
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block mr-2" />
+                    Mengirim...
                   </>
                 ) : (
-                  <>
-                    <ShoppingCart className="w-5 h-5" />
-                    Tambah ke Keranjang
-                  </>
+                  "Kirim Pesanan"
                 )}
-              </button>
-
-              <button
-                onClick={handleBuyNow}
-                disabled={buying || stok < 1}
-                className={`flex items-center justify-center gap-2 ${buying
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : stok < 1
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700"
-                  } text-white font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-md transition-all`}
-              >
-                {buying ? "Memproses..." : stok < 1 ? "Stok Habis" : "Beli Sekarang"}
               </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
