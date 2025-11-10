@@ -65,6 +65,12 @@ class CartController extends Controller
             ], 409);
         }
 
+        if ($product->stock < $request->quantity) {
+            return response()->json([
+                "message" => "Product is out of stock"
+            ],409);
+        }
+
         $cart = Cart::create([
             "product_id" => $product->id,
             "user_id" => Auth::user()->id,

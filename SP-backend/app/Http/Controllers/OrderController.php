@@ -88,7 +88,7 @@ class OrderController extends Controller
                     "tracking_number" => $order->tracking_number ?? '-',
                     "location" => $order->location,
                     "notes" => $order->notes ?? '-',
-                    "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
+                    "date_ordered" => $order->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
                     "product" => [
                         "name" => $order->product->name,
                         "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
@@ -208,7 +208,7 @@ class OrderController extends Controller
                 "shipping_status" => $order->shipping_status,
                 "delivery_service" => $order->delivery_service,
                 "tracking_number" => $order->tracking_number,
-                "date_ordered" => $order->created_at->format('Y-m-d H:i:s')
+                "date_ordered" => $order->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s')
             ]
         ]);
     }
@@ -247,7 +247,7 @@ class OrderController extends Controller
                 "quantity" => $order->quantity,
                 "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
                 "status" => $order->status,
-                "date_ordered" => $order->created_at->format('Y-m-d H:i:s')
+                "date_ordered" => $order->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s')
             ]
 
         ]);
@@ -547,12 +547,20 @@ class OrderController extends Controller
 
         $user = Auth::user();
 
-        $cartItems = Cart::with(['product.user'])
+        $rawCartItems = Cart::with(['product.user'])
             ->where('user_id', $user->id)
             ->get();
 
-        if ($cartItems->isEmpty()) {
+        if ($rawCartItems->isEmpty()) {
             return response()->json(['message' => 'Cart is empty'], 400);
+        }
+
+        $cartItems = $rawCartItems->filter(function ($item) {
+            return $item->product && $item->product->stock > 0;
+        });
+
+        if ($cartItems->isEmpty() && !$rawCartItems->isEmpty()) {
+            return response()->json(['message' => 'All items in cart are out of stock'], 400);
         }
 
         foreach ($cartItems as $item) {
@@ -590,9 +598,8 @@ class OrderController extends Controller
             }
         }
 
-        // PERBAIKAN: Group by user_id (seller_id)
         $groups = $cartItems->groupBy(function ($item) {
-            return $item->product->user_id; // Gunakan user_id sebagai seller_id
+            return $item->product->user_id;
         });
 
         $orders = [];
@@ -605,7 +612,7 @@ class OrderController extends Controller
                 $order = Order::create([
                     'user_id' => $user->id,
                     'product_id' => $item->product_id,
-                    'seller_id' => $sellerId, // ← Sekarang ini harus ada nilai
+                    'seller_id' => $sellerId,
                     'quantity' => $item->quantity,
                     'total_price' => $totalPrice,
                     'location' => $request->location,
@@ -618,7 +625,6 @@ class OrderController extends Controller
             }
         }
 
-        // Clear cart setelah order berhasil dibuat
         Cart::where('user_id', $user->id)->delete();
 
         return response()->json([
