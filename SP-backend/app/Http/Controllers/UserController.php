@@ -31,6 +31,7 @@ class UserController extends Controller
                     "email" => $user->email,
                     "phone_number" => $user->wallet->phone_number,
                     "role" => $user->role,
+                    "image" => url($user->image),
                     "products" => $user->products->map(function ($product) {
                         return [
                             "id" => $product->id,
@@ -49,8 +50,10 @@ class UserController extends Controller
                 "id" => $user->id,
                 "name" => $user->name,
                 "email" => $user->email,
-                "phone_number" => $user->wallet->phone_number,
+                "phone_number" => $user->wallet?->phone_number,
                 "role" => $user->role,
+                "image" => url($user->image),
+
             ]
         ]);
     }
