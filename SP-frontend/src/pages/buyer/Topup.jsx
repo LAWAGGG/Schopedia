@@ -112,7 +112,7 @@ export default function Topup() {
                         <p className="text-gray-600 text-sm mb-6">
                             Saldo sekarang:{" "}
                             <span className="font-semibold text-purple-600">
-                                Rp {walletBalance.toLocaleString("id-ID")}
+                                {walletBalance.toLocaleString("id-ID")}
                             </span>
                         </p>
                     )}
