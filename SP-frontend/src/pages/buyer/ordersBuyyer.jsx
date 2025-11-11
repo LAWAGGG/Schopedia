@@ -200,7 +200,7 @@ export default function OrdersBuyyer() {
   };
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-gray-50">
+    <div className="flex min-h-screen overflow-x-hidden">
       {/* Sidebar */}
       <div className="hidden md:block w-64 bg-white fixed left-0 top-0 bottom-0 z-10">
         <Sidebarbuyyer />
