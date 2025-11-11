@@ -45,13 +45,13 @@ export default function OrdersBuyyer() {
       }
 
       const data = await res.json();
-      
+
       // Debug: Log seluruh response dari API
       console.log("📦 FULL API RESPONSE:", data);
-      
+
       // Coba berbagai kemungkinan struktur data
       let buyerOrders = [];
-      
+
       if (Array.isArray(data.buyer_orders)) {
         buyerOrders = data.buyer_orders;
         console.log("✅ Menggunakan data.buyer_orders");
@@ -70,7 +70,7 @@ export default function OrdersBuyyer() {
       }
 
       console.log(`🎯 Found ${buyerOrders.length} orders`);
-      
+
       // Log detail setiap order
       buyerOrders.forEach((order, index) => {
         console.log(`   Order ${index + 1}:`, {
@@ -95,16 +95,16 @@ export default function OrdersBuyyer() {
 
   useEffect(() => {
     fetchOrders();
-    
+
     // Refresh lebih sering untuk debugging
     const interval = setInterval(fetchOrders, 15000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
   const getStatusIcon = (status) => {
     const statusLower = String(status || '').toLowerCase();
-    
+
     switch (statusLower) {
       case "pending":
       case "menunggu":
@@ -134,7 +134,7 @@ export default function OrdersBuyyer() {
 
   const getStatusColor = (status) => {
     const statusLower = String(status || '').toLowerCase();
-    
+
     switch (statusLower) {
       case "pending":
       case "menunggu":
@@ -164,7 +164,7 @@ export default function OrdersBuyyer() {
 
   const getStatusText = (status) => {
     const statusLower = String(status || '').toLowerCase();
-    
+
     switch (statusLower) {
       case "pending":
       case "menunggu":
@@ -217,20 +217,7 @@ export default function OrdersBuyyer() {
         <div className="h-[80px] md:h-0" />
 
         {/* Debug Info - selalu tampil */}
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm font-medium">Debug Info:</p>
-              <p className="text-xs">Orders: {orders.length} | Loading: {loading.toString()} | Error: {error || 'None'}</p>
-            </div>
-            <button
-              onClick={handleManualRefresh}
-              className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-            >
-              Refresh
-            </button>
-          </div>
-        </div>
+   
 
         {loading ? (
           <div className="flex justify-center items-center min-h-[60vh]">
@@ -271,11 +258,11 @@ export default function OrdersBuyyer() {
                 >
                   Mulai Berbelanja
                 </button>
-                
+
                 {/* Debug empty state */}
                 <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
                   <p className="text-sm text-yellow-700">
-                    💡 Tips: Jika Anda sudah melakukan order tapi tidak muncul di sini, 
+                    💡 Tips: Jika Anda sudah melakukan order tapi tidak muncul di sini,
                     mungkin ada masalah dengan API response structure.
                   </p>
                 </div>
@@ -283,12 +270,6 @@ export default function OrdersBuyyer() {
             ) : (
               <div className="space-y-4 mb-24">
                 {orders.map((order) => {
-                  const productImage = order.product?.image?.startsWith("http")
-                    ? order.product.image
-                    : order.product?.image?.startsWith("/storage")
-                    ? `${import.meta.env.VITE_API_URL}${order.product.image}`
-                    : "/placeholder-product.jpg";
-
                   return (
                     <div
                       key={order.id}
@@ -297,11 +278,11 @@ export default function OrdersBuyyer() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 flex-1">
                           <img
-                            src={productImage}
-                            alt={order.product?.name || "Produk"}
+                            src={order.product.image}
+                            alt={order.product?.name}
                             className="w-16 h-16 object-cover rounded-md"
                             onError={(e) => {
-                              e.target.src = "/placeholder-product.jpg";
+                              e.target.src = `https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk`
                             }}
                           />
                           <div className="flex-1">
@@ -356,36 +337,32 @@ export default function OrdersBuyyer() {
         <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden">
           <button
             onClick={() => navigate("/dashboard")}
-            className={`flex flex-col items-center ${
-              location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"
-            }`}
+            className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"
+              }`}
           >
             <LayoutDashboard size={22} />
             <span className="text-xs mt-1">Home</span>
           </button>
           <button
             onClick={() => navigate("/ordersBuyyer")}
-            className={`flex flex-col items-center ${
-              location.pathname === "/ordersBuyyer" ? "text-purple-600" : "text-gray-500"
-            }`}
+            className={`flex flex-col items-center ${location.pathname === "/ordersBuyyer" ? "text-purple-600" : "text-gray-500"
+              }`}
           >
             <Truck size={22} />
             <span className="text-xs mt-1">Orders</span>
           </button>
           <button
             onClick={() => navigate("/walletBuyyer")}
-            className={`flex flex-col items-center ${
-              location.pathname === "/walletBuyyer" ? "text-purple-600" : "text-gray-500"
-            }`}
+            className={`flex flex-col items-center ${location.pathname === "/walletBuyyer" ? "text-purple-600" : "text-gray-500"
+              }`}
           >
             <Wallet size={22} />
             <span className="text-xs mt-1">Wallet</span>
           </button>
           <button
             onClick={() => navigate("/profileBuyyer")}
-            className={`flex flex-col items-center ${
-              location.pathname === "/profileBuyyer" ? "text-purple-600" : "text-gray-500"
-            }`}
+            className={`flex flex-col items-center ${location.pathname === "/profileBuyyer" ? "text-purple-600" : "text-gray-500"
+              }`}
           >
             <User size={22} />
             <span className="text-xs mt-1">Profile</span>

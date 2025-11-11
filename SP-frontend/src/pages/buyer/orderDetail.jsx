@@ -421,7 +421,7 @@ export default function OrderDetail() {
 
                 <div className="flex justify-between">
                   <span className="text-gray-600">Harga Satuan</span>
-                  <span className="font-medium">{order.product?.price || order.unit_price}</span>
+                  <span className="font-medium">{order.product?.price}</span>
                 </div>
 
                 <div className="flex justify-between text-lg font-bold mt-4 pt-4 border-t">
