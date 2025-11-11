@@ -130,9 +130,9 @@ export default function ProductDetail() {
       }, 2000);
     } catch (err) {
       console.error("Order error:", err);
-      setMessage({ 
-        type: "error", 
-        text: err.message || "Gagal mengirim pesanan" 
+      setMessage({
+        type: "error",
+        text: err.message || "Gagal mengirim pesanan"
       });
     } finally {
       setOrderLoading(false);
@@ -154,6 +154,7 @@ export default function ProductDetail() {
         );
         if (!res.ok) throw new Error(`Gagal memuat produk (status ${res.status})`);
         const data = await res.json();
+        console.log(data)
         setProduct(data.data || data.product || data);
       } catch (err) {
         setError(err.message);
@@ -208,6 +209,7 @@ export default function ProductDetail() {
         <img
           src={gambar}
           alt={name}
+          onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk" }}
           className="object-contain w-full h-full p-4"
         />
         <button
@@ -218,7 +220,6 @@ export default function ProductDetail() {
         </button>
       </div>
 
-      {/* Konten utama — mengisi ruang tengah */}
       <div className="flex-grow bg-white p-4 sm:p-6">
         <div className="flex justify-between items-start mb-2">
           <h2 className="text-2xl font-extrabold text-purple-600">{price}</h2>
@@ -250,11 +251,10 @@ export default function ProductDetail() {
             <button
               onClick={decreaseQuantity}
               disabled={quantity <= 1}
-              className={`p-2 rounded-full border ${
-                quantity <= 1
+              className={`p-2 rounded-full border ${quantity <= 1
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-              }`}
+                }`}
             >
               <Minus className="w-4 h-4" />
             </button>
@@ -264,11 +264,10 @@ export default function ProductDetail() {
             <button
               onClick={increaseQuantity}
               disabled={quantity >= stock}
-              className={`p-2 rounded-full border ${
-                quantity >= stock
+              className={`p-2 rounded-full border ${quantity >= stock
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-              }`}
+                }`}
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -284,11 +283,10 @@ export default function ProductDetail() {
             <button
               onClick={handleAddToCart}
               disabled={addingToCart || stock < 1}
-              className={`flex-1 flex items-center justify-center py-3 ${
-                addingToCart || stock < 1
+              className={`flex-1 flex items-center justify-center py-3 ${addingToCart || stock < 1
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-blue-600 text-white hover:bg-blue-700"
-              }`}
+                }`}
             >
               {addingToCart ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -301,11 +299,10 @@ export default function ProductDetail() {
             <button
               onClick={handleOrderNow}
               disabled={stock < 1}
-              className={`flex-1 py-3 font-medium text-white ${
-                stock < 1
+              className={`flex-1 py-3 font-medium text-white ${stock < 1
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-purple-600 hover:bg-purple-700"
-              }`}
+                }`}
             >
               Checkout Sekarang
             </button>
@@ -366,11 +363,10 @@ export default function ProductDetail() {
               <button
                 onClick={handleConfirmOrder}
                 disabled={orderLoading || !location.trim()}
-                className={`flex-1 py-2.5 rounded-lg font-medium text-white ${
-                  orderLoading || !location.trim()
+                className={`flex-1 py-2.5 rounded-lg font-medium text-white ${orderLoading || !location.trim()
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                }`}
+                  }`}
               >
                 {orderLoading ? (
                   <>

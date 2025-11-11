@@ -19,6 +19,7 @@ export default function OrdersBuyyer() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeFilter, setActiveFilter] = useState("all"); // 'all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,7 +38,6 @@ export default function OrdersBuyyer() {
         },
       });
 
-      // Log response status
       console.log("🔄 Response Status:", res.status);
 
       if (!res.ok) {
@@ -46,10 +46,8 @@ export default function OrdersBuyyer() {
 
       const data = await res.json();
 
-      // Debug: Log seluruh response dari API
       console.log("📦 FULL API RESPONSE:", data);
 
-      // Coba berbagai kemungkinan struktur data
       let buyerOrders = [];
 
       if (Array.isArray(data.buyer_orders)) {
@@ -71,7 +69,6 @@ export default function OrdersBuyyer() {
 
       console.log(`🎯 Found ${buyerOrders.length} orders`);
 
-      // Log detail setiap order
       buyerOrders.forEach((order, index) => {
         console.log(`   Order ${index + 1}:`, {
           id: order.id,
@@ -80,7 +77,7 @@ export default function OrdersBuyyer() {
           quantity: order.quantity,
           total_price: order.total_price,
           date: order.date_ordered,
-          seller_status: order.seller_status // tambahkan field kemungkinan lain
+          shipping_status: order.shipping_status
         });
       });
 
@@ -96,14 +93,21 @@ export default function OrdersBuyyer() {
   useEffect(() => {
     fetchOrders();
 
-    // Refresh lebih sering untuk debugging
     const interval = setInterval(fetchOrders, 15000);
-
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusIcon = (status) => {
-    const statusLower = String(status || '').toLowerCase();
+  const getStatusIcon = (order) => {
+    const statusLower = String(order.status || '').toLowerCase();
+    const shippingStatusLower = String(order.shipping_status || '').toLowerCase();
+
+    if (shippingStatusLower === "delivered" && statusLower === "completed") {
+      return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+    }
+
+    if (shippingStatusLower === "delivered" && statusLower !== "completed") {
+      return <CheckCircle className="w-4 h-4 text-purple-500" />;
+    }
 
     switch (statusLower) {
       case "pending":
@@ -111,7 +115,6 @@ export default function OrdersBuyyer() {
         return <Clock className="w-4 h-4 text-yellow-500" />;
       case "accepted":
       case "confirmed":
-      case "diterima":
       case "dikonfirmasi":
       case "processing":
       case "diproses":
@@ -123,17 +126,22 @@ export default function OrdersBuyyer() {
       case "shipped":
       case "dikirim":
         return <Truck className="w-4 h-4 text-blue-500" />;
-      case "completed":
-      case "selesai":
-      case "done":
-        return <CheckCircle className="w-4 h-4 text-purple-500" />;
       default:
         return <Package className="w-4 h-4 text-gray-500" />;
     }
   };
 
-  const getStatusColor = (status) => {
-    const statusLower = String(status || '').toLowerCase();
+  const getStatusColor = (order) => {
+    const statusLower = String(order.status || '').toLowerCase();
+    const shippingStatusLower = String(order.shipping_status || '').toLowerCase();
+
+    if (shippingStatusLower === "delivered" && statusLower === "completed") {
+      return "bg-emerald-100 text-emerald-800";
+    }
+
+    if (shippingStatusLower === "delivered" && statusLower !== "completed") {
+      return "bg-purple-100 text-purple-800";
+    }
 
     switch (statusLower) {
       case "pending":
@@ -141,7 +149,6 @@ export default function OrdersBuyyer() {
         return "bg-yellow-100 text-yellow-800";
       case "accepted":
       case "confirmed":
-      case "diterima":
       case "dikonfirmasi":
       case "processing":
       case "diproses":
@@ -153,54 +160,106 @@ export default function OrdersBuyyer() {
       case "shipped":
       case "dikirim":
         return "bg-blue-100 text-blue-800";
-      case "completed":
-      case "selesai":
-      case "done":
-        return "bg-purple-100 text-purple-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getStatusText = (status) => {
-    const statusLower = String(status || '').toLowerCase();
+  const getStatusText = (order) => {
+    const statusLower = String(order.status || '').toLowerCase();
+    const shippingStatusLower = String(order.shipping_status || '').toLowerCase();
 
+    if (shippingStatusLower === "delivered" && statusLower === "completed") {
+      return "Completed";
+    }
+
+    if (shippingStatusLower === "delivered" && statusLower !== "completed") {
+      return "Delivered";
+    }
     switch (statusLower) {
       case "pending":
       case "menunggu":
-        return "Menunggu Konfirmasi";
+        return "Pending";
       case "accepted":
       case "confirmed":
-      case "diterima":
       case "dikonfirmasi":
-        return "Diterima Seller";
+        return "Confirmed";
       case "processing":
       case "diproses":
-        return "Sedang Diproses";
+        return "Processing";
       case "canceled":
       case "cancelled":
       case "dibatalkan":
-        return "Dibatalkan";
+        return "Cancelled";
       case "shipped":
       case "dikirim":
-        return "Sedang Dikirim";
-      case "completed":
-      case "selesai":
-      case "done":
-        return "Selesai";
+        return "Shipped";
       default:
-        return status || "Unknown";
+        return order.status || "Unknown";
     }
   };
 
-  // Manual refresh function
+  
+  const filteredOrders = orders.filter(order => {
+    if (activeFilter === "all") return true;
+
+    const statusLower = String(order.status || '').toLowerCase();
+    const shippingStatusLower = String(order.shipping_status || '').toLowerCase();
+
+    const isCompleted = shippingStatusLower === "delivered" && statusLower === "completed";
+    const isDelivered = shippingStatusLower === "delivered" && statusLower !== "completed";
+
+    switch (activeFilter) {
+      case "pending":
+        return ["pending", "menunggu"].includes(statusLower);
+      case "processing":
+        return ["processing", "diproses", "accepted", "confirmed", "dikonfirmasi"].includes(statusLower);
+      case "shipped":
+        return ["shipped", "dikirim"].includes(statusLower) && !isDelivered && !isCompleted;
+      case "delivered":
+        return isDelivered; 
+      case "completed":
+        return isCompleted; 
+      case "cancelled":
+        return ["canceled", "cancelled", "dibatalkan"].includes(statusLower);
+      default:
+        return true;
+    }
+  });
+
   const handleManualRefresh = () => {
     setLoading(true);
     fetchOrders();
   };
 
+  // Mobile-only filter buttons
+  const FilterButtons = () => (
+    <div className="flex flex-wrap gap-2 mb-6">
+      {[
+        { key: "all", label: "All" },
+        { key: "pending", label: "Pending" },
+        { key: "processing", label: "Processing" },
+        { key: "shipped", label: "Shipped" },
+        { key: "delivered", label: "Delivered" },
+        { key: "completed", label: "Completed" },
+        { key: "cancelled", label: "Cancelled" },
+      ].map(({ key, label }) => (
+        <button
+          key={key}
+          onClick={() => setActiveFilter(key)}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === key
+            ? "bg-purple-600 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="flex min-h-screen overflow-x-hidden">
+    <div className="flex min-h-screen overflow-x-hidden bg-gray-50">
       {/* Sidebar */}
       <div className="hidden md:block w-64 bg-white fixed left-0 top-0 bottom-0 z-10">
         <Sidebarbuyyer />
@@ -214,11 +273,7 @@ export default function OrdersBuyyer() {
           <ShoppingBag onClick={() => navigate("/cart")} className="w-6 h-6 text-gray-700" />
         </div>
 
-        <div className="h-[80px] md:h-0" />
-
         {/* Debug Info - selalu tampil */}
-   
-
         {loading ? (
           <div className="flex justify-center items-center min-h-[60vh]">
             <div className="text-center">
@@ -239,94 +294,122 @@ export default function OrdersBuyyer() {
           </div>
         ) : (
           <>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">Pesanan Saya</h1>
-              <p className="text-gray-600 mt-2">Kelola dan lacak pesanan Anda</p>
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">Order History</h1>
             </div>
 
-            {orders.length === 0 ? (
+            {/* Filter Buttons (Mobile Only) */}
+            <div className="md:hidden">
+              <FilterButtons />
+            </div>
+
+            {/* Desktop Filter */}
+            <div className="hidden md:flex flex-wrap gap-3 mb-6">
+              <button
+                onClick={() => setActiveFilter("all")}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === "all"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setActiveFilter("pending")}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === "pending"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                Pending
+              </button>
+              <button
+                onClick={() => setActiveFilter("processing")}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === "processing"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                Processing
+              </button>
+              <button
+                onClick={() => setActiveFilter("shipped")}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === "shipped"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                Shipped
+              </button>
+              <button
+                onClick={() => setActiveFilter("delivered")}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === "delivered"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                Delivered
+              </button>
+              <button
+                onClick={() => setActiveFilter("cancelled")}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === "cancelled"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                Cancelled
+              </button>
+            </div>
+
+            {filteredOrders.length === 0 ? (
               <div className="text-center py-12">
                 <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada pesanan</h3>
-                <p className="text-gray-500 mb-6">
-                  Mulai berbelanja dan pesanan Anda akan muncul di sini
-                </p>
-                <button
-                  onClick={() => navigate("/dashboard")}
-                  className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700"
-                >
-                  Mulai Berbelanja
-                </button>
-
-                {/* Debug empty state */}
-                <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
-                  <p className="text-sm text-yellow-700">
-                    💡 Tips: Jika Anda sudah melakukan order tapi tidak muncul di sini,
-                    mungkin ada masalah dengan API response structure.
-                  </p>
-                </div>
+                <h3 className="text-lg text-gray-500 mb-2">
+                  {activeFilter === "all" ? "Belum ada pesanan" : `Tidak ada pesanan yang sedang ${activeFilter}`}
+                </h3>
               </div>
             ) : (
               <div className="space-y-4 mb-24">
-                {orders.map((order) => {
-                  return (
-                    <div
-                      key={order.id}
-                      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border border-gray-200"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4 flex-1">
-                          <img
-                            src={order.product.image}
-                            alt={order.product?.name}
-                            className="w-16 h-16 object-cover rounded-md"
-                            onError={(e) => {
-                              e.target.src = `https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk`
-                            }}
-                          />
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">
-                              {order.product?.name || "Nama produk tidak tersedia"}
-                            </h3>
-                            <p className="text-gray-600 text-sm">
-                              Jumlah: {order.quantity} × Rp {order.product?.price || 0}
-                            </p>
-                            <p className="text-gray-500 text-sm">
-                              {order.date_ordered ? new Date(order.date_ordered).toLocaleDateString('id-ID') : 'Tanggal tidak tersedia'}
-                            </p>
-                            {/* Debug info untuk setiap order */}
-                            <div className="mt-1 text-xs text-gray-400">
-                              <span>ID: {order.id} | </span>
-                              <span>Status: {order.status}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-4">
-                          <div className="text-right">
-                            <p className="font-bold text-gray-900"> {order.total_price || 0}</p>
-                            <div className="flex items-center justify-end space-x-1 mt-1">
-                              {getStatusIcon(order.status)}
-                              <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                                  order.status
-                                )}`}
-                              >
-                                {getStatusText(order.status)}
-                              </span>
-                            </div>
-                          </div>
-                          <Link
-                            to={`/ordersBuyyer/${order.id}`}
-                            className="flex items-center text-purple-600 hover:text-purple-700 ml-4"
+                {filteredOrders.map((order) => (
+                  <Link
+                    key={order.id}
+                    to={`/ordersBuyyer/${order.id}`}
+                    className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow border border-gray-100"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={order.product.image}
+                        alt={order.product?.name}
+                        className="w-16 h-22 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.target.src = `https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk`;
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {order.product?.name || "Nama produk tidak tersedia"}
+                        </h3>
+                        <p className="text-purple-600 font-medium mt-1">
+                          {order.total_price || 0}
+                        </p>
+                        <div className="flex items-center mt-2">
+                          {getStatusIcon(order)}
+                          <span
+                            className={`ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                              order.status
+                            )}`}
                           >
-                            <ArrowRight className="w-5 h-5" />
-                          </Link>
+                            {getStatusText(order)}
+                          </span>
                         </div>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {order.date_ordered ? new Date(order.date_ordered).toLocaleDateString('id-ID') : 'Tanggal tidak tersedia'}
+                        </p>
                       </div>
+                      <ArrowRight className="w-5 h-5 text-gray-400 self-center" />
                     </div>
-                  );
-                })}
+                  </Link>
+                ))}
               </div>
             )}
           </>
@@ -336,29 +419,25 @@ export default function OrdersBuyyer() {
         <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden">
           <button
             onClick={() => navigate("/dashboard")}
-            className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"
-              }`}
+            className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}
           >
             <LayoutDashboard size={22} />
           </button>
           <button
             onClick={() => navigate("/ordersBuyyer")}
-            className={`flex flex-col items-center ${location.pathname === "/ordersBuyyer" ? "text-purple-600" : "text-gray-500"
-              }`}
+            className={`flex flex-col items-center ${location.pathname === "/ordersBuyyer" ? "text-purple-600" : "text-gray-500"}`}
           >
             <Truck size={22} />
           </button>
           <button
             onClick={() => navigate("/walletBuyyer")}
-            className={`flex flex-col items-center ${location.pathname === "/walletBuyyer" ? "text-purple-600" : "text-gray-500"
-              }`}
+            className={`flex flex-col items-center ${location.pathname === "/walletBuyyer" ? "text-purple-600" : "text-gray-500"}`}
           >
             <Wallet size={22} />
           </button>
           <button
             onClick={() => navigate("/profileBuyyer")}
-            className={`flex flex-col items-center ${location.pathname === "/profileBuyyer" ? "text-purple-600" : "text-gray-500"
-              }`}
+            className={`flex flex-col items-center ${location.pathname === "/profileBuyyer" ? "text-purple-600" : "text-gray-500"}`}
           >
             <User size={22} />
           </button>

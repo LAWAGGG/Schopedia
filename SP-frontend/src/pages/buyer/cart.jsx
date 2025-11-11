@@ -297,7 +297,7 @@ export default function Cart() {
                                             src={item.product?.image || "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk"}
                                             alt={item.product?.name}
                                             className="w-20 h-20 bg-gray-200 rounded-lg object-cover"
-                                            onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/100x100/e0e0e0/a0a0a0?text=Error" }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk" }}
                                         />
                                         
                                         <div className="flex-1">

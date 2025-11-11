@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { getToken } from "../../utils/utils.jsx";
 import {
   Package,
@@ -13,7 +13,7 @@ import {
   Truck,
   PackageCheck,
   MapPin,
-  FileText
+  FileText,
 } from "lucide-react";
 
 export default function OrderDetail() {
@@ -53,7 +53,7 @@ export default function OrderDetail() {
 
       const data = await response.json();
       console.log("Order detail data:", data); // Debug log
-      
+
       // Cek struktur response yang benar
       setOrder(data.buyer_order || data.order || data.data || data);
     } catch (err) {
@@ -93,7 +93,6 @@ export default function OrderDetail() {
         alert(data.message || "Gagal membatalkan pesanan!");
         return;
       }
-      
 
       alert("Pesanan berhasil dibatalkan!");
       navigate("/ordersBuyyer");
@@ -133,7 +132,6 @@ export default function OrderDetail() {
       }
 
       alert("Pesanan berhasil ditandai sebagai diterima!");
-      // Refresh data order
       await fetchOrderDetail();
     } catch (err) {
       console.error("Error marking order as delivered:", err);
@@ -144,22 +142,43 @@ export default function OrderDetail() {
   };
 
   const getStatusIcon = (status, shippingStatus) => {
-    // Prioritaskan shipping_status terlebih dahulu
-    switch (shippingStatus) {
+    const statusLower = String(status || '').toLowerCase();
+    const shippingStatusLower = String(shippingStatus || '').toLowerCase();
+
+    // CASE 1: shipping_status = delivered DAN status = completed -> CheckCircle (Emerald)
+    if (shippingStatusLower === "delivered" && statusLower === "completed") {
+      return <CheckCircle className="w-5 h-5 text-emerald-500" />;
+    }
+
+    // CASE 2: shipping_status = delivered TAPI status belum completed -> CheckCircle (Purple)
+    if (shippingStatusLower === "delivered" && statusLower !== "completed") {
+      return <CheckCircle className="w-5 h-5 text-purple-500" />;
+    }
+
+    // Untuk case lainnya, gunakan logika existing
+    switch (shippingStatusLower) {
       case "delivered":
         return <PackageCheck className="w-5 h-5 text-green-500" />;
       case "shipped":
         return <Truck className="w-5 h-5 text-purple-500" />;
       default:
-        // Fallback ke order status
-        switch (status) {
+        switch (statusLower) {
           case "pending":
+          case "menunggu":
             return <Clock className="w-5 h-5 text-yellow-500" />;
           case "accepted":
+          case "confirmed":
+          case "dikonfirmasi":
+          case "processing":
+          case "diproses":
             return <CheckCircle className="w-5 h-5 text-blue-500" />;
           case "canceled":
+          case "cancelled":
+          case "dibatalkan":
             return <XCircle className="w-5 h-5 text-red-500" />;
           case "completed":
+          case "selesai":
+          case "done":
             return <PackageCheck className="w-5 h-5 text-green-500" />;
           default:
             return <Package className="w-5 h-5 text-gray-500" />;
@@ -168,22 +187,43 @@ export default function OrderDetail() {
   };
 
   const getStatusColor = (status, shippingStatus) => {
-    // Prioritaskan shipping_status
-    switch (shippingStatus) {
+    const statusLower = String(status || '').toLowerCase();
+    const shippingStatusLower = String(shippingStatus || '').toLowerCase();
+
+    // CASE 1: shipping_status = delivered DAN status = completed -> "Completed" (Emerald)
+    if (shippingStatusLower === "delivered" && statusLower === "completed") {
+      return "bg-emerald-100 text-emerald-800";
+    }
+
+    // CASE 2: shipping_status = delivered TAPI status belum completed -> "Delivered" (Purple)
+    if (shippingStatusLower === "delivered" && statusLower !== "completed") {
+      return "bg-purple-100 text-purple-800";
+    }
+
+    // Untuk case lainnya, gunakan logika existing
+    switch (shippingStatusLower) {
       case "delivered":
         return "bg-green-100 text-green-800";
       case "shipped":
         return "bg-purple-100 text-purple-800";
       default:
-        // Fallback ke order status
-        switch (status) {
+        switch (statusLower) {
           case "pending":
+          case "menunggu":
             return "bg-yellow-100 text-yellow-800";
           case "accepted":
+          case "confirmed":
+          case "dikonfirmasi":
+          case "processing":
+          case "diproses":
             return "bg-blue-100 text-blue-800";
           case "canceled":
+          case "cancelled":
+          case "dibatalkan":
             return "bg-red-100 text-red-800";
           case "completed":
+          case "selesai":
+          case "done":
             return "bg-green-100 text-green-800";
           default:
             return "bg-gray-100 text-gray-800";
@@ -191,45 +231,56 @@ export default function OrderDetail() {
     }
   };
 
-  const getShippingStatusColor = (shippingStatus) => {
-    switch (shippingStatus) {
-      case "pending":
-        return "bg-gray-100 text-gray-800";
-      case "shipped":
-        return "bg-purple-100 text-purple-800";
-      case "delivered":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   const getStatusText = (status, shippingStatus) => {
-    switch (shippingStatus) {
+    const statusLower = String(status || '').toLowerCase();
+    const shippingStatusLower = String(shippingStatus || '').toLowerCase();
+
+    // CASE 1: shipping_status = delivered DAN status = completed -> "Completed"
+    if (shippingStatusLower === "delivered" && statusLower === "completed") {
+      return "Completed";
+    }
+
+    // CASE 2: shipping_status = delivered TAPI status belum completed -> "Delivered"
+    if (shippingStatusLower === "delivered" && statusLower !== "completed") {
+      return "Delivered";
+    }
+
+    // Untuk case lainnya, gunakan logika existing
+    switch (shippingStatusLower) {
       case "delivered":
         return "Telah Diterima";
       case "shipped":
         return "Sedang Dikirim";
       default:
-        switch (status) {
+        switch (statusLower) {
           case "pending":
+          case "menunggu":
             return "Menunggu Konfirmasi";
           case "accepted":
+          case "confirmed":
+          case "dikonfirmasi":
             return "Diproses";
+          case "processing":
+          case "diproses":
+            return "Processing";
           case "canceled":
+          case "cancelled":
+          case "dibatalkan":
             return "Dibatalkan";
           case "completed":
+          case "selesai":
+          case "done":
             return "Selesai";
           default:
-            return status;
+            return status || "Unknown";
         }
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gray-50 py-6 px-4">
+        <div className="max-w-md mx-auto">
           <div className="text-center">
             <p className="text-gray-600 animate-pulse">Memuat detail pesanan...</p>
           </div>
@@ -240,8 +291,8 @@ export default function OrderDetail() {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gray-50 py-6 px-4">
+        <div className="max-w-md mx-auto">
           <div className="text-center text-red-500">
             <p>Error: {error || "Order tidak ditemukan"}</p>
             <button
@@ -262,256 +313,264 @@ export default function OrderDetail() {
       ? `${import.meta.env.VITE_API_URL}${order.product.image}`
       : "/placeholder-product.jpg";
 
-  // Cek apakah bisa mark delivered
-  const canMarkDelivered = order.shipping_status === "shipped" && order.status !== "completed" && order.status !== "canceled";
-  // Cek apakah bisa cancel order
-  const canCancelOrder = order.status === "pending";
+  // Tentukan kapan menampilkan informasi pengiriman
+  const shouldShowShippingInfo = order.shipping_status && 
+    order.shipping_status !== "pending" && 
+    order.status !== "pending" && 
+    order.status !== "menunggu";
+
+  const shouldShowSellerInfo = order.seller && Object.keys(order.seller).length > 0;
+
+  // Update kondisi untuk button actions - LEBIH AKURAT
+  const canMarkDelivered = order.shipping_status === "shipped" && 
+    order.status !== "completed" && 
+    order.status !== "canceled" &&
+    order.status !== "pending";
+
+  const canCancelOrder = order.status === "pending" || order.status === "menunggu";
+
+  const statusBadges = [];
+  const statusLower = String(order.status || '').toLowerCase();
+  const shippingStatusLower = String(order.shipping_status || '').toLowerCase();
+
+  if (shippingStatusLower === "delivered" && statusLower === "completed") {
+    statusBadges.push({
+      label: "Completed",
+      color: "bg-emerald-100 text-emerald-800",
+      icon: <CheckCircle className="w-4 h-4 text-emerald-500" />,
+    });
+  }
+  else if (shippingStatusLower === "delivered" && statusLower !== "completed") {
+    statusBadges.push({
+      label: "Delivered",
+      color: "bg-purple-100 text-purple-800",
+      icon: <CheckCircle className="w-4 h-4 text-purple-500" />,
+    });
+  }
+  else if (statusLower === "completed") {
+    statusBadges.push({
+      label: "Completed",
+      color: "bg-green-100 text-green-800",
+      icon: <PackageCheck className="w-4 h-4 text-green-500" />,
+    });
+  }
+  else if (shippingStatusLower === "delivered") {
+    statusBadges.push({
+      label: "Telah Diterima",
+      color: "bg-green-100 text-green-800",
+      icon: <PackageCheck className="w-4 h-4 text-green-500" />,
+    });
+  }
+  else {
+    const statusText = getStatusText(order.status, order.shipping_status);
+    const statusColor = getStatusColor(order.status, order.shipping_status);
+    const statusIcon = getStatusIcon(order.status, order.shipping_status);
+
+    statusBadges.push({
+      label: statusText,
+      color: statusColor,
+      icon: statusIcon,
+    });
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate("/ordersBuyyer")}
-              className="flex items-center text-gray-600 hover:text-gray-800"
+    <div className="min-h-screen bg-gray-50 py-6 px-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => navigate("/ordersBuyyer")}
+          className="flex items-center text-gray-600"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+        </button>
+        <h1 className="text-xl font-bold text-gray-900">Detail Pesanan</h1>
+        <div className="w-5"></div> {/* placeholder for balance */}
+      </div>
+
+      {/* Status Badges */}
+      {statusBadges.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
+          {statusBadges.map((badge, idx) => (
+            <div
+              key={idx}
+              className={`flex items-center px-3 py-1 rounded-full text-xs font-medium ${badge.color}`}
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Kembali
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">Detail Pesanan</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex items-center space-x-2">
-                {getStatusIcon(order.status, order.shipping_status)}
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                    order.status,
-                    order.shipping_status
-                  )}`}
-                >
-                  {getStatusText(order.status, order.shipping_status)}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Truck className="w-4 h-4 text-gray-500" />
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getShippingStatusColor(
-                    order.shipping_status
-                  )}`}
-                >
-                  {order.shipping_status === "pending" && "Menunggu Pengiriman"}
-                  {order.shipping_status === "shipped" && "Sedang Dikirim"}
-                  {order.shipping_status === "delivered" && "Telah Diterima"}
-                </span>
-              </div>
+              {badge.icon}
+              <span className="ml-1">{badge.label}</span>
             </div>
-          </div>
+          ))}
         </div>
+      )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Informasi Produk
-              </h2>
-
-              <div className="flex space-x-4">
-                <img
-                  src={productImage}
-                  alt={order.product?.name}
-                  className="w-20 h-20 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">
-                    {order.product?.name}
-                  </h3>
-                  <p className="text-gray-600 text-sm mt-1">
-                    {order.product?.description}
-                  </p>
-                  <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                    <span>Kategori: {order.product?.category}</span>
-                    <span>Stok: {order.product?.stock}</span>
-                  </div>
-                </div>
-              </div>
+      {/* Informasi Produk Card */}
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+        <div className="flex items-start space-x-3">
+          <img
+            src={productImage}
+            alt={order.product?.name}
+            onError={(e) => {
+              e.target.src = `https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk`;
+            }}
+            className="w-18 h-22 object-cover rounded-lg"
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 text-xl truncate">
+              <Link to={`/product/${order.product?.id}`}>{order.product?.name || "Produk tidak tersedia"}</Link>
+            </h3>
+            <div className="flex items-center text-xs text-gray-500 mt-2">
+              <span>Kategori: {order.product?.category || "N/A"}</span>
+              <span className="mx-2">•</span>
+              <span>Stok: {order.product?.stock || "N/A"}</span>
             </div>
-
-            {/* Informasi Pengiriman & Catatan */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <MapPin className="w-5 h-5 mr-2" />
-                Informasi Pengiriman & Catatan
-              </h2>
-              
-              <div className="space-y-4">
-                {/* Alamat Pengiriman */}
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2 flex items-center">
-                    <MapPin className="w-4 h-4 mr-2 text-blue-500" />
-                    Alamat Pengiriman
-                  </h3>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-gray-800">{order.location || "Alamat tidak tersedia"}</p>
-                  </div>
-                </div>
-
-                {/* Catatan */}
-                {order.notes && (
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2 flex items-center">
-                      <FileText className="w-4 h-4 mr-2 text-green-500" />
-                      Catatan Pesanan
-                    </h3>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-gray-800">{order.notes}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Informasi Pengiriman (jika sudah dikirim) */}
-                {(order.shipping_status === "shipped" || order.shipping_status === "delivered") && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                    <div>
-                      <p className="text-sm text-gray-500 font-medium">Layanan Pengiriman</p>
-                      <p className="font-medium text-gray-900">{order.delivery_service || "Belum tersedia"}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 font-medium">Nomor Resi</p>
-                      <p className="font-medium text-gray-900">{order.tracking_number || "Belum tersedia"}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <User className="w-5 h-5 mr-2" />
-                Informasi Penjual
-              </h2>
-              <div className="space-y-2">
-                <p>
-                  <span className="font-medium">Nama:</span> {order.seller?.name || "Tidak tersedia"}
-                </p>
-                <p>
-                  <span className="font-medium">Email:</span> {order.seller?.email || "Tidak tersedia"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Ringkasan Pesanan
-              </h2>
-
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">ID Pesanan</span>
-                  <span className="font-medium">#{order.id}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Jumlah</span>
-                  <span className="font-medium">{order.quantity} item</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Harga Satuan</span>
-                  <span className="font-medium">{order.product?.price}</span>
-                </div>
-
-                <div className="flex justify-between text-lg font-bold mt-4 pt-4 border-t">
-                  <span>Total Harga</span>
-                  <span className="text-purple-600">{order.total_price}</span>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-6 border-t">
-                <div className="flex items-center text-gray-600 mb-2">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  <span className="text-sm">Tanggal Pesan</span>
-                </div>
-                <p className="text-gray-900">
-                  {order.date_ordered || order.created_at || "Tidak tersedia"}
-                </p>
-              </div>
-            </div>
-
-            {/* Section Aksi */}
-            {(canCancelOrder || canMarkDelivered) && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Aksi</h3>
-                <div className="space-y-3">
-                  {/* Tombol Batalkan Pesanan */}
-                  {canCancelOrder && (
-                    <button
-                      onClick={handleCancelOrder}
-                      disabled={canceling}
-                      className={`w-full ${canceling
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-red-600 hover:bg-red-700"
-                        } text-white font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2`}
-                    >
-                      {canceling ? (
-                        <>
-                          <Clock className="w-4 h-4 animate-spin" />
-                          Membatalkan...
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-4 h-4" />
-                          Batalkan Pesanan
-                        </>
-                      )}
-                    </button>
-                  )}
-
-                  {/* Tombol Konfirmasi Diterima */}
-                  {canMarkDelivered && (
-                    <button
-                      onClick={handleMarkDelivered}
-                      disabled={markingDelivered}
-                      className={`w-full ${markingDelivered
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                        } text-white font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2`}
-                    >
-                      {markingDelivered ? (
-                        <>
-                          <Clock className="w-4 h-4 animate-spin" />
-                          Memproses...
-                        </>
-                      ) : (
-                        <>
-                          <PackageCheck className="w-4 h-4" />
-                          Konfirmasi Pesanan Diterima
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Status Completed */}
-            {(order.status === "completed" || order.shipping_status === "delivered") && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                <div className="flex items-center justify-center gap-2 text-green-700">
-                  <PackageCheck className="w-6 h-6" />
-                  <span className="font-semibold">Pesanan Telah Selesai</span>
-                </div>
-                <p className="text-green-600 text-sm text-center mt-2">
-                  Terima kasih telah berbelanja! Pesanan Anda telah selesai.
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Informasi Pengiriman Card - HANYA TAMPIL JIKA BUKAN PENDING */}
+      {shouldShowShippingInfo && (
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <div className="flex items-center mb-3">
+            <MapPin className="w-5 h-5 text-gray-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-900">Informasi Pengiriman</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <p className="text-[14px] text-gray-500">Layanan Pengiriman</p>
+              <p className="text-[14px] font-medium text-gray-900">{order.delivery_service || "Belum tersedia"}</p>
+            </div>
+            <div>
+              <p className="text-[14px] text-gray-500">Nomor Resi</p>
+              <p className="text-[14px] font-medium text-gray-900">{order.tracking_number || "Belum tersedia"}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Banner Informasi Pending */}
+      {!shouldShowShippingInfo && (
+        <div>
+         
+        </div>
+      )}
+
+      {/* Informasi Penjual Card */}
+      {shouldShowSellerInfo && (
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <div className="flex items-center mb-3">
+            <User className="w-5 h-5 text-gray-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-900">Informasi Penjual</h2>
+          </div>
+          <div className="space-y-1 text-[13px]">
+            <p><span className="text-gray-500">Nama:</span> {order.seller?.name || "Tidak tersedia"}</p>
+            <p><span className="text-gray-500">Email:</span> {order.seller?.email || "Tidak tersedia"}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Ringkasan Pesanan Card */}
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-3">Ringkasan Pesanan</h2>
+        <div className="space-y-2 text-[13px]">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Jumlah</span>
+            <span className="font-medium">{order.quantity} item</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Harga Satuan</span>
+            <span className="font-medium">{order.product?.price}</span>
+          </div>
+          <div className="flex justify-between pt-2 mt-2 border-t">
+            <span className="font-semibold">Total Harga</span>
+            <span className="font-semibold text-purple-600">{order.total_price}</span>
+          </div>
+        </div>
+        <div className="mt-4 pt-3 border-t">
+          <div className="flex items-center text-[13px] text-gray-500">
+            <Calendar className="w-4 h-4 mr-2" />
+            <span>Tanggal Pesan</span>
+          </div>
+          <p className="text-gray-900 text-sm mt-1">
+            {order.date_ordered || order.created_at || "Tidak tersedia"}
+          </p>
+        </div>
+      </div>
+
+      {/* Aksi Button */}
+      {(canCancelOrder || canMarkDelivered) && (
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Aksi</h3>
+          <div className="space-y-2">
+            {canCancelOrder && (
+              <button
+                onClick={handleCancelOrder}
+                disabled={canceling}
+                className={`w-full ${canceling
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-red-700"
+                  } text-white font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2`}
+              >
+                {canceling ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin" />
+                    Membatalkan...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    Batalkan Pesanan
+                  </>
+                )}
+              </button>
+            )}
+            {canMarkDelivered && (
+              <button
+                onClick={handleMarkDelivered}
+                disabled={markingDelivered}
+                className={`w-full ${markingDelivered
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"
+                  } text-white font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2`}
+              >
+                {markingDelivered ? (
+                  <>
+                    <Clock className="w-4 h-4 animate-spin" />
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <PackageCheck className="w-4 h-4" />
+                    Konfirmasi Diterima
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Banner Selesai - HANYA TAMPIL JIKA STATUS SUDAH COMPLETED ATAU DELIVERED */}
+      {(order.status === "completed" || order.shipping_status === "delivered") && (
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
+          <div className="flex items-center gap-2">
+            <PackageCheck className="w-5 h-5 text-purple-600" />
+            <span className="font-semibold text-purple-800">
+              {order.status === "completed" && order.shipping_status === "delivered"
+                ? "Pesanan Telah Selesai"
+                : order.shipping_status === "delivered"
+                  ? "Pesanan Telah Diterima"
+                  : "Pesanan Selesai"}
+            </span>
+          </div>
+          <p className="text-purple-600 text-xs mt-1">
+            {order.status === "completed" && order.shipping_status === "delivered"
+              ? "Terima kasih telah berbelanja! Pesanan Anda telah selesai sepenuhnya."
+              : order.shipping_status === "delivered"
+                ? "Pesanan telah diterima. Menunggu konfirmasi penyelesaian."
+                : "Pesanan telah selesai."}
+          </p>
+        </div>
+      )}
+
     </div>
   );
 }

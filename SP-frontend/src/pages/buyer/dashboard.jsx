@@ -21,12 +21,6 @@ export default function Dashboard() {
   const [category, setCategory] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
-  // const category = [
-  //   "All", "Makanan", "Minuman", "Barang", "Elektronik",
-  //   "Fashion", "Kesehatan", "Aksesoris", "Rumah Tangga", "Lainnya",
-  //   "Kamera", "Gaming", "Buku", "Alat Tulis", "Olahraga"
-  // ];
-
   const banners = [banner, banner3, banner4];
 
   async function fetchCategories() {
@@ -39,7 +33,6 @@ export default function Dashboard() {
       }
     })
     const data = await res.json()
-    console.log(data.Categories)
     setCategory(data.Categories)
   }
 
@@ -195,7 +188,7 @@ export default function Dashboard() {
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
             <button
               onClick={() => setActiveCategory("All")}
-              className={`px-4 py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory === "All"
+              className={`px-4 no-scrollbar py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory === "All"
                 ? "bg-purple-600 text-white border-purple-600"
                 : "border-purple-400 text-purple-600 bg-white"
                 }`}
@@ -226,7 +219,7 @@ export default function Dashboard() {
               <div
                 key={product.id}
                 onClick={() => navigate(`/product/${product.id}`)}
-                className="cursor-pointer"
+                className="flex justify-center"
               >
                 <CardBuyer product={product} />
               </div>
