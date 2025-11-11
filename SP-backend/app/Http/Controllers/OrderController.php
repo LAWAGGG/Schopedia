@@ -208,6 +208,8 @@ class OrderController extends Controller
                 "shipping_status" => $order->shipping_status,
                 "delivery_service" => $order->delivery_service,
                 "tracking_number" => $order->tracking_number,
+                "location"=>$order->location,
+                "notes"=>$order->notes,
                 "date_ordered" => $order->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s')
             ]
         ]);
