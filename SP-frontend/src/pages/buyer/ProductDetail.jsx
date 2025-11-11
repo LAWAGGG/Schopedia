@@ -21,12 +21,12 @@ export default function ProductDetail() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [quantity, setQuantity] = useState(1);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // ← Tambahkan state ini
   const [notes, setNotes] = useState("");
   const [location, setLocation] = useState("");
   const navigate = useNavigate();
   const modalRef = useRef(null);
 
-  // Tutup modal saat klik di luar
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (modalRef.current && !modalRef.current.contains(e.target)) {
@@ -119,15 +119,9 @@ export default function ProductDetail() {
         throw new Error(data.message || "Gagal membuat pesanan");
       }
 
-      setMessage({
-        type: "success",
-        text: "Pesanan berhasil dikirim! Mengarahkan ke riwayat pesanan...",
-      });
+      setShowOrderModal(false);
+      setShowSuccessModal(true); 
 
-      setTimeout(() => {
-        setShowOrderModal(false);
-        navigate("/ordersBuyyer");
-      }, 2000);
     } catch (err) {
       console.error("Order error:", err);
       setMessage({
@@ -219,7 +213,7 @@ export default function ProductDetail() {
             <ArrowLeft className="text-gray-800 w-5 h-5" />
           </button>
         </div>
-        <div className="flex absolute top-4 right-8 bg-purple-500 p-[.6rem] rounded-4xl">
+        <div className="flex absolute top-4 right-6 bg-purple-500 p-[.6rem] rounded-4xl">
           <ShoppingCart onClick={() => navigate("/cart")} className="w-6 h-6 text-white" />
         </div>
       </div>
@@ -244,7 +238,6 @@ export default function ProductDetail() {
           </div>
         )}
 
-        {/* Quantity */}
         <div className="mb-6">
           <div className="flex items-center gap-3">
             <button
@@ -281,7 +274,6 @@ export default function ProductDetail() {
       <div className="bg-white border-t border-gray-200 flex-shrink-0">
         <div className="max-w-4xl mx-auto px-0 py-0">
           <div className="flex w-full gap-0">
-            {/* Button Keranjang (biru, ikon saja) */}
             <button
               onClick={handleAddToCart}
               disabled={addingToCart || stock < 1}
@@ -297,7 +289,6 @@ export default function ProductDetail() {
               )}
             </button>
 
-            {/* Button Checkout Sekarang (ungu, teks putih) */}
             <button
               onClick={handleOrderNow}
               disabled={stock < 1}
@@ -312,7 +303,6 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Modal */}
       {showOrderModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div
@@ -383,6 +373,26 @@ export default function ProductDetail() {
           </div>
         </div>
       )}
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 text-center">
+            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              Selamat, Pesanan Kamu Berhasil di Checkout
+            </h3>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="mt-6 w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition"
+            >
+              Kembali
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
