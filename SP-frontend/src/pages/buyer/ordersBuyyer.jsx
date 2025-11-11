@@ -223,7 +223,6 @@ export default function OrdersBuyyer() {
           <div className="flex justify-center items-center min-h-[60vh]">
             <div className="text-center">
               <p className="text-gray-600 animate-pulse">Memuat daftar pesanan...</p>
-              <p className="text-gray-400 text-sm mt-2">Mengecek API...</p>
             </div>
           </div>
         ) : error ? (
@@ -341,7 +340,6 @@ export default function OrdersBuyyer() {
               }`}
           >
             <LayoutDashboard size={22} />
-            <span className="text-xs mt-1">Home</span>
           </button>
           <button
             onClick={() => navigate("/ordersBuyyer")}
@@ -349,7 +347,6 @@ export default function OrdersBuyyer() {
               }`}
           >
             <Truck size={22} />
-            <span className="text-xs mt-1">Orders</span>
           </button>
           <button
             onClick={() => navigate("/walletBuyyer")}
@@ -357,7 +354,6 @@ export default function OrdersBuyyer() {
               }`}
           >
             <Wallet size={22} />
-            <span className="text-xs mt-1">Wallet</span>
           </button>
           <button
             onClick={() => navigate("/profileBuyyer")}
@@ -365,7 +361,6 @@ export default function OrdersBuyyer() {
               }`}
           >
             <User size={22} />
-            <span className="text-xs mt-1">Profile</span>
           </button>
         </div>
       </div>
