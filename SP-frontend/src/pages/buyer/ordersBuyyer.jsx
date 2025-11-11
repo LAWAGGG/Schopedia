@@ -266,12 +266,7 @@ export default function OrdersBuyyer() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 md:ml-64 px-3 pt-[65px] md:pt-[90px] md:px-8 max-w-full overflow-hidden relative">
-        {/* Mobile Header */}
-        <div className="fixed top-0 left-0 right-0 z-40 bg-white flex items-center justify-between px-4 py-2 shadow-sm md:hidden">
-          <img src="/Schopediagg.png" alt="Schopedia" className="h-8 object-contain" />
-          <ShoppingBag onClick={() => navigate("/cart")} className="w-6 h-6 text-gray-700" />
-        </div>
+      <div className="flex-1 md:ml-64 px-3 pt-[40px] md:pt-[40px] md:px-8 max-w-full overflow-hidden relative">
 
         {/* Debug Info - selalu tampil */}
         {loading ? (

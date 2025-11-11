@@ -204,32 +204,34 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header gambar */}
-      <div className="relative w-full h-48 sm:h-64 bg-gray-100 flex-shrink-0">
-        <img
-          src={gambar}
-          alt={name}
-          onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk" }}
-          className="object-contain w-full h-full p-4"
-        />
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 bg-white/80 hover:bg-white rounded-full p-2.5 shadow-md transition"
-        >
-          <ArrowLeft className="text-gray-800 w-5 h-5" />
-        </button>
+      <div className="relative w-full bg-gray-100 flex-shrink-0">
+        <div className="relative h-100 sm:h-96 md:h-[28rem] lg:h-[32rem] xl:h-[36rem]">
+          <img
+            src={gambar}
+            alt={name}
+            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk" }}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 bg-white/80 hover:bg-white rounded-full p-2.5 shadow-md transition"
+          >
+            <ArrowLeft className="text-gray-800 w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex absolute top-4 right-8 bg-purple-500 p-[.6rem] rounded-4xl">
+          <ShoppingCart onClick={() => navigate("/cart")} className="w-6 h-6 text-white" />
+        </div>
       </div>
 
+      {/* Content Area */}
       <div className="flex-grow bg-white p-4 sm:p-6">
         <div className="flex justify-between items-start mb-2">
           <h2 className="text-2xl font-extrabold text-purple-600">{price}</h2>
           <p className="text-xs text-gray-500">Stock: {stock}</p>
         </div>
 
-        <h1 className="text-xl font-bold text-gray-900 mb-3">{name}</h1>
-        <p className="text-gray-700 text-sm mb-5 leading-relaxed">
-          {description || "Tidak ada deskripsi tersedia."}
-        </p>
+        <h1 className="text-xl font-bold text-gray-900 mb-5">{name}</h1>
 
         {message.text && (
           <div
@@ -244,16 +246,13 @@ export default function ProductDetail() {
 
         {/* Quantity */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Jumlah Pembelian:
-          </label>
           <div className="flex items-center gap-3">
             <button
               onClick={decreaseQuantity}
               disabled={quantity <= 1}
               className={`p-2 rounded-full border ${quantity <= 1
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
             >
               <Minus className="w-4 h-4" />
@@ -265,17 +264,20 @@ export default function ProductDetail() {
               onClick={increaseQuantity}
               disabled={quantity >= stock}
               className={`p-2 rounded-full border ${quantity >= stock
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
         </div>
+
+        <p className="text-gray-700 text-sm mb-5 leading-relaxed">
+          {description || "Tidak ada deskripsi tersedia."}
+        </p>
       </div>
 
-      {/* ✅ TOMBOL DI POLENG BAWAH — BERDAMPINGAN TANPA JARAK */}
       <div className="bg-white border-t border-gray-200 flex-shrink-0">
         <div className="max-w-4xl mx-auto px-0 py-0">
           <div className="flex w-full gap-0">
@@ -284,8 +286,8 @@ export default function ProductDetail() {
               onClick={handleAddToCart}
               disabled={addingToCart || stock < 1}
               className={`flex-1 flex items-center justify-center py-3 ${addingToCart || stock < 1
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
             >
               {addingToCart ? (
@@ -300,8 +302,8 @@ export default function ProductDetail() {
               onClick={handleOrderNow}
               disabled={stock < 1}
               className={`flex-1 py-3 font-medium text-white ${stock < 1
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-purple-600 hover:bg-purple-700"
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-purple-600 hover:bg-purple-700"
                 }`}
             >
               Checkout Sekarang
@@ -364,8 +366,8 @@ export default function ProductDetail() {
                 onClick={handleConfirmOrder}
                 disabled={orderLoading || !location.trim()}
                 className={`flex-1 py-2.5 rounded-lg font-medium text-white ${orderLoading || !location.trim()
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                   }`}
               >
                 {orderLoading ? (

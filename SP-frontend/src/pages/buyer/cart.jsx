@@ -1,9 +1,10 @@
 import { ArrowLeft, ShoppingCart, Trash2, MapPin, MessageSquare, X, AlertCircle, Check } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getToken } from "../../utils/utils"; 
+import { getToken } from "../../utils/utils";
+import { useNavigate } from "react-router-dom";
 
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/"; 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/";
 
 
 const SuccessPopup = ({ onReturn }) => {
@@ -53,16 +54,17 @@ export default function Cart() {
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  
+
     const [location, setLocation] = useState("");
     const [notes, setNotes] = useState("");
-    const [updatingQuantity, setUpdatingQuantity] = useState(null); 
-    const [error, setError] = useState(null); 
+    const [updatingQuantity, setUpdatingQuantity] = useState(null);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate()
 
     const fetchCart = async () => {
         try {
-            setError(null); 
-            const res = await fetch(`${API_URL}api/cart`, { 
+            setError(null);
+            const res = await fetch(`${API_URL}api/cart`, {
                 headers: {
                     Authorization: `Bearer ${getToken()}`,
                     Accept: "application/json"
@@ -78,7 +80,7 @@ export default function Cart() {
         } catch (error) {
             console.error("Gagal memuat data cart:", error);
             setError(error.message || "Gagal memuat keranjang");
-            setCartData([]); 
+            setCartData([]);
         } finally {
             setLoading(false);
         }
@@ -110,7 +112,7 @@ export default function Cart() {
     };
 
     const updateQuantity = async (cartItemId, newQuantity) => {
-        if (newQuantity < 1) return; 
+        if (newQuantity < 1) return;
 
         setUpdatingQuantity(cartItemId);
         setError(null);
@@ -137,7 +139,7 @@ export default function Cart() {
             setCartData(prev => prev.map(item =>
                 item.id === cartItemId ? { ...item, quantity: newQuantity } : item
             ));
-            
+
         } catch (error) {
             console.error("Error updating quantity:", error);
             setError(error.message || "Terjadi kesalahan saat mengupdate quantity");
@@ -178,13 +180,13 @@ export default function Cart() {
                 throw new Error(data.message || `Checkout gagal (status ${res.status})`);
             }
 
-     
-            setShowCheckoutModal(false); 
+
+            setShowCheckoutModal(false);
             setLocation("");
             setNotes("");
-            await fetchCart(); 
-            setShowSuccessPopup(true); 
-       
+            await fetchCart();
+            setShowSuccessPopup(true);
+
 
         } catch (error) {
             console.error("Error during checkout:", error);
@@ -196,8 +198,8 @@ export default function Cart() {
 
     const handleReturn = () => {
         setShowSuccessPopup(false);
-     
-        window.location.href = "/ordersBuyyer"; 
+
+        window.location.href = "/ordersBuyyer";
     };
 
 
@@ -207,7 +209,7 @@ export default function Cart() {
         return sum + (price * qty);
     }, 0);
 
-  
+
     const formatPrice = (price) => {
         const numPrice = parseFloat(price) || 0;
         return new Intl.NumberFormat('id-ID', {
@@ -222,8 +224,8 @@ export default function Cart() {
         return (
             <div className="min-h-screen bg-white flex flex-col">
                 <div className="flex items-center gap-4 px-4 py-3 border-b">
-                    <button onClick={() => window.location.href = "/dashboard"}> 
-                        <ArrowLeft className="w-6 h-6 text-gray-700" />
+                    <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
+                        <ArrowLeft className="w-6 h-6 text-gray-800" />
                     </button>
                     <h1 className="text-xl font-semibold">Keranjang</h1>
                 </div>
@@ -238,10 +240,10 @@ export default function Cart() {
     if (!cartData || cartData.length === 0) {
         return (
             <div className="min-h-screen bg-white flex flex-col">
-                {showSuccessPopup && <SuccessPopup onReturn={handleReturn} />} {}
+                {showSuccessPopup && <SuccessPopup onReturn={handleReturn} />} { }
                 <div className="flex items-center gap-4 px-4 py-3 border-b">
-                    <button onClick={() => window.location.href = "/dashboard"}>
-                        <ArrowLeft className="w-6 h-6 text-gray-700" />
+                    <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
+                        <ArrowLeft className="w-6 h-6 text-gray-800" />
                     </button>
                     <h1 className="text-xl font-semibold">Keranjang</h1>
                 </div>
@@ -249,7 +251,7 @@ export default function Cart() {
                     <ShoppingCart className="w-16 h-16 text-gray-300" />
                     <p className="text-gray-500 text-lg">Keranjang belanja kosong</p>
                     <button
-                        onClick={() => window.location.href = "/dashboard"} 
+                        onClick={() => window.location.href = "/dashboard"}
                         className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700"
                     >
                         Mulai Belanja
@@ -262,21 +264,21 @@ export default function Cart() {
 
     return (
         <>
-            {}
+            { }
             {showSuccessPopup && <SuccessPopup onReturn={handleReturn} />}
-            
+
             <div className="min-h-screen bg-gray-50">
                 <div className="w-full max-w-lg mx-auto bg-white min-h-screen flex flex-col pb-28">
-                    
-                    {}
+
+                    { }
                     <div className="sticky top-0 bg-white z-10 flex items-center gap-4 px-4 py-3 border-b">
-                        <button onClick={() => window.location.href = "/dashboard"} className="p-1 rounded-full hover:bg-gray-100">
+                        <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
                             <ArrowLeft className="w-6 h-6 text-gray-800" />
                         </button>
                         <h1 className="text-xl font-semibold text-gray-900">Keranjang</h1>
                     </div>
 
-                    {}
+                    { }
                     <div className="flex-1 overflow-y-auto">
                         <div className="p-4">
                             <ErrorMessage message={error} onClose={() => setError(null)} />
@@ -297,9 +299,9 @@ export default function Cart() {
                                             src={item.product?.image || "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk"}
                                             alt={item.product?.name}
                                             className="w-20 h-20 bg-gray-200 rounded-lg object-cover"
-                                            onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk" }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk" }}
                                         />
-                                        
+
                                         <div className="flex-1">
                                             <p className="font-semibold text-base text-gray-800 line-clamp-2">
                                                 {item.product?.name || "Nama Produk"}
@@ -348,7 +350,7 @@ export default function Cart() {
                         </div>
                     </div>
 
-                    {}
+                    { }
                     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10">
                         <div className="w-full max-w-lg mx-auto p-4 flex items-center justify-between gap-4">
                             <div className="flex-1 text-right">
@@ -357,7 +359,7 @@ export default function Cart() {
                                     {formatPrice(total)}
                                 </p>
                             </div>
-                            
+
                             <button
                                 onClick={() => setShowCheckoutModal(true)}
                                 className="bg-purple-600 hover:bg-purple-700 text-white text-base font-semibold py-3 px-6 rounded-full transition-all shadow-md"
@@ -369,7 +371,7 @@ export default function Cart() {
                 </div>
             </div>
 
-            {}
+            { }
             {showCheckoutModal && (
                 <div className="fixed inset-0 bg-black/[.60] flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl w-full max-w-md p-6">
@@ -386,7 +388,7 @@ export default function Cart() {
                         <ErrorMessage message={error} onClose={() => setError(null)} />
 
                         <div className="space-y-4 mt-4">
-                            {}
+                            { }
                             <div>
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                     <MapPin className="w-4 h-4" />
@@ -402,7 +404,7 @@ export default function Cart() {
                                 />
                             </div>
 
-                            {}
+                            { }
                             <div>
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                     <MessageSquare className="w-4 h-4" />
@@ -417,7 +419,7 @@ export default function Cart() {
                                 />
                             </div>
 
-                            {}
+                            { }
                             <div className="bg-gray-50 rounded-lg p-4">
                                 <h3 className="font-semibold text-gray-800 mb-2">Ringkasan Order</h3>
                                 <div className="space-y-1 text-sm">
@@ -432,7 +434,7 @@ export default function Cart() {
                                 </div>
                             </div>
 
-                            {}
+                            { }
                             <div className="flex gap-3 pt-2">
                                 <button
                                     onClick={() => setShowCheckoutModal(false)}
@@ -443,11 +445,10 @@ export default function Cart() {
                                 <button
                                     onClick={handleCheckout}
                                     disabled={checkoutLoading || !location.trim()}
-                                    className={`flex-1 font-semibold py-3 rounded-lg transition-all text-white ${
-                                        checkoutLoading || !location.trim()
-                                            ? "bg-gray-400 cursor-not-allowed"
-                                            : "bg-purple-600 hover:bg-purple-700"
-                                    }`}
+                                    className={`flex-1 font-semibold py-3 rounded-lg transition-all text-white ${checkoutLoading || !location.trim()
+                                        ? "bg-gray-400 cursor-not-allowed"
+                                        : "bg-purple-600 hover:bg-purple-700"
+                                        }`}
                                 >
                                     {checkoutLoading ? (
                                         <div className="flex items-center justify-center gap-2">
