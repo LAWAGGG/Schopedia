@@ -6,9 +6,12 @@ export default function Schobot() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [showQuickReplies, setShowQuickReplies] = useState(true);
     const scrollRef = useRef(null);
 
     const API_KEY = "AIzaSyD24dRI3iP3qn2WdZOoH0kMc21AiWZ0CTE";
+
+    const quickReplies = ["Cara jualan?", "Cek order saya", "Bantuan produk"];
 
     useEffect(() => {
         if (open && messages.length === 0) {
@@ -16,18 +19,14 @@ export default function Schobot() {
         }
     }, [open]);
 
-    // Scroll otomatis ke bawah setiap pesan baru
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
 
-    const handleSend = async () => {
-        if (!prompt.trim()) return;
-        const userMessage = { sender: "user", text: prompt };
-        setMessages((prev) => [...prev, userMessage]);
-        setPrompt("");
+    const sendMessageToBot = async (text) => {
+        setMessages((prev) => [...prev, { sender: "user", text }]);
         setLoading(true);
 
         try {
@@ -43,32 +42,31 @@ export default function Schobot() {
                                 parts: [
                                     {
                                         text: `
-                                            Kamu adalah Schobot, asisten AI untuk aplikasi e-commerce sederhana bernama Schopedia.
-                                            jawab tanpa tanda spesial misal bintang untuk menebalkan teks itu tidak perlu.
-                                            jangan mengulang pengenalan diri kamu,saat pertama kali aja boleh kalo berkali kali jangan terlalu sering kecuali di tanya lagi
-                                            Berikut informasi tentang sistem:
-                                            - Nama toko: Schopedia
-                                            - Fokus: jual beli produk digital & fisik
-                                            - Cara jual: pengguna daftar sebagai seller, tambah produk, pembeli bisa checkout, bayar, dan tracking order.
-                                            - Warna tema: ungu
-                                            - Tugasmu: bantu pengguna menjelaskan fitur, cara jualan, dan hal umum di luar sistem juga.
-                                            -Dibuat oleh:kelompok 1 intek,karllo,erzy,adit sebagai frontend ,faqih sebagai backend dan ladya,andhika sebagai ui/ux designer
+                                                Kamu adalah Schobot, asisten AI untuk aplikasi e-commerce sederhana bernama Schopedia.
+                                                jawab tanpa tanda spesial misal bintang untuk menebalkan teks itu tidak perlu(ini penting).
+                                                jangan mengulang pengenalan diri kamu,saat pertama kali aja boleh kalo berkali kali jangan terlalu sering kecuali di tanya lagi
+                                                Berikut informasi tentang sistem:
+                                                - Nama toko: Schopedia
+                                                - Fokus: jual beli produk digital & fisik
+                                                - Cara jual: pengguna daftar sebagai seller, tambah produk, pembeli bisa checkout, bayar, dan tracking order.
+                                                - Warna tema: ungu
+                                                - Tugasmu: bantu pengguna menjelaskan fitur, cara jualan, dan hal umum di luar sistem juga.
+                                                -Dibuat oleh:kelompok 1 intek,karllo,erzy,adit sebagai frontend ,faqih sebagai backend dan ladya,andhika sebagai ui/ux designer
 
-                                            User: ${prompt}
-                                            `,
+                                                User: ${text}
+                                        `,
                                     },
                                 ],
                             },
                         ],
                     }),
-
                 }
             );
             const data = await res.json();
-            const text =
+            const textBot =
                 data.candidates?.[0]?.content?.parts?.[0]?.text ||
                 "Maaf, saya tidak bisa menjawab itu.";
-            setMessages((prev) => [...prev, { sender: "bot", text }]);
+            setMessages((prev) => [...prev, { sender: "bot", text: textBot }]);
         } catch (err) {
             console.error(err);
             setMessages((prev) => [
@@ -78,6 +76,17 @@ export default function Schobot() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSend = async () => {
+        if (!prompt.trim()) return;
+        await sendMessageToBot(prompt);
+        setPrompt("");
+    };
+
+    const handleQuickReply = async (text) => {
+        setShowQuickReplies(false); // hilangkan tombol
+        await sendMessageToBot(text); // langsung kirim pesan
     };
 
     return (
@@ -104,7 +113,7 @@ export default function Schobot() {
                     {/* Area pesan */}
                     <div
                         ref={scrollRef}
-                        className="flex-1 p-3 overflow-y-auto bg-gray-50 space-y-3 scrollbar-thin scrollbar-thumb-purple-400 scrollbar-track-gray-100"
+                        className="flex-1 p-3 overflow-y-auto bg-gray-50 space-y-3 scrollbar-thin scrollbar-thumb-purple-400 scrollbar-track-gray-100 relative"
                     >
                         {messages.map((msg, i) => (
                             <div
@@ -122,10 +131,25 @@ export default function Schobot() {
                                 Schobot sedang mengetik...
                             </div>
                         )}
+
+                        {/* Quick Replies di atas input */}
+                        {showQuickReplies && messages.length === 1 && (
+                            <div className="absolute bottom-[30px] right-3 flex flex-col gap-2">
+                                {quickReplies.map((q, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleQuickReply(q)}
+                                        className="bg-purple-200 border text-purple-800 px-4 py-2 mt-1 rounded-lg text-sm hover:bg-purple-300 transition w-max shadow-md"
+                                    >
+                                        {q}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Input */}
-                    <div className="p-3 border-t bg-white flex items-center">
+                    <div className="p-3 border-t bg-white flex items-center relative">
                         <input
                             type="text"
                             className="flex-1 p-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -147,29 +171,31 @@ export default function Schobot() {
 
             {/* Animasi */}
             <style jsx>{`
+
+            
         .animate-fadeIn {
-          animation: fadeIn 0.25s ease-in-out;
+            animation: fadeIn 0.25s ease-in-out;
         }
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Custom scrollbar */
         ::-webkit-scrollbar {
-          width: 6px;
+            width: 6px;
         }
         ::-webkit-scrollbar-thumb {
-          background-color: #a855f7;
-          border-radius: 6px;
+            background-color: #a855f7;
+            border-radius: 6px;
         }
-      `}</style>
+        `}</style>
         </>
     );
 }
