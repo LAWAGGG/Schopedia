@@ -6,6 +6,7 @@ import setToken from "../../utils/utils";
 import { getToken } from "../../utils/utils";
 import LoadingScreen from "../../components/loadingProfile";
 import { useNavigate } from "react-router-dom";
+import Schobot from "../../components/Chatbot";
 
 const BASE_URL = "http://localhost:8000";
 
@@ -244,6 +245,7 @@ export default function Profile() {
           </form>
         </div>
       </div>
+      <Schobot />
     </div>
   );
 }
