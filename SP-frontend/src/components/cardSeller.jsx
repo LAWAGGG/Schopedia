@@ -27,7 +27,7 @@ export default function Card({ image, name, price, onEdit, onDelete }) {
             <div className="flex justify-center gap-6">
                 <button
                     onClick={onEdit}
-                    className="border-1 border-gray-400 flex gap-2 items-center text-black text-[11px] px-4 py-1 rounded-sm hover:bg-gray-400 hover:scale-105 transition-all duration-200 shadow-sm"
+                    className="border-1 border-gray-400 flex gap-2 items-center text-black text-[11px] px-4 py-1 rounded-sm hover:bg-gray-100 hover:scale-105 transition-all duration-200 shadow-sm"
                     >
                         <Pen className="w-3 h-3"></Pen>
                     Edit
