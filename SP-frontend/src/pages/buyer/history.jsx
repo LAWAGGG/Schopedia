@@ -8,7 +8,7 @@ import {
     ArrowDownCircle,
     ArrowUpCircle,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import Sidebarbuyyer from "../../components/sidebarBuyyer";
 import { getToken } from "../../utils/utils";
 
@@ -32,9 +32,7 @@ export default function History() {
 
                 if (!res.ok) throw new Error("Gagal memuat riwayat transaksi");
                 const data = await res.json();
-                console.log("DATA FETCHED:", data);
-
-                setTransactions(data["Transaction history"] || []);
+                setTransactions(data.transaction_history || []);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -98,7 +96,7 @@ export default function History() {
                                 : "-";
 
                             return (
-                                <div
+                                <Link to={!isTopup ? `/ordersBuyyer/${trx.order_id}` : ''}
                                     key={trx.id}
                                     className={`flex justify-between items-center border rounded-xl p-4 ${isTopup
                                         ? "border-green-200 bg-green-50"
@@ -131,14 +129,13 @@ export default function History() {
                                         {isTopup ? `+ ${trx.amount}` : `- ${trx.amount}`}
                                     </p>
 
-                                </div>
+                                </Link>
                             );
                         })}
                     </div>
                 )}
             </div>
 
-            {/* Bottom Navbar (mobile) */}
             <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden">
                 <button
                     onClick={() => navigate("/dashboard")}
