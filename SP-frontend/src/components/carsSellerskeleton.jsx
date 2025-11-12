@@ -6,10 +6,10 @@ export default function SkeletonCard() {
             {skeletons.map((_, index) => (
                 <div
                     key={index}
-                    className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse"
+                    className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-50 flex-shrink-0 border border-gray-100 animate-pulse"
                 >
                     {/* Gambar skeleton */}
-                    <div className="w-full h-32 bg-gray-200" />
+                    <div className="w-full h-40 bg-gray-200" />
 
                     {/* Isi skeleton */}
                     <div className="p-2 text-center">

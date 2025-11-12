@@ -228,12 +228,12 @@ export default function Dashboard() {
 
                 <SearchBar title="Product" onSearch={handleSearch} />
 
-                <div className="flex justify-center mb-10 mt-8">
+                <div className="flex justify-end mb-10 mt-8">
                     <button
                         onClick={openCreateModal}
-                        className="bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-4 px-10 rounded-full shadow-lg hover:scale-105 transition-all text-lg"
+                        className="bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-2 px-5 rounded-xl shadow-lg hover:scale-105 transition-all text-lg"
                     >
-                        + Create Product
+                        + Add Product
                     </button>
                 </div>
 
