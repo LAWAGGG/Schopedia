@@ -37,8 +37,31 @@ export default function Schobot() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
+                        contents: [
+                            {
+                                role: "user",
+                                parts: [
+                                    {
+                                        text: `
+                                            Kamu adalah Schobot, asisten AI untuk aplikasi e-commerce sederhana bernama Schopedia.
+                                            jawab tanpa tanda spesial misal bintang untuk menebalkan teks itu tidak perlu.
+                                            jangan mengulang pengenalan diri kamu,saat pertama kali aja boleh kalo berkali kali jangan terlalu sering kecuali di tanya lagi
+                                            Berikut informasi tentang sistem:
+                                            - Nama toko: Schopedia
+                                            - Fokus: jual beli produk digital & fisik
+                                            - Cara jual: pengguna daftar sebagai seller, tambah produk, pembeli bisa checkout, bayar, dan tracking order.
+                                            - Warna tema: ungu
+                                            - Tugasmu: bantu pengguna menjelaskan fitur, cara jualan, dan hal umum di luar sistem juga.
+                                            -Dibuat oleh:kelompok 1 intek,karllo,erzy,adit sebagai frontend ,faqih sebagai backend dan ladya,andhika sebagai ui/ux designer
+
+                                            User: ${prompt}
+                                            `,
+                                    },
+                                ],
+                            },
+                        ],
                     }),
+
                 }
             );
             const data = await res.json();
@@ -87,8 +110,8 @@ export default function Schobot() {
                             <div
                                 key={i}
                                 className={`p-2 rounded-lg max-w-[80%] text-sm break-words ${msg.sender === "user"
-                                        ? "bg-purple-600 text-white self-end ml-auto"
-                                        : "bg-gray-200 text-gray-800"
+                                    ? "bg-purple-600 text-white self-end ml-auto"
+                                    : "bg-gray-200 text-gray-800"
                                     }`}
                             >
                                 {msg.text}
