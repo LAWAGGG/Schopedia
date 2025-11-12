@@ -279,7 +279,7 @@ export default function Dashboard() {
 
                                 <div className="flex justify-end gap-2 mt-4">
                                     <button type="button" onClick={() => setShowModal(false)} className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Batal</button>
-                                    <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">{editingProduct ? "Simpan" : "Tambah"}</button>
+                                    <button type="submit" className="bg-purple-500 text-white px-4 py-1 rounded hover:bg-purple-600">{editingProduct ? "Simpan" : "Tambah"}</button>
                                 </div>
                             </form>
                         </div>
