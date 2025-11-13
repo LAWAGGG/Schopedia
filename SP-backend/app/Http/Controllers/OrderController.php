@@ -52,17 +52,13 @@ class OrderController extends Controller
             "buyer_orders" => $orders->map(function ($order) {
                 return [
                     "id" => $order->id,
-                    "quantity" => $order->quantity,
                     "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
                     "status" => $order->status,
                     "shipping_status" => $order->shipping_status,
                     "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
                     "product" => [
                         "name" => $order->product->name,
-                        "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
-                        "seller" => $order->seller->name,
                         "image" => url($order->product->image) ?? null,
-                        // "image" => "http://localhost:8000/storage" . $order->product->image ?? null,
                     ],
                 ];
             })
@@ -92,7 +88,6 @@ class OrderController extends Controller
                     "product" => [
                         "name" => $order->product->name,
                         "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
-                        "image" => $order->product->image ?? null,
                     ],
                     "buyer" => [
                         "id" => $order->buyer->id,
@@ -190,10 +185,8 @@ class OrderController extends Controller
                 "product" => [
                     "id" => $order->product->id,
                     "name" => $order->product->name,
-                    "description" => $order->product->description,
                     "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
                     "stock" => $order->product->stock,
-                    "date_uploaded" => $order->product->created_at->format('Y-m-d H:i:s'),
                     "image" => url($order->product->image),
                     "category" => $order->product->category->name
                 ],
@@ -329,7 +322,7 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'type' => 'payment',
                 'amount' => $order->total_price,
-                'note' => 'Payment for Order #' . $order->id,
+                'note' => 'Payment for Order Product ' . $order->product->name,
                 'status' => 'success'
             ]);
 

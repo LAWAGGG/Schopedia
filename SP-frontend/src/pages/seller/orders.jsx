@@ -70,7 +70,6 @@ export default function Orders() {
         fetchOrders();
     }, []);
 
-    // Update order status - TANPA menutup modal
     const updateOrderStatus = async (orderId, newStatus) => {
         try {
             setUpdatingStatus(true);
@@ -88,14 +87,11 @@ export default function Orders() {
                 throw new Error(errorData.message || 'Failed to update order');
             }
 
-            // Update local state tanpa fetch ulang semua data
             const updatedOrderResponse = await response.json();
             if (updatedOrderResponse.seller_order) {
-                // Update order yang dipilih di modal
                 setSelectedOrder(updatedOrderResponse.seller_order);
             }
             
-            // Refresh list orders
             await fetchOrders();
             
             alert('Order status updated successfully');
@@ -107,7 +103,6 @@ export default function Orders() {
         }
     };
 
-    // Ship order - TANPA menutup modal
     const shipOrder = async (orderId) => {
         if (!shippingData.delivery_service || !shippingData.tracking_number) {
             alert('Please fill delivery service and tracking number');
@@ -130,7 +125,6 @@ export default function Orders() {
                 throw new Error(errorData.message || 'Failed to ship order');
             }
 
-            // Update local state
             const updatedOrderResponse = await response.json();
             if (updatedOrderResponse.order) {
                 setSelectedOrder(updatedOrderResponse.order);

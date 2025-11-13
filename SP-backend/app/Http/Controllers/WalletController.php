@@ -25,7 +25,6 @@ class WalletController extends Controller
             "my_wallet" => [
                 "id" => $wallet->id,
                 "balance" => "Rp" . number_format($wallet->balance, 2, ',', '.'),
-                "phone_number" => $wallet->phone_number,
                 'user' => [
                     'id' => $wallet->user->id,
                     "name" => $wallet->user->name
@@ -98,23 +97,17 @@ class WalletController extends Controller
         $transaction = Wallet_Transaction::where('wallet_id', $wallet->id)->with(['order.buyer'])->get();
 
         return response()->json([
-            "Transaction history" => $transaction->map(function ($transaction) {
+            "transaction_history" => $transaction->map(function ($transaction) {
                 return [
                     "id" => $transaction->id,
                     "type" => $transaction->type,
-                    "order" => $transaction->order ? [
-                        "user"   => [
-                            "id"   => $transaction->order->buyer->id,
-                            "name" => $transaction->order->buyer->name,
-                        ],
-                        "quantity"    => $transaction->order->quantity,
-                        "total_price" => $transaction->order->total_price,
-                        "status"      => $transaction->order->status,
-                    ] : null,
+                    "order_id" => $transaction->order ?
+                        $transaction->order->id
+                     : null,
                     "amount" => "Rp" . number_format($transaction->amount, 0, ',', '.'),
                     "status" => $transaction->status,
                     "note" => $transaction->note,
-                    "created_at" => $transaction->created_at->format('Y-m-d H:i:s'),
+                    "created_at" => $transaction->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
                 ];
             })
         ]);
