@@ -2,7 +2,7 @@ import '../styles/loading.css';
 
 export default function LoadingScreen() {
     return (
-        <div className="fixed inset-0 z-70 flex items-center justify-center backdrop-blur-md">
+        <div className="fixed ml-55 inset-0 z-70 flex items-center justify-center backdrop-blur-md">
             {/* Card putih di belakang spinner */}
             <div className="flex items-center justify-center bg-white p-6 rounded-xl shadow-lg">
                 {/* Spinner SVG */}

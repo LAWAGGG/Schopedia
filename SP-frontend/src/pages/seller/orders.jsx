@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "../../components/sideBar";
 import Nav from "../../components/profileNav";
 import { Eye, X, CalendarDays, Filter, Truck, Loader2 } from "lucide-react";
+import Schobot from "../../components/Chatbot";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -552,6 +553,7 @@ export default function Orders() {
                     </div>
                 </div>
             )}
+                    <Schobot />
         </div>
     );
 }

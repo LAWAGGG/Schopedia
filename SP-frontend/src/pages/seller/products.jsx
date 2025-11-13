@@ -5,6 +5,7 @@ import { getToken } from "../../utils/utils";
 import Sidebar from "../../components/sideBar";
 import SearchBar from "../../components/searchBar";
 import LoadingScreen from "../../components/loading";
+import Schobot from "../../components/Chatbot";
 
 export default function Dashboard() {
     const [products, setProducts] = useState([]);
@@ -221,7 +222,7 @@ export default function Dashboard() {
             <Sidebar />
             <div className="ml-60 px-6 pb-6 space-y-6 relative">
                 {loading && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
                         <LoadingScreen />
                     </div>
                 )}
@@ -237,7 +238,7 @@ export default function Dashboard() {
                     </button>
                 </div>
 
-                <div className="flex flex-wrap gap-4 ml-6 justify-start mt-8">
+                <div className="flex flex-wrap gap-4 ml-18 justify-start mt-8">
                     {isFetching ? (
                         <CardSkeletons />
                     ) : filteredProducts.length > 0 ? (
@@ -260,7 +261,7 @@ export default function Dashboard() {
 
                 {/* Modal Create/Edit */}
                 {showModal && (
-                    <div className="fixed ml-60 inset-0 bg-black/40 flex items-center justify-center z-40">
+                    <div className="fixed ml-58 inset-0 bg-black/40 flex items-center justify-center z-40">
                         <div className="bg-white p-6 rounded-xl shadow-lg w-96">
                             <h2 className="text-lg font-semibold mb-4">{editingProduct ? "Edit Produk" : "Tambah Produk"}</h2>
                             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -309,6 +310,7 @@ export default function Dashboard() {
                     </div>
                 )}
             </div>
+                    <Schobot />
         </div>
     );
 }

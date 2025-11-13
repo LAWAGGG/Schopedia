@@ -6,6 +6,7 @@ import Profilenav from "../../components/profileNav";
 import { Wallet, PackageSearch, ShoppingCart, Boxes } from 'lucide-react';
 import { getName, getToken } from '../../utils/utils';
 import { useEffect, useState } from "react";
+import Schobot from "../../components/Chatbot";
 
 export default function DashboardSeller() {
     const name = getName();
@@ -111,6 +112,7 @@ export default function DashboardSeller() {
 
                 </div>
             </div>
+                    <Schobot />
         </div>
     );
 }

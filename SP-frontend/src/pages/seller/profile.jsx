@@ -230,14 +230,14 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={e => handleLogout(e)}
-                className="bg-gray-400 flex gap-2 items-center text-white px-5 py-2 rounded-md hover:bg-gray-500 transition"
+                className="bg-white flex gap-2 items-center text-black  border-2 border-purple-500 px-5 py-2 rounded-md hover:bg-gray-200  transition"
               >
                 <LogOut className="w-4 h-4" />
                 Log out
               </button>
               <button
                 type="submit"
-                className="bg-[#3C1848] text-white px-6 py-2 rounded-md hover:bg-gray-200 hover:text-black transition"
+                className="bg-[#9e0bd0] text-white px-6 py-2 rounded-md hover:bg-[#bf00ff]  transition"
               >
                 Save Changes
               </button>

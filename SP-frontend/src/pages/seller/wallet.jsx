@@ -4,6 +4,7 @@ import Sidebar from "../../components/sideBar";
 import Navbar from "../../components/profileNav";
 import { Wallet, History, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { getToken } from "../../utils/utils";
+import Schobot from "../../components/Chatbot";
 
 function formatRp(n) {
     if (typeof n !== "number") return n;
@@ -214,6 +215,7 @@ export default function WalletPage() {
                     )}
                 </div>
             </main>
+                    <Schobot />
         </div>
     );
 }
