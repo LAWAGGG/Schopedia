@@ -1,25 +1,22 @@
 import { useState } from "react";
 import "../../styles/Login.css";
 import { Link, useNavigate } from "react-router-dom";
-import LoadingScreen from "../../components/loading";
-import setToken from '../../utils/utils';
-import { Eye, EyeOff } from "lucide-react";
-
+import setToken from "../../utils/utils";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [remember, setRemember] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
 
-
     async function HandleLogin(e) {
         e.preventDefault();
-        setLoading(true)
+        setLoading(true);
         const res = await fetch(`${import.meta.env.VITE_API_URL}api/login`, {
             method: "POST",
             headers: {
@@ -50,8 +47,7 @@ export default function Login() {
         } else if (res.status === 404) {
             setLoading(false);
             setError("Email atau password salah!");
-        }
-        else if (res.status === 422) {
+        } else if (res.status === 422) {
             setLoading(false);
             setError("Email dan password harus diisi!");
         } else {
@@ -62,7 +58,7 @@ export default function Login() {
 
     return (
         <div className="flex flex-col md:flex-row bg-gradient-to-b from-[#3768C8] to-[#290771] h-screen overflow-hidden">
-            {/* BAGIAN KIRI (hanya muncul di desktop) */}
+            {/* BAGIAN KIRI (desktop) */}
             <div className="hidden md:flex justify-center items-center w-1/2 h-full p-12">
                 <img
                     src="hape.png"
@@ -73,15 +69,15 @@ export default function Login() {
 
             {/* BAGIAN KANAN */}
             <div className="
-                    flex flex-col justify-center items-center 
-                    w-full md:w-1/2 
-                    bg-white 
-                    rounded-none md:rounded-l-[25px]
-                    p-8 md:p-12 
-                    shadow-2xl md:shadow-none 
-                    h-full
-                    overflow-hidden
-                        ">
+                flex flex-col justify-center items-center 
+                w-full md:w-1/2 
+                bg-white 
+                rounded-none md:rounded-l-[25px]
+                p-8 md:p-12 
+                shadow-2xl md:shadow-none 
+                h-full
+                overflow-hidden
+            ">
                 <div className="text-center flex flex-col items-center">
                     <img
                         src="Schopediagg.png"
@@ -112,7 +108,6 @@ export default function Login() {
                         />
                     </div>
 
-                    {/*tombol mata */}
                     <div className="flex flex-col">
                         <label className="text-sm mb-1 font-medium text-gray-700">
                             Password
@@ -148,9 +143,22 @@ export default function Login() {
                     </div>
 
                     <button
-                        className="w-full h-[45px] bg-[#713491] text-white font-medium rounded-md text-[15px] shadow-md hover:bg-[#8f3fc7] hover:scale-[1.03] transition-transform duration-300 active:scale-95"
+                        type="submit"
+                        disabled={loading}
+                        className={`w-full h-[45px] flex justify-center items-center gap-2 
+                            bg-[#713491] text-white font-medium rounded-md text-[15px] 
+                            shadow-md hover:bg-[#8f3fc7] transition-transform duration-300 
+                            ${loading ? "opacity-80 cursor-not-allowed" : "hover:scale-[1.03] active:scale-95"}
+                        `}
                     >
-                        Login
+                        {loading ? (
+                            <>
+                                <Loader2 className="animate-spin" size={20} />
+                                Loading...
+                            </>
+                        ) : (
+                            "Login"
+                        )}
                     </button>
                 </form>
 
@@ -161,11 +169,10 @@ export default function Login() {
                     Create an Account
                 </Link>
 
-                {/* Modal Error */}
                 {error && (
                     <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-opacity-30 z-50">
                         <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs text-center">
-                            <p className=" font-semibold mb-4">{error}</p>
+                            <p className="font-semibold mb-4">{error}</p>
                             <button
                                 onClick={() => setError(null)}
                                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -176,7 +183,6 @@ export default function Login() {
                     </div>
                 )}
             </div>
-            {loading && <LoadingScreen />}
         </div>
     );
 }
