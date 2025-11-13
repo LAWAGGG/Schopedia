@@ -226,11 +226,11 @@ export default function Profile() {
               />
             </div>
 
-            <div className="flex gap-4 justify-center w-full">
+            <div className="flex gap-4 ml-7 justify-center w-full">
               <button
                 type="button"
                 onClick={e => handleLogout(e)}
-                className="bg-white flex gap-2 items-center text-black  border-2 border-purple-500 px-5 py-2 rounded-md hover:bg-gray-200  transition"
+                className="bg-white flex gap-2 items-center  text-black  border-2 border-purple-500 px-8 py-2 rounded-md hover:bg-gray-200  transition"
               >
                 <LogOut className="w-4 h-4" />
                 Log out
