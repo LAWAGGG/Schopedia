@@ -6,7 +6,7 @@ export default function Card({ image, name, price, onEdit, onDelete }) {
             {/* Gambar produk */}
             <div className="relative group">
                 <img
-                    src={image || "https://via.placeholder.com/200"}
+                    src={image}
                     alt={name}
                      onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk` }}
                     className="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-105"

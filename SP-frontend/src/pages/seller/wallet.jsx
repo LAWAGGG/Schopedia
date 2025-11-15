@@ -58,7 +58,8 @@ export default function WalletPage() {
                 });
                 if (!res.ok) throw new Error("Gagal memuat history");
                 const data = await res.json();
-                setTransactions(data["Transaction history"] || []);
+                console.log(data.transaction_history)
+                setTransactions(data.transaction_history || []);
             } catch (err) {
                 console.error("Gagal memuat history:", err);
             } finally {
