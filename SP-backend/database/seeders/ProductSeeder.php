@@ -13,49 +13,50 @@ class ProductSeeder extends Seeder
     {
         $seller1 = User::where('email', 'seller1@schopedia.com')->first();
         $seller2 = User::where('email', 'seller2@schopedia.com')->first();
+
         $categories = Category::all();
 
-        $products = [
-            [
-                'user_id' => $seller1->id,
-                'category_id' => $categories->where('name', 'Makanan')->first()->id,
-                'name' => 'Nasi Goreng Spesial',
-                'description' => 'Nasi goreng dengan topping ayam, telur, dan sosis.',
-                'price' => 15000,
-                'stock' => 30,
-                'image' => '/images/Nasi-Goreng-Spesial/Nasi-Goreng-Spesial.jpg',
-            ],
-            [
-                'user_id' => $seller1->id,
-                'category_id' => $categories->where('name', 'Minuman')->first()->id,
-                'name' => 'Es Teh Manis',
-                'description' => 'Minuman teh manis dingin, segar diminum siang hari.',
-                'price' => 5000,
-                'stock' => 50,
-                'image' => '/images/Es-Teh-Manis/Es-Teh-Manis.jpg',
-            ],
-            [
-                'user_id' => $seller2->id,
-                'category_id' => $categories->where('name', 'Snack')->first()->id,
-                'name' => 'Keripik Pedas',
-                'description' => 'Snack pedas renyah favorit anak muda.',
-                'price' => 10000,
-                'stock' => 40,
-                'image' => '/images/Keripik-Pedas/Keripik-Pedas.jpg',
-            ],
-            [
-                'user_id' => $seller2->id,
-                'category_id' => $categories->where('name', 'Kue')->first()->id,
-                'name' => 'Brownies Lumer',
-                'description' => 'Brownies lembut dengan cokelat meleleh di tengah.',
-                'price' => 20000,
-                'stock' => 25,
-                'image' => '/images/Brownies-Lumer/Brownies-Lumer.jpg',
-            ],
+        if (!$seller1 || !$seller2) {
+            dd('Seller tidak ditemukan, pastikan user seedernya sudah jalan.');
+        }
+
+        $sampleProducts = [
+            'Nasi Goreng Spesial', 'Ayam Geprek Level 5', 'Mie Goreng Telur',
+            'Soto Ayam Bening', 'Bakso Urat Jumbo', 'Seblak Ceker Pedas',
+            'Burger Mini', 'Kentang Goreng Crispy', 'Keripik Pedas',
+            'Coklat Lumer', 'Donat Gula Halus', 'Brownies Lumer',
+            'Es Teh Manis', 'Es Jeruk Segar', 'Milkshake Coklat',
+            'Jus Mangga', 'Jus Alpukat', 'Thai Tea Original',
+            'Taro Boba', 'Matcha Latte', 'Roti Bakar Coklat Keju',
+            'Martabak Mini', 'Pisang Goreng Crispy', 'Batagor Bandung',
+            'Dimsum Ayam', 'Onigiri Tuna Mayo', 'Kimbap Mini',
+            'Spaghetti Bolognese', 'Nugget Ayam 5pcs',
         ];
 
-        foreach ($products as $product) {
-            Product::create($product);
+        $sellers = [
+            $seller1->id,
+            $seller2->id
+        ];
+
+        foreach ($sellers as $sellerId) {
+            foreach ($sampleProducts as $name) {
+
+                $category = $categories->random();
+
+                Product::create([
+                    'user_id' => $sellerId,
+                    'category_id' => $category->id,
+                    'name' => $name,
+                    'description' => 'Produk ' . $name . ' sangat enak dan disukai banyak pelanggan.',
+
+                    // Harga bulat kelipatan seribu
+                    'price' => rand(5, 30) * 1000,
+
+                    'stock' => rand(10, 100),
+
+                    'image' => 'https://picsum.photos/seed/' . urlencode($name . "-" . $sellerId) . '/600/400',
+                ]);
+            }
         }
     }
 }

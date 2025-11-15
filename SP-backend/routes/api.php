@@ -30,7 +30,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //wallet
     Route::get('/wallet', [WalletController::class, "index"]);
-    Route::put('/wallet/topUp', [WalletController::class, "topUp"]);
     Route::get('/wallet/transaction/history', [WalletController::class, "WalletHistory"]);
 
     //Category
@@ -67,6 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/order/buyer/{order_id}', [OrderController::class, 'showOrderBuyer']);
         Route::put('/order/buyer/{order_id}/cancel', [OrderController::class, 'updateAsBuyer']);
         Route::put('/order/buyer/{order_id}/delivered', [OrderController::class, "markDelivered"]);
+        Route::put('/wallet/topUp', [WalletController::class, "topUp"]);
 
         //buyed Product
         Route::get('/product/get/buyed', [OrderController::class, 'BuyedProduct']);
