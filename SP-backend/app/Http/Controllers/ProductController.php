@@ -123,9 +123,10 @@ class ProductController extends Controller
                 "stock" => $product->stock,
                 "image" => asset($product->image),
                 "category" => $product->category->name,
-                "seller"=>[
-                    "id"=>$product->user->id,
-                    "name"=>$product->user->name,
+                "seller" => [
+                    "id" => $product->user->id,
+                    "name" => $product->user->name,
+                    "image" => url($product->user->image),
                 ]
             ]
         ]);

@@ -60,10 +60,24 @@ class UserController extends Controller
 
     public function userProfile($id)
     {
-        $user = User::where("id", $id)->with("products")->get();
+        $user = User::where("id", $id)->with("products")->first();
 
         return response()->json([
-            "user" => $user
+            "user" => [
+                "id" => $user->id,
+                "name" => $user->name,
+                "image" => url($user->image),
+                "products" => $user->products->map(function ($product) {
+                    return [
+                        "id" => $product->id,
+                        "name" => $product->name,
+                        "price" => $product->price,
+                        "price" => $product->price,
+                        "image" => url($product->image),
+                        "category_id" => $product->category_id,
+                    ];
+                })
+            ]
         ]);
     }
 
