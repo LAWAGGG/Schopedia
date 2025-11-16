@@ -361,7 +361,7 @@ export default function OrdersBuyyer() {
               <div className="text-center py-12">
                 <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg text-gray-500 mb-2">
-                  {activeFilter === "all" ? "Belum ada pesanan" : `Tidak ada pesanan yang sedang ${activeFilter}`}
+                  {activeFilter === "all" ? "Belum ada pesanan" : `no orders is ${activeFilter} in here`}
                 </h3>
               </div>
             ) : (

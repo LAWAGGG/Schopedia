@@ -7,6 +7,7 @@ import SearchBar from "../../components/searchBar";
 import { Home, Truck, Wallet, User, ShoppingCart } from "lucide-react";
 import banner from "../../../public/banner2.svg";
 import banner3 from "../../../public/banner3.jpg";
+// import banner4 from "../../../public/banner-schopedia.png";
 import banner4 from "../../../public/banner4.webp";
 
 export default function Dashboard() {
@@ -132,7 +133,7 @@ export default function Dashboard() {
     );
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-white">
+    <div className="flex min-h-screen pt-10 sm:pt-0 overflow-x-hidden bg-white">
       <div className="hidden md:block w-64 bg-white fixed left-0 top-0 bottom-0 z-10">
         <Sidebarbuyyer />
       </div>
@@ -162,7 +163,7 @@ export default function Dashboard() {
                   <img
                     src={img}
                     alt={`Banner ${i}`}
-                    className="w-full h-36 sm:h-58 object-contain select-none rounded-xl"
+                    className="w-full h-36 sm:h-58 object-cover select-none rounded-xl"
                   />
                 </div>
               ))}

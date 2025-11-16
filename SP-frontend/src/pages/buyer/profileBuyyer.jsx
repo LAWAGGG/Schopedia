@@ -22,7 +22,7 @@ const setToken = (token, isLogin, name) => {
   }
 };
 
-const importMetaEnvViteApiUrl = "http://localhost:8000/"
+const API_URL = import.meta.env.VITE_API_URL
 
 
 const Modal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Confirm", cancelText = "Cancel", type = "confirm" }) => {
@@ -171,7 +171,7 @@ export default function ProfileBuyyer() {
                 closeModal();
                 setLoading(true); 
                 try {
-                    const res = await fetch(`${importMetaEnvViteApiUrl}api/logout`, {
+                    const res = await fetch(`${API_URL}api/logout`, {
                         method: 'POST',
                         headers: {
                             "Content-Type": "application/json",
@@ -208,7 +208,7 @@ export default function ProfileBuyyer() {
         async function fetchUser() {
             setLoading(true);
             try {
-                const res = await fetch(`${importMetaEnvViteApiUrl}api/user`, {
+                const res = await fetch(`${API_URL}api/user`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (!res.ok) throw new Error("Gagal mengambil data profil.");
@@ -221,7 +221,7 @@ export default function ProfileBuyyer() {
                     email: data.email || "",
                     image: data.image
                 
-                        ? `${importMetaEnvViteApiUrl}${data.image.replace(/^\/?storage\//, "storage/")}`
+                        ? `${API_URL}${data.image.replace(/^\/?storage\//, "storage/")}`
                         : "https://placehold.co/160x160/713491/ffffff?text=User", 
                 });
                 setForm(prev => ({ ...prev, name: data.name || "", email: data.email || "" }));
@@ -266,7 +266,7 @@ export default function ProfileBuyyer() {
             if (form.password) formData.append("password", form.password);
             if (form.imageFile) formData.append("image", form.imageFile);
 
-            const res = await fetch(`${importMetaEnvViteApiUrl}api/users/update`, {
+            const res = await fetch(`${API_URL}api/users/update`, {
                 method: "POST",
                 headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
                 body: formData,
@@ -279,7 +279,7 @@ export default function ProfileBuyyer() {
                     ...prev,
                     name: form.name || prev.name,
                     email: form.email || prev.email,
-                    image: preview || (data.image ? `${importMetaEnvViteApiUrl}${data.image.replace(/^\/?storage\//, "storage/")}` : prev.image),
+                    image: preview || (data.image ? `${API_URL}${data.image.replace(/^\/?storage\//, "storage/")}` : prev.image),
                 }));
                 
                 setForm((prev) => ({ ...prev, password: "", imageFile: null }));
