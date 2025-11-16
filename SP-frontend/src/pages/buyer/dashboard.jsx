@@ -4,7 +4,7 @@ import { getToken } from "../../utils/utils";
 import CardBuyer from "../../components/cardBuyer";
 import Sidebarbuyyer from "../../components/sidebarBuyyer";
 import SearchBar from "../../components/searchBar";
-import { LayoutDashboard, Truck, Wallet, User, ShoppingCart } from "lucide-react";
+import { Home, Truck, Wallet, User, ShoppingCart } from "lucide-react";
 import banner from "../../../public/banner2.svg";
 import banner3 from "../../../public/banner3.jpg";
 import banner4 from "../../../public/banner4.webp";
@@ -20,20 +20,30 @@ export default function Dashboard() {
   const bannerRef = useRef(null);
   const [category, setCategory] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
 
   const banners = [banner, banner3, banner4];
 
   async function fetchCategories() {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}api/category/get`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${getToken()}`,
-      }
-    })
-    const data = await res.json()
-    setCategory(data.Categories)
+    try {
+      setLoadingCategories(true);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}api/category/get`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${getToken()}`,
+        }
+      })
+      const data = await res.json();
+      setCategory(data.Categories || []);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setCategory([]);
+    } finally {
+      setLoadingCategories(false);
+    }
   }
 
   async function FetchProduct() {
@@ -122,98 +132,100 @@ export default function Dashboard() {
     );
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-gray-50">
-      {/* Sidebar desktop */}
+    <div className="flex min-h-screen overflow-x-hidden bg-white">
       <div className="hidden md:block w-64 bg-white fixed left-0 top-0 bottom-0 z-10">
         <Sidebarbuyyer />
       </div>
 
-      {/* Konten utama */}
-      <div className="flex-1 md:ml-64 px-3 pt-[65px] md:pt-[90px] md:px-8 max-w-full overflow-hidden relative">
+      <div className="flex-1 md:ml-64 px-4 pt-2 pb-24 md:pt-8 md:px-8 max-w-full overflow-hidden relative">
 
-        {/* Header Mobile */}
-        <div className="fixed top-0 left-0 right-0 z-40 bg-white flex items-center justify-between px-4 py-2 shadow-sm md:hidden">
-          <img src="/Schopediagg.png" alt="Schopedia" className="h-8 object-contain" />
-          <ShoppingCart onClick={() => navigate("/cart")} className="w-6 h-6 text-gray-700" />
+        <div className="flex items-center justify-between mb-4 md:hidden">
+          <h1 className="text-2xl font-bold text-gray-800">Welcome</h1>
+          <ShoppingCart onClick={() => navigate("/cart")} className="w-6 h-6 text-purple-600" />
         </div>
 
-        {/* SearchBar untuk semua ukuran */}
-        <div className="absolute top-20 md:top-0 left-0 right-0 md:left-0 px-2 md:px-5">
-          <div className="w-full md:max-w-[95%] mx-auto">
-            <SearchBar title="Dashboard" />
-          </div>
+        <div className="w-full mb-4">
+          <SearchBar title="Search" />
         </div>
 
-        {/* spacer kecil agar konten tidak ketimpa */}
-        <div className="h-[100px] md:h-[30px]" />
-        {/* Banner */}
-        <div className="relative w-full overflow-hidden rounded-xl mb-4 md:mb-6">
-          <div
-            ref={bannerRef}
-            className="flex transition-transform duration-700 ease-in-out"
-            style={{
-              transform: `translateX(-${currentBanner * 100}%)`,
-            }}
-          >
-            {banners.map((img, i) => (
-              <div key={i} className="w-full flex-shrink-0">
-                <img
-                  src={img}
-                  alt={`Banner ${i}`}
-                  className="w-full h-36 sm:h-48 md:h-60 object-contain select-none"
+        <div className="relative w-full overflow-hidden rounded-xl mb-6">
+          <div className="relative w-full overflow-hidden rounded-xl">
+            <div
+              ref={bannerRef}
+              className="flex transition-transform duration-700 ease-in-out"
+              style={{
+                transform: `translateX(-${currentBanner * 100}%)`,
+              }}
+            >
+              {banners.map((img, i) => (
+                <div key={i} className="w-full flex-shrink-0">
+                  <img
+                    src={img}
+                    alt={`Banner ${i}`}
+                    className="w-full h-36 sm:h-58 object-contain select-none rounded-xl"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+              {banners.map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${currentBanner === i
+                    ? "bg-white scale-110"
+                    : "bg-gray-400 scale-90 opacity-50"
+                    }`}
                 />
-              </div>
-            ))}
-          </div>
-
-          {/* Dots indikator */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-            {banners.map((_, i) => (
-              <div
-                key={i}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${currentBanner === i
-                  ? "bg-purple-600 scale-110"
-                  : "bg-gray-300 scale-90"
-                  }`}
-              />
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Kategori */}
         <div className="mb-5 md:mb-8 w-full">
-          <h2 className="text-sm md:text-base font-semibold text-gray-800 mb-2">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">
             Kategori
           </h2>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+            {/* All Category Button */}
             <button
               onClick={() => setActiveCategory("All")}
-              className={`px-4 no-scrollbar py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory === "All"
-                ? "bg-purple-600 text-white border-purple-600"
-                : "border-purple-400 text-purple-600 bg-white"
+              className={`px-5 py-1.5 rounded-xl text-sm flex-shrink-0 ${activeCategory === "All"
+                  ? "bg-purple-600 text-white shadow-md"
+                  : "bg-gray-200 text-gray-700"
                 }`}
             >
-              Semua
+              All
             </button>
 
-            {category.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveCategory(item)}
-                className={`px-4 py-1.5 rounded-full border text-sm flex-shrink-0 ${activeCategory.id === item.id
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "border-purple-400 text-purple-600 bg-white"
-                  }`}
-              >
-                {item.name}
-              </button>
-            ))}
-
+            {loadingCategories ? (
+              <>
+                {[...Array(6)].map((_, index) => (
+                  <div
+                    key={index}
+                    className="w-18 h-8 rounded-xl bg-gray-200 animate-pulse flex-shrink-0"
+                  >
+                  </div>
+                ))}
+              </>
+            ) : (
+              category.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveCategory(item)}
+                  className={`px-5 py-1.5 rounded-xl text-sm flex-shrink-0 ${activeCategory.id === item.id
+                      ? "bg-purple-600 text-white shadow-md"
+                      : "bg-gray-200 text-gray-700"
+                    }`}
+                >
+                  {item.name}
+                </button>
+              ))
+            )}
           </div>
         </div>
 
-        {/* Produk */}
-        <div className="grid grid-cols-2 mb-24 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5">
+        <div className="grid grid-cols-2 mb-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <div
@@ -225,16 +237,18 @@ export default function Dashboard() {
               </div>
             ))
           ) : (
-            <p className="text-gray-500 text-center col-span-full">
-              {isFetching ? "Memuat produk..." : "Tidak ada produk tersedia"}
-            </p>
+            <>
+              <div className="bg-gray-200 rounded-lg h-57 w-43 animate-pulse"></div>
+              <div className="bg-gray-200 rounded-lg h-57 w-43 animate-pulse"></div>
+              <div className="bg-gray-200 rounded-lg h-57 w-43 animate-pulse"></div>
+              <div className="bg-gray-200 rounded-lg h-57 w-43 animate-pulse"></div>
+            </>
           )}
         </div>
 
-        {/* Bottom Navbar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden">
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden z-50">
           <button onClick={() => navigate("/dashboard")} className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}>
-            <LayoutDashboard size={22} />
+            <Home size={22} />
           </button>
           <button onClick={() => navigate("/ordersBuyyer")} className={`flex flex-col items-center ${location.pathname === "/ordersBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
             <Truck size={22} />

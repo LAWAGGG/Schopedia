@@ -13,6 +13,7 @@ import {
   Truck,
   Wallet,
   User,
+  Home,
 } from "lucide-react";
 
 export default function OrdersBuyyer() {
@@ -199,7 +200,7 @@ export default function OrdersBuyyer() {
     }
   };
 
-  
+
   const filteredOrders = orders.filter(order => {
     if (activeFilter === "all") return true;
 
@@ -217,9 +218,9 @@ export default function OrdersBuyyer() {
       case "shipped":
         return ["shipped", "dikirim"].includes(statusLower) && !isDelivered && !isCompleted;
       case "delivered":
-        return isDelivered; 
+        return isDelivered;
       case "completed":
-        return isCompleted; 
+        return isCompleted;
       case "cancelled":
         return ["canceled", "cancelled", "dibatalkan"].includes(statusLower);
       default:
@@ -416,7 +417,7 @@ export default function OrdersBuyyer() {
             onClick={() => navigate("/dashboard")}
             className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}
           >
-            <LayoutDashboard size={22} />
+            <Home size={22} />
           </button>
           <button
             onClick={() => navigate("/ordersBuyyer")}

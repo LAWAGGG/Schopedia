@@ -1,4 +1,4 @@
-import { Pencil, LogOut, LayoutDashboard, Truck, Wallet, User, Loader2, X, AlertCircle, Check } from "lucide-react";
+import { Pencil, LogOut, Home, Truck, Wallet, User, Loader2, X, AlertCircle, Check } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 
@@ -112,7 +112,7 @@ const Sidebarbuyyer = () => {
       
 
             <nav className="flex flex-col space-y-1 flex-grow">
-                <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
+                <SidebarItem to="/dashboard" icon={Home} label="Dashboard" />
                 <SidebarItem to="/ordersBuyyer" icon={Truck} label="Orders" />
                 <SidebarItem to="/walletBuyyer" icon={Wallet} label="E-Wallet" />
                 <SidebarItem to="/profileBuyyer" icon={User} label="Profile" />
@@ -433,7 +433,7 @@ export default function ProfileBuyyer() {
             <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] flex justify-around items-center h-16 md:hidden z-30 p-2 border-t border-gray-200">
                 {
                     [
-                        { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+                        { to: "/dashboard", icon: Home, label: "Dashboard" },
                         { to: "/ordersBuyyer", icon: Truck, label: "Orders" },
                         { to: "/walletBuyyer", icon: Wallet, label: "Wallet" },
                         { to: "/profileBuyyer", icon: User, label: "Profile" }
