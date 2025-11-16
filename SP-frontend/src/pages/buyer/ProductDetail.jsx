@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { getToken } from "../../utils/utils.jsx";
 import {
   ShoppingCart,
@@ -120,7 +120,7 @@ export default function ProductDetail() {
       }
 
       setShowOrderModal(false);
-      setShowSuccessModal(true); 
+      setShowSuccessModal(true);
 
     } catch (err) {
       console.error("Order error:", err);
@@ -149,7 +149,7 @@ export default function ProductDetail() {
         if (!res.ok) throw new Error(`Gagal memuat produk (status ${res.status})`);
         const data = await res.json();
         console.log(data)
-        setProduct(data.data || data.product || data);
+        setProduct(data.product || data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -263,6 +263,43 @@ export default function ProductDetail() {
             >
               <Plus className="w-4 h-4" />
             </button>
+          </div>
+        </div>
+
+        {/* Seller Info Section */}
+        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg mb-5">
+          <div className="flex-shrink-0">
+            <img
+              src={
+                product.seller?.image ||
+                `https://placehold.co/40x40/e0e0e0/a0a0a0?text=${product.seller?.name?.charAt(0).toUpperCase() || "S"
+                }`
+              }
+              alt={product.seller?.name}
+              className="w-10 h-10 rounded-full object-cover border border-gray-200"
+              onError={(e) => {
+                e.target.onerror = null;
+                const initial = product.seller?.name?.charAt(0).toUpperCase() || "S";
+                e.target.src = `https://placehold.co/40x40/e0e0e0/a0a0a0?text=${initial}`;
+              }}
+            />
+
+          </div>
+          <div className="flex-1 min-w-0">
+            <p
+              to={`/product/seller/${product.seller?.id}`}
+              className="text-sm font-medium text-purple-600 hover:text-purple-700 truncate block"
+            >
+              {product.seller?.name || "Seller"}
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <Link
+              to={`/product/seller/${product.seller?.id}`}
+              className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 border border-gray-300 rounded-full transition-colors"
+            >
+              Lihat Toko
+            </Link>
           </div>
         </div>
 

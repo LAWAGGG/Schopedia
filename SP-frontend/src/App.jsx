@@ -29,6 +29,7 @@ import Wallet from "./pages/seller/wallet";
 import SideBar from "./components/sideBar";
 import Policy from "./components/policy";
 import { getToken } from "./utils/utils";
+import ProfileSeller from "./pages/buyer/ProfileSeller";
 
 function ProtectedRoute({ children }) {
   const token = getToken();
@@ -83,6 +84,11 @@ export default function App() {
           <ProductDetail />
         </ProtectedRoute>
       } />
+      <Route path="/product/seller/:id" element={
+        <ProtectedRoute>
+          <ProfileSeller />
+        </ProtectedRoute>
+      } />
       <Route path="/profileBuyyer" element={
         <ProtectedRoute>
           <BuyerProfile />
@@ -119,7 +125,7 @@ export default function App() {
         </ProtectedRoute>
       } />
 
-      {/* Admin - ProtectedRoute dengan requiredRole admin */}
+      {/* Admin */}
       <Route path="/dashboardadmin" element={
         <ProtectedRoute>
           <DashboardAdmin />
@@ -136,7 +142,7 @@ export default function App() {
         </ProtectedRoute>
       } />
 
-      {/* Seller - ProtectedRoute dengan requiredRole seller */}
+      {/* Seller */}
       <Route path="/dashboardseller" element={
         <ProtectedRoute>
           <DashboardSeller />
