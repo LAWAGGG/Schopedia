@@ -433,11 +433,11 @@ export default function ProfileBuyyer() {
             <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] flex justify-around items-center h-16 md:hidden z-30 p-2 border-t border-gray-200">
                 {
                     [
-                        { to: "/dashboard", icon: Home, label: "Dashboard" },
-                        { to: "/ordersBuyyer", icon: Truck, label: "Orders" },
-                        { to: "/walletBuyyer", icon: Wallet, label: "Wallet" },
-                        { to: "/profileBuyyer", icon: User, label: "Profile" }
-                    ].map(({ to, icon: Icon, label }) => (
+                        { to: "/dashboard", icon: Home},
+                        { to: "/ordersBuyyer", icon: Truck},
+                        { to: "/walletBuyyer", icon: Wallet},
+                        { to: "/profileBuyyer", icon: User}
+                    ].map(({ to, icon: Icon,  }) => (
                         <button 
                             key={to}
                             onClick={() => navigate(to)} 
@@ -446,7 +446,6 @@ export default function ProfileBuyyer() {
                             className={`flex flex-col items-center p-1 rounded-lg transition-colors ${location.pathname === to ? "text-[#713491] font-semibold" : "text-gray-500 hover:text-gray-700"}`}
                         >
                             <Icon size={22} />
-                            <span className="text-xs mt-1">{label}</span>
                         </button>
                     ))
                 }
