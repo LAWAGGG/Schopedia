@@ -44,11 +44,11 @@ export default function WalletPage() {
                 {/* Card saldo */}
                 <div className="bg-gradient-to-r from-[#6A00F5] to-[#9D4EDD] text-white rounded-xl p-5 mb-6 shadow-md">
                     <p className="text-sm opacity-90">
-                        {walletData ? walletData.user.name : "Loading..."}
+                        {walletData ? walletData.user.name : <span className="inline-block h-4 w-24 bg-white/30 rounded"></span>}
                     </p>
                     <p className="text-lg mt-2">Saldo</p>
                     <p className="text-3xl font-bold">
-                        {walletData ? walletData.balance : "Loading..."}
+                        {walletData ? walletData.balance : <span className="inline-block mt-1 h-5 w-32 bg-white/30 rounded"></span>}
                     </p>
                 </div>
 

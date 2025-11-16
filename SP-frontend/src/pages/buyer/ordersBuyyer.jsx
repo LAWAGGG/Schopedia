@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { getToken } from "../../utils/utils.jsx";
 import Sidebarbuyyer from "../../components/sidebarBuyyer";
+import SkeletonOrderCard from "../../components/SkeletonOrderCard.jsx";
 import {
   Package,
   ArrowRight,
@@ -271,12 +272,14 @@ export default function OrdersBuyyer() {
 
         {/* Debug Info - selalu tampil */}
         {loading ? (
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="text-center">
-              <p className="text-gray-600 animate-pulse">Memuat daftar pesanan...</p>
-            </div>
+          <div className="space-y-4 mb-24">
+            <SkeletonOrderCard />
+            <SkeletonOrderCard />
+            <SkeletonOrderCard />
+            <SkeletonOrderCard />
           </div>
         ) : error ? (
+
           <div className="flex flex-col justify-center items-center min-h-[60vh] text-red-500 text-center">
             <XCircle className="w-12 h-12 mb-4" />
             <p className="text-lg font-medium">Error: {error}</p>

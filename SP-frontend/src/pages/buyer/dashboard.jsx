@@ -133,12 +133,12 @@ export default function Dashboard() {
     );
 
   return (
-    <div className="flex min-h-screen pt-10 sm:pt-0 overflow-x-hidden bg-white">
+    <div className="flex min-h-screen pt-3 sm:pt-0 overflow-x-hidden bg-white">
       <div className="hidden md:block w-64 bg-white fixed left-0 top-0 bottom-0 z-10">
         <Sidebarbuyyer />
       </div>
 
-      <div className="flex-1 md:ml-64 px-4 pt-2 pb-24 md:pt-8 md:px-8 max-w-full overflow-hidden relative">
+      <div className="flex-1 md:ml-64 px-4 pt- pb-24 md:pt- md:px-8 max-w-full overflow-hidden relative">
 
         <div className="flex items-center justify-between mb-4 md:hidden">
           <h1 className="text-2xl font-bold text-gray-800">Welcome</h1>
@@ -192,8 +192,8 @@ export default function Dashboard() {
             <button
               onClick={() => setActiveCategory("All")}
               className={`px-5 py-1.5 rounded-xl text-sm flex-shrink-0 ${activeCategory === "All"
-                  ? "bg-purple-600 text-white shadow-md"
-                  : "bg-gray-200 text-gray-700"
+                ? "bg-purple-600 text-white shadow-md"
+                : "bg-gray-200 text-gray-700"
                 }`}
             >
               All
@@ -215,8 +215,8 @@ export default function Dashboard() {
                   key={item.id}
                   onClick={() => setActiveCategory(item)}
                   className={`px-5 py-1.5 rounded-xl text-sm flex-shrink-0 ${activeCategory.id === item.id
-                      ? "bg-purple-600 text-white shadow-md"
-                      : "bg-gray-200 text-gray-700"
+                    ? "bg-purple-600 text-white shadow-md"
+                    : "bg-gray-200 text-gray-700"
                     }`}
                 >
                   {item.name}
@@ -227,7 +227,58 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-2 mb-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
-          {filteredProducts.length > 0 ? (
+          {isFetching ? (
+            <>
+              <div className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
+                {/* Gambar */}
+                <div className="w-full h-40 bg-gray-200"></div>
+                {/* Isi */}
+                <div className="p-2">
+                  {/* Title skeleton */}
+                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
+                  {/* Price skeleton */}
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
+
+                {/* Gambar */}
+                <div className="w-full h-40 bg-gray-200"></div>
+                {/* Isi */}
+                <div className="p-2">
+                  {/* Title skeleton */}
+                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
+                  {/* Price skeleton */}
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
+
+                {/* Gambar */}
+                <div className="w-full h-40 bg-gray-200"></div>
+                {/* Isi */}
+                <div className="p-2">
+                  {/* Title skeleton */}
+                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
+                  {/* Price skeleton */}
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
+
+                {/* Gambar */}
+                <div className="w-full h-40 bg-gray-200"></div>
+                {/* Isi */}
+                <div className="p-2">
+                  {/* Title skeleton */}
+                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
+                  {/* Price skeleton */}
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                </div>
+              </div>
+
+            </>
+          ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <div
                 key={product.id}
@@ -238,14 +289,12 @@ export default function Dashboard() {
               </div>
             ))
           ) : (
-            <>
-              <div className="bg-gray-200 rounded-lg h-57 w-43 animate-pulse"></div>
-              <div className="bg-gray-200 rounded-lg h-57 w-43 animate-pulse"></div>
-              <div className="bg-gray-200 rounded-lg h-57 w-43 animate-pulse"></div>
-              <div className="bg-gray-200 rounded-lg h-57 w-43 animate-pulse"></div>
-            </>
+            <div className="col-span-full text-center text-gray-500 py-10">
+              Produk tidak ada
+            </div>
           )}
         </div>
+
 
         <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden z-50">
           <button onClick={() => navigate("/dashboard")} className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}>

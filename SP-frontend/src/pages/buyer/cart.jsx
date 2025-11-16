@@ -6,6 +6,27 @@ import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const SkeletonCartItem = () => (
+    <div className="flex items-start gap-4 p-4 animate-pulse">
+        <div className="w-20 h-20 bg-gray-200 rounded-lg"></div>
+
+        <div className="flex-1 space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+
+            <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-2">
+                    {/* <div className="w-8 h-8 bg-gray-200 rounded-full"></div> */}
+                    <div className="w-27 h-8 bg-gray-200 rounded-2xl"></div>
+                    {/* <div className="w-8 h-8 bg-gray-200 rounded-full"></div> */}
+                </div>
+            </div>
+        </div>
+
+        <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+    </div>
+);
+
 
 const SuccessPopup = ({ onReturn }) => {
     return (
@@ -220,28 +241,32 @@ export default function Cart() {
     };
 
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-white flex flex-col">
-                <div className="flex items-center gap-4 px-4 py-3 border-b">
-                    <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
-                        <ArrowLeft className="w-6 h-6 text-gray-800" />
-                    </button>
-                    <h1 className="text-xl font-semibold">Keranjang</h1>
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                    <p className="text-gray-500">Memuat keranjang...</p>
-                </div>
+   if (loading) {
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+            <div className="sticky top-0 bg-white z-10 flex items-center gap-4 px-4 py-3 shadow-sm">
+                <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
+                    <ArrowLeft className="w-6 h-6 text-gray-800" />
+                </button>
+                <h1 className="text-xl font-semibold text-gray-900">Keranjang</h1>
             </div>
-        );
-    }
+
+            <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                <SkeletonCartItem />
+                <SkeletonCartItem />
+                <SkeletonCartItem />
+            </div>
+        </div>
+    );
+}
+
 
 
     if (!cartData || cartData.length === 0) {
         return (
             <div className="min-h-screen bg-white flex flex-col">
                 {showSuccessPopup && <SuccessPopup onReturn={handleReturn} />} { }
-                <div className="flex items-center gap-4 px-4 py-3 border-b">
+                <div className="flex items-center gap-4 px-4 py-3 ">
                     <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
                         <ArrowLeft className="w-6 h-6 text-gray-800" />
                     </button>
@@ -271,7 +296,7 @@ export default function Cart() {
                 <div className="w-full max-w-lg mx-auto bg-white min-h-screen flex flex-col pb-28">
 
                     { }
-                    <div className="sticky top-0 bg-white z-10 flex items-center gap-4 px-4 py-3 border-b">
+                    <div className="sticky top-0 bg-white z-10 flex items-center gap-4 px-4 py-3">
                         <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
                             <ArrowLeft className="w-6 h-6 text-gray-800" />
                         </button>
@@ -280,9 +305,9 @@ export default function Cart() {
 
                     { }
                     <div className="flex-1 overflow-y-auto">
-                        <div className="p-4">
+                        {/* <div className="p-4">
                             <ErrorMessage message={error} onClose={() => setError(null)} />
-                        </div>
+                        </div> */}
                         <div className="divide-y divide-gray-100">
                             {cartData.map((item) => {
                                 const price = parseFloat(item.product?.price) || 0;
