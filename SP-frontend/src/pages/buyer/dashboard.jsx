@@ -7,8 +7,8 @@ import SearchBar from "../../components/searchBar";
 import { Home, Truck, Wallet, User, ShoppingCart } from "lucide-react";
 import banner from "../../../public/banner2.svg";
 import banner3 from "../../../public/banner3.jpg";
-// import banner4 from "../../../public/banner-schopedia.png";
-import banner4 from "../../../public/banner4.webp";
+import banner4 from "../../../public/banner-schopedia1.png";
+// import banner4 from "../../../public/banner4.webp";
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);

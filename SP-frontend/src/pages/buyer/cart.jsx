@@ -3,30 +3,23 @@ import { useEffect, useState } from "react";
 import { getToken } from "../../utils/utils";
 import { useNavigate } from "react-router-dom";
 
-
 const API_URL = import.meta.env.VITE_API_URL;
 
 const SkeletonCartItem = () => (
     <div className="flex items-start gap-4 p-4 animate-pulse">
         <div className="w-20 h-20 bg-gray-200 rounded-lg"></div>
-
         <div className="flex-1 space-y-3">
             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-
             <div className="flex items-center gap-4 mt-2">
                 <div className="flex items-center gap-2">
-                    {/* <div className="w-8 h-8 bg-gray-200 rounded-full"></div> */}
                     <div className="w-27 h-8 bg-gray-200 rounded-2xl"></div>
-                    {/* <div className="w-8 h-8 bg-gray-200 rounded-full"></div> */}
                 </div>
             </div>
         </div>
-
         <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
     </div>
 );
-
 
 const SuccessPopup = ({ onReturn }) => {
     return (
@@ -50,8 +43,6 @@ const SuccessPopup = ({ onReturn }) => {
         </div>
     );
 };
-// ----------------------------------
-
 
 const ErrorMessage = ({ message, onClose }) => {
     if (!message) return null;
@@ -73,14 +64,12 @@ export default function Cart() {
     const [loading, setLoading] = useState(true);
     const [checkoutLoading, setCheckoutLoading] = useState(false);
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-
     const [location, setLocation] = useState("");
     const [notes, setNotes] = useState("");
     const [updatingQuantity, setUpdatingQuantity] = useState(null);
     const [error, setError] = useState(null);
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const fetchCart = async () => {
         try {
@@ -138,6 +127,11 @@ export default function Cart() {
         setUpdatingQuantity(cartItemId);
         setError(null);
 
+        // ⛳ 1. UPDATE LANGSUNG DI FRONTEND (optimistic)
+        setCartData(prev => prev.map(item =>
+            item.id === cartItemId ? { ...item, quantity: newQuantity } : item
+        ));
+
         try {
             const res = await fetch(`${API_URL}api/cart/${cartItemId}/update`, {
                 method: 'PUT',
@@ -146,9 +140,7 @@ export default function Cart() {
                     Authorization: `Bearer ${getToken()}`,
                     Accept: "application/json"
                 },
-                body: JSON.stringify({
-                    quantity: newQuantity
-                })
+                body: JSON.stringify({ quantity: newQuantity })
             });
 
             const data = await res.json();
@@ -157,18 +149,20 @@ export default function Cart() {
                 throw new Error(data.message || `Gagal update quantity (status ${res.status})`);
             }
 
-            setCartData(prev => prev.map(item =>
-                item.id === cartItemId ? { ...item, quantity: newQuantity } : item
-            ));
+            // ⛳ 2. OPTIONAL: sync ulang data tapi *tanpa delay UI*
+            fetchCart();   // ga blocking UI
 
         } catch (error) {
             console.error("Error updating quantity:", error);
             setError(error.message || "Terjadi kesalahan saat mengupdate quantity");
-            await fetchCart();
+
+            // ⛔ Kalau error → revert quantity (balikkan ke server)
+            fetchCart();
         } finally {
             setUpdatingQuantity(null);
         }
     };
+
 
     const handleCheckout = async () => {
         if (checkoutLoading) return;
@@ -201,13 +195,11 @@ export default function Cart() {
                 throw new Error(data.message || `Checkout gagal (status ${res.status})`);
             }
 
-
             setShowCheckoutModal(false);
             setLocation("");
             setNotes("");
             await fetchCart();
             setShowSuccessPopup(true);
-
 
         } catch (error) {
             console.error("Error during checkout:", error);
@@ -219,17 +211,14 @@ export default function Cart() {
 
     const handleReturn = () => {
         setShowSuccessPopup(false);
-
         window.location.href = "/ordersBuyyer";
     };
-
 
     const total = cartData.reduce((sum, item) => {
         const price = parseFloat(item.product?.price) || 0;
         const qty = item.quantity || 1;
         return sum + (price * qty);
     }, 0);
-
 
     const formatPrice = (price) => {
         const numPrice = parseFloat(price) || 0;
@@ -240,32 +229,28 @@ export default function Cart() {
         }).format(numPrice);
     };
 
-
-   if (loading) {
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <div className="sticky top-0 bg-white z-10 flex items-center gap-4 px-4 py-3 shadow-sm">
-                <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
-                    <ArrowLeft className="w-6 h-6 text-gray-800" />
-                </button>
-                <h1 className="text-xl font-semibold text-gray-900">Keranjang</h1>
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col">
+                <div className="sticky top-0 bg-white z-10 flex items-center gap-4 px-4 py-3 shadow-sm">
+                    <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
+                        <ArrowLeft className="w-6 h-6 text-gray-800" />
+                    </button>
+                    <h1 className="text-xl font-semibold text-gray-900">Keranjang</h1>
+                </div>
+                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                    <SkeletonCartItem />
+                    <SkeletonCartItem />
+                    <SkeletonCartItem />
+                </div>
             </div>
-
-            <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-                <SkeletonCartItem />
-                <SkeletonCartItem />
-                <SkeletonCartItem />
-            </div>
-        </div>
-    );
-}
-
-
+        );
+    }
 
     if (!cartData || cartData.length === 0) {
         return (
             <div className="min-h-screen bg-white flex flex-col">
-                {showSuccessPopup && <SuccessPopup onReturn={handleReturn} />} { }
+                {showSuccessPopup && <SuccessPopup onReturn={handleReturn} />}
                 <div className="flex items-center gap-4 px-4 py-3 ">
                     <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
                         <ArrowLeft className="w-6 h-6 text-gray-800" />
@@ -286,16 +271,12 @@ export default function Cart() {
         );
     }
 
-
     return (
         <>
-            { }
             {showSuccessPopup && <SuccessPopup onReturn={handleReturn} />}
 
             <div className="min-h-screen bg-gray-50">
                 <div className="w-full max-w-lg mx-auto bg-white min-h-screen flex flex-col pb-28">
-
-                    { }
                     <div className="sticky top-0 bg-white z-10 flex items-center gap-4 px-4 py-3">
                         <button onClick={() => navigate(-1)} className="p-1 rounded-full hover:bg-gray-100">
                             <ArrowLeft className="w-6 h-6 text-gray-800" />
@@ -303,16 +284,12 @@ export default function Cart() {
                         <h1 className="text-xl font-semibold text-gray-900">Keranjang</h1>
                     </div>
 
-                    { }
                     <div className="flex-1 overflow-y-auto">
-                        {/* <div className="p-4">
-                            <ErrorMessage message={error} onClose={() => setError(null)} />
-                        </div> */}
                         <div className="divide-y divide-gray-100">
                             {cartData.map((item) => {
                                 const price = parseFloat(item.product?.price) || 0;
                                 const qty = item.quantity || 1;
-                                const isUpdating = updatingQuantity === item.id;
+                                const isUpdating = updatingQuantity === item.product.id;
                                 const stock = item.product?.stock || 0;
 
                                 return (
@@ -345,7 +322,11 @@ export default function Cart() {
                                                         -
                                                     </button>
                                                     <span className="w-10 text-center font-medium text-gray-800">
-                                                        {isUpdating ? "..." : qty}
+                                                        {isUpdating ? (
+                                                            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                                        ) : (
+                                                            qty
+                                                        )}
                                                     </span>
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, qty + 1)}
@@ -362,7 +343,7 @@ export default function Cart() {
                                         </div>
 
                                         <button
-                                            onClick={() => removeItem(item.product.id)}
+                                            onClick={() => removeItem(item.id)}
                                             disabled={isUpdating}
                                             className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
                                             aria-label="Hapus item"
@@ -375,7 +356,6 @@ export default function Cart() {
                         </div>
                     </div>
 
-                    { }
                     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10">
                         <div className="w-full max-w-lg mx-auto p-4 flex items-center justify-between gap-4">
                             <div className="flex-1 text-right">
@@ -396,7 +376,6 @@ export default function Cart() {
                 </div>
             </div>
 
-            { }
             {showCheckoutModal && (
                 <div className="fixed inset-0 bg-black/[.60] flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl w-full max-w-md p-6">
@@ -413,7 +392,6 @@ export default function Cart() {
                         <ErrorMessage message={error} onClose={() => setError(null)} />
 
                         <div className="space-y-4 mt-4">
-                            { }
                             <div>
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                     <MapPin className="w-4 h-4" />
@@ -429,7 +407,6 @@ export default function Cart() {
                                 />
                             </div>
 
-                            { }
                             <div>
                                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                     <MessageSquare className="w-4 h-4" />
@@ -444,7 +421,6 @@ export default function Cart() {
                                 />
                             </div>
 
-                            { }
                             <div className="bg-gray-50 rounded-lg p-4">
                                 <h3 className="font-semibold text-gray-800 mb-2">Ringkasan Order</h3>
                                 <div className="space-y-1 text-sm">
@@ -459,7 +435,6 @@ export default function Cart() {
                                 </div>
                             </div>
 
-                            { }
                             <div className="flex gap-3 pt-2">
                                 <button
                                     onClick={() => setShowCheckoutModal(false)}
