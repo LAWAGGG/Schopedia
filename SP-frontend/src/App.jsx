@@ -12,6 +12,7 @@ import BuyerWallet from "./pages/buyer/walletBuyyer";
 import Cart from "./pages/buyer/cart";
 import Topup from "./pages/buyer/Topup";
 import History from "./pages/buyer/history";
+import ProfileSeller from "./pages/buyer/ProfileSeller";
 
 // Admin
 import DashboardAdmin from "./pages/admin/dashboardAdmin";
@@ -28,150 +29,107 @@ import Wallet from "./pages/seller/wallet";
 // Components
 import SideBar from "./components/sideBar";
 import Policy from "./components/policy";
-import { getToken } from "./utils/utils";
-import ProfileSeller from "./pages/buyer/ProfileSeller";
 
-function ProtectedRoute({ children }) {
-  const token = getToken();
-
-  if (!token) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-}
-
-// function RedirectRoute({ children }) {
-//   const token = getToken();
-//   const userRole = getUserRole();
-
-//   if (token) {
-//     // Redirect ke dashboard sesuai role
-//     switch (userRole) {
-//       case "admin":
-//         return <Navigate to="/dashboardadmin" replace />;
-//       case "seller":
-//         return <Navigate to="/dashboardseller" replace />;
-//       case "buyer":
-//         return <Navigate to="/dashboard" replace />;
-//       default:
-//         return <Navigate to="/dashboard" replace />;
-//     }
-//   }
-
-//   return children;
-// }
+import RoleGuard from "./components/RoleGuard";
+import { getToken, getUserRole } from "./utils/utils";
 
 export default function App() {
+  const token = getToken();
+  const role = getUserRole();
+
   return (
     <Routes>
-      {/* Auth*/}
-      <Route path="/" element={
-        <Login />
-      } />
-      <Route path="/register" element={
-        <Register />
-      } />
+      {/* Auth */}
+      <Route
+        path="/"
+        element={
+          !token ? (
+            <Login />
+          ) : (
+            <Navigate
+              to={
+                role === "admin"
+                  ? "/dashboardadmin"
+                  : role === "seller"
+                  ? "/dashboardseller"
+                  : "/dashboard"
+              }
+              replace
+            />
+          )
+        }
+      />
+      <Route
+        path="/register"
+        element={!token ? <Register /> : <Navigate to="/" replace />}
+      />
 
       {/* Buyer */}
       <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><Dashboard /></RoleGuard>
       } />
       <Route path="/product/:id" element={
-        <ProtectedRoute>
-          <ProductDetail />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><ProductDetail /></RoleGuard>
       } />
       <Route path="/product/seller/:id" element={
-        <ProtectedRoute>
-          <ProfileSeller />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><ProfileSeller /></RoleGuard>
       } />
       <Route path="/profileBuyyer" element={
-        <ProtectedRoute>
-          <BuyerProfile />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><BuyerProfile /></RoleGuard>
       } />
       <Route path="/ordersBuyyer" element={
-        <ProtectedRoute>
-          <BuyerOrders />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><BuyerOrders /></RoleGuard>
       } />
       <Route path="/ordersBuyyer/:orderId" element={
-        <ProtectedRoute>
-          <OrderDetail />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><OrderDetail /></RoleGuard>
       } />
       <Route path="/walletBuyyer" element={
-        <ProtectedRoute>
-          <BuyerWallet />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><BuyerWallet /></RoleGuard>
       } />
       <Route path="/cart" element={
-        <ProtectedRoute>
-          <Cart />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><Cart /></RoleGuard>
       } />
       <Route path="/topup" element={
-        <ProtectedRoute>
-          <Topup />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><Topup /></RoleGuard>
       } />
       <Route path="/buyerhistory" element={
-        <ProtectedRoute>
-          <History />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["buyer"]}><History /></RoleGuard>
       } />
 
       {/* Admin */}
       <Route path="/dashboardadmin" element={
-        <ProtectedRoute>
-          <DashboardAdmin />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["admin"]}><DashboardAdmin /></RoleGuard>
       } />
       <Route path="/categories" element={
-        <ProtectedRoute>
-          <Categories />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["admin"]}><Categories /></RoleGuard>
       } />
       <Route path="/allaccount" element={
-        <ProtectedRoute>
-          <AllAccount />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["admin"]}><AllAccount /></RoleGuard>
       } />
 
       {/* Seller */}
       <Route path="/dashboardseller" element={
-        <ProtectedRoute>
-          <DashboardSeller />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["seller"]}><DashboardSeller /></RoleGuard>
       } />
       <Route path="/orders" element={
-        <ProtectedRoute>
-          <Orders />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["seller"]}><Orders /></RoleGuard>
       } />
       <Route path="/profile" element={
-        <ProtectedRoute>
-          <Profile />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["seller"]}><Profile /></RoleGuard>
       } />
       <Route path="/products" element={
-        <ProtectedRoute>
-          <Product />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["seller"]}><Product /></RoleGuard>
       } />
       <Route path="/wallet" element={
-        <ProtectedRoute>
-          <Wallet />
-        </ProtectedRoute>
+        <RoleGuard allowedRoles={["seller"]}><Wallet /></RoleGuard>
       } />
 
       {/* Components */}
       <Route path="/sidebar" element={<SideBar />} />
       <Route path="/policy" element={<Policy />} />
+
+      {/* 404 Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
