@@ -43,6 +43,11 @@ export default function Register() {
             setTimeout(() => {
                 alert("Email sudah dipakai!");
             }, 500);
+        } else if (data.errors?.password) {
+            setLoading(false);
+            setTimeout(() => {
+                alert("password minimal 6 huruf!");
+            }, 500);
         } else {
             setLoading(false);
         }
