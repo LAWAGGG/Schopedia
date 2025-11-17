@@ -103,7 +103,7 @@ export default function Topup() {
                 className={`fixed inset-0 z-50 flex items-end transition-transform duration-300 ease-out ${success ? "translate-y-0" : "translate-y-full"
                     }`}
             >
-                <div className="w-full md:w-[calc(100%-15rem)] md:ml-60 h-[45%] bg-white rounded-t-3xl shadow-[0_-4px_30px_rgba(0,0,0,0.2)] p-6 flex flex-col items-center text-center">
+                <div className="w-full md:w-[calc(100%-15rem)] md:ml-60 h-[50%] bg-white rounded-t-3xl shadow-[0_-4px_30px_rgba(0,0,0,0.2)] p-6 flex flex-col items-center text-center">
                     <div className="bg-green-100 p-4 rounded-full mb-4 mt-4">
                         <CheckCircle2 size={50} className="text-green-600" />
                     </div>
