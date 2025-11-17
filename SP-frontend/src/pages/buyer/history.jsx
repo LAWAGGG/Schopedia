@@ -32,7 +32,13 @@ export default function History() {
 
                 if (!res.ok) throw new Error("Gagal memuat riwayat transaksi");
                 const data = await res.json();
-                setTransactions(data.transaction_history || []);
+
+                    //ini buat urutan terbaru ke terlama
+                const sorted = (data.transaction_history || []).sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                );
+
+                setTransactions(sorted);
             } catch (err) {
                 console.error(err);
             } finally {
