@@ -135,7 +135,7 @@ export default function Dashboard() {
     );
 
   return (
-    <div className="flex min-h-screen pt-3 sm:pt-0 overflow-x-hidden bg-white">
+    <div className="flex min-h-screen pt-10 sm:pt-0 overflow-x-hidden bg-white">
       <div className="hidden md:block w-64 bg-white fixed left-0 top-0 bottom-0 z-10">
         <Sidebarbuyyer />
       </div>

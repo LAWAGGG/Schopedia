@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, NavLink } from "react-router-dom";
 import { getToken } from "../../utils/utils.jsx";
 import {
   Package,
@@ -461,7 +461,7 @@ export default function OrderDetail() {
             <h2 className="text-xl font-semibold text-gray-900">Informasi Penjual</h2>
           </div>
           <div className="space-y-1 text-[13px]">
-            <p><span className="text-gray-500">Nama:</span> {order.seller?.name || "Tidak tersedia"}</p>
+            <NavLink to={`/product/seller/${order.seller.id}`}><span className="text-gray-500">Nama:</span> {order.seller?.name || "Tidak tersedia"}</NavLink>
             <p><span className="text-gray-500">Email:</span> {order.seller?.email || "Tidak tersedia"}</p>
           </div>
         </div>

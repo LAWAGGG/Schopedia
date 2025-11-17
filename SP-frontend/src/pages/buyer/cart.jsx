@@ -1,7 +1,7 @@
 import { ArrowLeft, ShoppingCart, Trash2, MapPin, MessageSquare, X, AlertCircle, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getToken } from "../../utils/utils";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -311,9 +311,9 @@ export default function Cart() {
                                         />
 
                                         <div className="flex-1">
-                                            <p className="font-semibold text-base text-gray-800 line-clamp-2">
+                                            <NavLink to={`/product/${item.product.id}`} className="font-semibold text-base text-gray-800 line-clamp-2">
                                                 {item.product?.name || "Nama Produk"}
-                                            </p>
+                                            </NavLink>
                                             <p className="text-gray-700 text-base font-bold my-1">
                                                 {formatPrice(price)}
                                             </p>
