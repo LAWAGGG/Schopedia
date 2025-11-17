@@ -68,6 +68,7 @@ export default function Cart() {
     const [location, setLocation] = useState("");
     const [notes, setNotes] = useState("");
     const [updatingQuantity, setUpdatingQuantity] = useState(null);
+    const [deletingItem, setDeletingItem] = useState(null); // State baru untuk tracking item yang sedang dihapus
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
@@ -103,6 +104,8 @@ export default function Cart() {
     const removeItem = async (cartItemId) => {
         try {
             setError(null);
+            setDeletingItem(cartItemId); // Set item yang sedang dihapus
+
             const res = await fetch(`${API_URL}api/cart/${cartItemId}/delete`, {
                 method: 'DELETE',
                 headers: {
@@ -118,6 +121,8 @@ export default function Cart() {
         } catch (error) {
             console.error("Gagal menghapus item:", error);
             setError(error.message || "Gagal menghapus item dari keranjang");
+        } finally {
+            setDeletingItem(null); // Reset state setelah selesai
         }
     };
 
@@ -290,12 +295,13 @@ export default function Cart() {
                                 const price = parseFloat(item.product?.price) || 0;
                                 const qty = item.quantity || 1;
                                 const isUpdating = updatingQuantity === item.product.id;
+                                const isDeleting = deletingItem === item.product.id; // Check jika item sedang dihapus
                                 const stock = item.product?.stock || 0;
 
                                 return (
                                     <div
                                         key={item.id}
-                                        className="flex items-start gap-4 p-4"
+                                        className={`flex items-start gap-4 p-4 relative transition-opacity duration-300  ${isDeleting ? 'opacity-40' : ''}`}
                                     >
                                         <img
                                             src={item.product?.image || "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk"}
@@ -316,7 +322,7 @@ export default function Cart() {
                                                 <div className="flex items-center border border-gray-300 rounded-full bg-white">
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, qty - 1)}
-                                                        disabled={isUpdating || qty <= 1}
+                                                        disabled={isUpdating || isDeleting || qty <= 1}
                                                         className="w-8 h-8 flex items-center justify-center text-lg text-gray-600 hover:bg-gray-100 rounded-l-full disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         -
@@ -330,7 +336,7 @@ export default function Cart() {
                                                     </span>
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, qty + 1)}
-                                                        disabled={isUpdating || qty >= stock}
+                                                        disabled={isUpdating || isDeleting || qty >= stock}
                                                         className="w-8 h-8 flex items-center justify-center text-lg text-gray-600 hover:bg-gray-100 rounded-r-full disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         +
@@ -343,13 +349,18 @@ export default function Cart() {
                                         </div>
 
                                         <button
-                                            onClick={() => removeItem(item.id)}
-                                            disabled={isUpdating}
-                                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+                                            onClick={() => removeItem(item.product.id)}
+                                            disabled={isUpdating || isDeleting}
+                                            className="relative p-2 text-gray-500 hover:text-purple-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
                                             aria-label="Hapus item"
                                         >
-                                            <Trash2 className="w-5 h-5" />
+                                            {isDeleting ? (
+                                                <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                                <Trash2 className="w-5 h-5" />
+                                            )}
                                         </button>
+
                                     </div>
                                 );
                             })}
@@ -367,7 +378,9 @@ export default function Cart() {
 
                             <button
                                 onClick={() => setShowCheckoutModal(true)}
-                                className="bg-purple-600 hover:bg-purple-700 text-white text-base font-semibold py-3 px-6 rounded-full transition-all shadow-md"
+                                disabled={deletingItem !== null} // Disable checkout jika ada item yang sedang dihapus
+                                className={`bg-purple-600 hover:bg-purple-700 text-white text-base font-semibold py-3 px-6 rounded-full transition-all shadow-md ${deletingItem !== null ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
                             >
                                 Checkout ({cartData.length})
                             </button>

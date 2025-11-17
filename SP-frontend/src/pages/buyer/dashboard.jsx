@@ -5,9 +5,11 @@ import CardBuyer from "../../components/cardBuyer";
 import Sidebarbuyyer from "../../components/sidebarBuyyer";
 import SearchBar from "../../components/searchBar";
 import { Home, Truck, Wallet, User, ShoppingCart } from "lucide-react";
-import banner from "../../../public/banner2.svg";
-import banner3 from "../../../public/banner3.jpg";
-import banner4 from "../../../public/banner-schopedia1.png";
+import banner3 from "../../../public/banner-schopedia2.png";
+// import banner from "../../../public/banner2.svg";
+import banner4 from "../../../public/banner-schopedia3.png";
+// import banner3 from "../../../public/banner3.jpg";
+import banner from "../../../public/banner-schopedia1.png";
 // import banner4 from "../../../public/banner4.webp";
 
 export default function Dashboard() {
