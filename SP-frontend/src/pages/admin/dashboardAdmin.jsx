@@ -1,11 +1,13 @@
 // src/pages/ProfileAdmin.jsx
 import { useEffect, useState } from "react";
-import { User, Phone, Mail, Edit2, Users, Grid2X2 } from "lucide-react";
-import { getToken } from "../../utils/utils";
+import { User, Phone, Mail, Edit2, Users, Grid2X2, LogOut } from "lucide-react";
+import { getToken, removeToken } from "../../utils/utils";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileAdmin() {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate()
 
     const API_URL = import.meta.env.VITE_API_URL;
 
@@ -29,6 +31,24 @@ export default function ProfileAdmin() {
         };
         fetchProfile();
     }, []);
+
+    async function handleLogout(e) {
+        e.preventDefault()
+        const res = await fetch(`${API_URL}api/logout`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": `Bearer ${getToken()}`,
+            }
+        })
+        const data = await res.json()
+        if (res.status == 200) {
+            removeToken();
+            navigate("/");
+        }
+        console.log(data)
+    }
 
     const handleNavigate = (path) => {
         window.location.href = path; // pindah page
@@ -88,27 +108,37 @@ export default function ProfileAdmin() {
                         </div>
                     ) : profile ? (
                         <>
-                            <div className="flex justify-between items-center mb-6">
+                            {/* Header section dengan flex untuk alignment horizontal */}
+                            <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <p className="text-sm text-gray-500">My Profile</p>
-                                    <p className="text-xs text-gray-400">
+                                    <h2 className="text-lg font-semibold mb-1">My Profile</h2>
+                                    <p className="text-sm text-gray-500">
                                         View and manage your admin account information
                                     </p>
                                 </div>
-                                <button
-                                    onClick={() => alert("Tombol Edit Profile diklik!")}
-                                    className="bg-purple-600 text-white text-sm px-4 py-2 rounded-md hover:bg-purple-700 transition flex items-center gap-2"
-                                >
-                                    <Edit2 size={14} /> Edit Profile
-                                </button>
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={() => alert("Tombol Edit Profile diklik!")}
+                                        className="bg-purple-600 text-white text-sm px-4 py-2 rounded-md hover:bg-purple-700 transition flex items-center gap-2"
+                                    >
+                                        <Edit2 size={14} /> Edit Profile
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={e => handleLogout(e)}
+                                        className="bg-white flex gap-2 items-center text-black border-2 border-purple-500 px-4 py-1 rounded-md hover:bg-gray-200 transition"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        Log out
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex justify-start gap-16 items-start">
                                 {/* Left info */}
                                 <div className="flex items-start gap-6">
                                     <img
-                                        src={profile.image || 
-                                            "default.png"}
+                                        src={profile.image || "default.png"}
                                         alt="profile"
                                         className="w-24 h-24 rounded-full object-cover"
                                     />
