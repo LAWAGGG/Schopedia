@@ -356,8 +356,8 @@ export default function ProductDetail() {
             <h3 className="text-lg font-bold text-gray-900 mb-4">Pesan Sekarang</h3>
 
             <div className="mb-5">
-              <label className="block text-sm text-gray-600 mb-1">
-                Lokasi Pengiriman *
+              <label className="block text-sm text-black-600 mb-1">
+                Lokasi 
               </label>
               <input
                 type="text"
@@ -371,7 +371,7 @@ export default function ProductDetail() {
 
             <div className="mb-4">
               <label className="block text-sm text-gray-600 mb-1">
-                Catatan (Opsional)
+                Note (Opsional)
               </label>
               <input
                 type="text"
@@ -385,7 +385,7 @@ export default function ProductDetail() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowOrderModal(false)}
-                className="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium text-gray-700"
+                className="flex-1 py-2.5 bg-red-500 hover:bg-white-300 rounded-lg font-medium text-white"
               >
                 Batal
               </button>
@@ -393,7 +393,7 @@ export default function ProductDetail() {
                 onClick={handleConfirmOrder}
                 disabled={orderLoading || !location.trim()}
                 className={`flex-1 py-2.5 rounded-lg font-medium text-white ${orderLoading || !location.trim()
-                  ? "bg-gray-400 cursor-not-allowed"
+                  ? "bg-purple-500 cursor-not-allowed"
                   : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                   }`}
               >
@@ -403,7 +403,7 @@ export default function ProductDetail() {
                     Mengirim...
                   </>
                 ) : (
-                  "Kirim Pesanan"
+                  "Checkout"
                 )}
               </button>
             </div>
