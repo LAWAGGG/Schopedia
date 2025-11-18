@@ -19,6 +19,14 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [isFetching, setIsFetching] = useState(true);
+    const [pagination, setPagination] = useState({
+        current_page: 1,
+        per_page: 10,
+        total: 0,
+        last_page: 1,
+        next_page_url: null,
+        prev_page_url: null
+    });
     const [formData, setFormData] = useState({
         name: "",
         price: "",
@@ -28,20 +36,36 @@ export default function Dashboard() {
         image: null,
     });
 
-    // Fetch semua product
-    async function FetchProduct() {
+    // Fetch semua product dengan pagination
+    async function FetchProduct(page = 1) {
         try {
             setIsFetching(true);
-            const res = await fetch(`${import.meta.env.VITE_API_URL}api/products/own`, {
+            const url = page === 1 
+                ? `${import.meta.env.VITE_API_URL}api/products/own`
+                : `${import.meta.env.VITE_API_URL}api/products/own?page=${page}`;
+            
+            const res = await fetch(url, {
                 headers: { Authorization: `Bearer ${getToken()}` },
             });
 
             const data = await res.json();
-            console.log(data.own_product);
+            console.log("Response data:", data);
 
-            if (Array.isArray(data.own_product)) {
-                setProducts(data.own_product);
-                setFilteredProducts(data.own_product);
+            if (data.data && Array.isArray(data.data)) {
+                setProducts(data.data);
+                setFilteredProducts(data.data);
+                
+                // Set pagination info
+                if (data.pagination) {
+                    setPagination({
+                        current_page: data.pagination.current_page,
+                        per_page: data.pagination.per_page,
+                        total: data.pagination.total,
+                        last_page: data.pagination.last_page,
+                        next_page_url: data.pagination.next_page_url,
+                        prev_page_url: data.pagination.prev_page_url
+                    });
+                }
             }
         } catch (err) {
             console.error("gagal: ", err);
@@ -49,7 +73,6 @@ export default function Dashboard() {
             setIsFetching(false);
         }
     }
-
 
     // Fetch kategori dari API
     async function fetchCategories() {
@@ -70,6 +93,19 @@ export default function Dashboard() {
         FetchProduct();
         fetchCategories();
     }, []);
+
+    // Navigation untuk pagination
+    const handleNextPage = () => {
+        if (pagination.next_page_url) {
+            FetchProduct(pagination.current_page + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (pagination.prev_page_url) {
+            FetchProduct(pagination.current_page - 1);
+        }
+    };
 
     // Modal control
     function openCreateModal() {
@@ -92,7 +128,6 @@ export default function Dashboard() {
             .replace(/\./g, "") // hapus titik pemisah ribuan
             .replace(/,(\d{2})$/, ".$1"); // ubah koma ke titik untuk desimal
     }
-
 
     async function openEditModal(product) {
         try {
@@ -128,7 +163,6 @@ export default function Dashboard() {
         }
     }
 
-
     async function handleSubmit(e) {
         e.preventDefault();
         setLoading(true);
@@ -144,8 +178,6 @@ export default function Dashboard() {
         form.append("description", formData.description);
         form.append("category_id", formData.category_id);
 
-
-
         if (formData.image) form.append("image", formData.image);
 
         try {
@@ -158,7 +190,7 @@ export default function Dashboard() {
             const data = await res.json();
             if (res.ok) {
                 setShowModal(false);
-                FetchProduct();
+                FetchProduct(pagination.current_page); // Reload current page
             } else {
                 setErrorMessage(data.message || "Gagal menyimpan data");
                 setShowErrorModal(true);
@@ -190,7 +222,12 @@ export default function Dashboard() {
             });
 
             if (res.ok) {
-                FetchProduct();
+                // Jika produk di halaman terakhir dan hanya ada 1 produk, kembali ke halaman sebelumnya
+                if (products.length === 1 && pagination.current_page > 1) {
+                    FetchProduct(pagination.current_page - 1);
+                } else {
+                    FetchProduct(pagination.current_page);
+                }
                 setShowDeleteModal(false);
             } else {
                 const err = await res.json();
@@ -229,7 +266,7 @@ export default function Dashboard() {
 
                 <SearchBar title="Product" onSearch={handleSearch} />
 
-                <div className="flex justify-end mb-10 mt-8">
+                <div className="flex justify-end items-center mb-10 mt-8">
                     <button
                         onClick={openCreateModal}
                         className="bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-2 px-5 rounded-xl shadow-lg hover:scale-105 transition-all text-lg"
@@ -258,6 +295,42 @@ export default function Dashboard() {
                         </div>
                     )}
                 </div>
+
+                {/* Pagination Controls */}
+                {pagination.last_page > 1 && (
+                    <div className="flex justify-center items-center space-x-4 mt-8">
+                        {/* Previous Button */}
+                        <button
+                            onClick={handlePrevPage}
+                            disabled={!pagination.prev_page_url}
+                            className={`px-4 py-2 rounded-lg border ${
+                                !pagination.prev_page_url 
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                                    : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                            }`}
+                        >
+                            Previous
+                        </button>
+
+                        {/* Page Info */}
+                        <div className="text-sm text-gray-600">
+                            Page {pagination.current_page} of {pagination.last_page}
+                        </div>
+
+                        {/* Next Button */}
+                        <button
+                            onClick={handleNextPage}
+                            disabled={!pagination.next_page_url}
+                            className={`px-4 py-2 rounded-lg border ${
+                                !pagination.next_page_url 
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                                    : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                            }`}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
 
                 {/* Modal Create/Edit */}
                 {showModal && (
@@ -310,7 +383,7 @@ export default function Dashboard() {
                     </div>
                 )}
             </div>
-                    <Schobot />
+            <Schobot />
         </div>
     );
 }

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../../components/sideBar";
 import Nav from "../../components/profileNav";
-import { Eye, X, CalendarDays, Filter, Truck, Loader2 } from "lucide-react";
+import { Eye, X, CalendarDays, Filter, Truck, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import Schobot from "../../components/Chatbot";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -25,8 +25,6 @@ function formatRp(n) {
     }).format(value);
 }
 
-
-
 export default function Orders() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -37,15 +35,25 @@ export default function Orders() {
         delivery_service: "",
         tracking_number: ""
     });
+    const [pagination, setPagination] = useState({
+        current_page: 1,
+        last_page: 1,
+        per_page: 10,
+        total: 0,
+        next_page_url: null,
+        prev_page_url: null
+    });
 
     const getToken = () => {
         return localStorage.getItem('token') || sessionStorage.getItem('token');
     };
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (pageUrl = null) => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_URL}api/order/seller`, {
+            const url = pageUrl || `${API_URL}api/order/seller?page=${pagination.current_page}`;
+
+            const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${getToken()}`,
                     'Content-Type': 'application/json',
@@ -58,11 +66,31 @@ export default function Orders() {
 
             const data = await response.json();
             setOrders(data.seller_orders || []);
+            setPagination(data.pagination || {
+                current_page: 1,
+                last_page: 1,
+                per_page: 10,
+                total: 0,
+                next_page_url: null,
+                prev_page_url: null
+            });
         } catch (error) {
             console.error('Error fetching orders:', error);
             alert('Failed to load orders');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const goToNextPage = () => {
+        if (pagination.next_page_url) {
+            fetchOrders(pagination.next_page_url);
+        }
+    };
+
+    const goToPrevPage = () => {
+        if (pagination.prev_page_url) {
+            fetchOrders(pagination.prev_page_url);
         }
     };
 
@@ -91,9 +119,9 @@ export default function Orders() {
             if (updatedOrderResponse.seller_order) {
                 setSelectedOrder(updatedOrderResponse.seller_order);
             }
-            
+
             await fetchOrders();
-            
+
             alert('Order status updated successfully');
         } catch (error) {
             console.error('Error updating order:', error);
@@ -129,7 +157,7 @@ export default function Orders() {
             if (updatedOrderResponse.order) {
                 setSelectedOrder(updatedOrderResponse.order);
             }
-            
+
             await fetchOrders();
             setShippingData({ delivery_service: "", tracking_number: "" });
             alert('Order shipped successfully');
@@ -167,7 +195,7 @@ export default function Orders() {
         const map = {
             pending: "Pending",
             accepted: "Processing",
-            canceled: "Canceled", 
+            canceled: "Canceled",
             completed: "Completed",
         };
         return map[statusLower] || status;
@@ -187,7 +215,7 @@ export default function Orders() {
     const getOrderDisplayStatus = (order) => {
         const status = order.status.toLowerCase();
         const shippingStatus = order.shipping_status.toLowerCase();
-        
+
         if (status === 'completed' || shippingStatus === 'delivered') {
             return { type: 'completed', text: 'Completed' };
         }
@@ -206,8 +234,8 @@ export default function Orders() {
         return { type: 'pending', text: 'Pending' };
     };
 
-    const filteredOrders = filter === "All" 
-        ? orders 
+    const filteredOrders = filter === "All"
+        ? orders
         : orders.filter(order => {
             const displayStatus = getOrderDisplayStatus(order);
             if (filter === "Pending") return displayStatus.type === 'pending';
@@ -355,6 +383,35 @@ export default function Orders() {
                             </table>
                         </div>
                     </div>
+                    {/* Pagination Controls */}
+                    <div className="flex justify-start gap-4 items-center mt-4 px-6 py-3 border-t">
+                        <div className="flex gap-2">
+                            <button
+                                onClick={goToPrevPage}
+                                disabled={!pagination.prev_page_url}
+                                className="flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <ChevronLeft size={16} />
+                                Previous
+                            </button>
+
+                            <div className="flex items-center px-3 py-2 text-sm text-gray-600">
+                                Page {pagination.current_page} of {pagination.last_page}
+                            </div>
+
+                            <button
+                                onClick={goToNextPage}
+                                disabled={!pagination.next_page_url}
+                                className="flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                            Showing {((pagination.current_page - 1) * pagination.per_page) + 1} to {Math.min(pagination.current_page * pagination.per_page, pagination.total)} of {pagination.total} results
+                        </div>
+                    </div>
                 </div>
             </main>
 
@@ -461,7 +518,7 @@ export default function Orders() {
                             {/* Action Buttons based on BOTH status and shipping_status - HANYA untuk SELLER */}
                             <div className="space-y-3">
                                 <h3 className="font-semibold text-gray-800 text-sm">Order Actions</h3>
-                                
+
                                 {selectedOrder.status.toLowerCase() === 'pending' && (
                                     <div className="flex gap-2">
                                         <button
@@ -547,7 +604,7 @@ export default function Orders() {
                     </div>
                 </div>
             )}
-                    <Schobot />
+            <Schobot />
         </div>
     );
 }

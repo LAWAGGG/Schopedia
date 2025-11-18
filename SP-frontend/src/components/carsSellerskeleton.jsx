@@ -1,5 +1,5 @@
 export default function SkeletonCard() {
-    const skeletons = Array.from({ length: 15 });
+    const skeletons = Array.from({ length: 10 });
 
     return (
         <div className="flex flex-wrap gap-4">
