@@ -158,8 +158,9 @@ export default function Profile() {
                     >PROFILE</p>
 
                     {(loading || saving) && (
-                        <div className="absolute inset-0 bg-white/80 flex justify-center items-center z-10 rounded-md">
-                            <LoadingScreen />
+                        <div className="absolute bottom-70 inset-0  bg-white/100 flex justify-center items-center z-10 rounded-md">
+                            <p>Memuat data...</p>
+                            {/* <loadingScreen /> */}
                         </div>
                     )}
 
@@ -167,7 +168,7 @@ export default function Profile() {
                     <div className="flex items-center mb-10 w-full">
                         <img
                             src={preview || user.image}
-                            className="w-24 h-24 rounded-full mt-5  object-cover shadow-md"
+                            className="w-24 h-24 rounded-full mt-5 border object-cover shadow-md"
                         />
                         <div className="flex flex-col ml-7">
                             <h2 className="mt-3 text-xl font-semibold text-gray-800">
