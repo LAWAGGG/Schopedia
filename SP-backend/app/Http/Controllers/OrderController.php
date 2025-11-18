@@ -70,32 +70,43 @@ class OrderController extends Controller
         $orders = Order::where('seller_id', Auth::user()->id)
             ->with(['product', 'buyer'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
+        $sellerOrder = $orders->map(function ($order) {
+            return [
+                "id" => $order->id,
+                "quantity" => $order->quantity,
+                "total_price" => number_format($order->total_price, 2, ',', '.'),
+                "status" => ucfirst($order->status),
+                "shipping_status" => ucfirst($order->shipping_status),
+                "delivery_service" => $order->delivery_service ?? '-',
+                "tracking_number" => $order->tracking_number ?? '-',
+                "location" => $order->location,
+                "notes" => $order->notes ?? '-',
+                "date_ordered" => $order->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "product" => [
+                    "name" => $order->product->name,
+                    "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
+                ],
+                "buyer" => [
+                    "id" => $order->buyer->id,
+                    "name" => $order->buyer->name,
+                    "email" => $order->buyer->email,
+                ],
+            ];
+        });
+
+        // Kirim data + pagination info
         return response()->json([
-            "seller_orders" => $orders->map(function ($order) {
-                return [
-                    "id" => $order->id,
-                    "quantity" => $order->quantity,
-                    "total_price" => number_format($order->total_price, 2, ',', '.'),
-                    "status" => ucfirst($order->status),
-                    "shipping_status" => ucfirst($order->shipping_status),
-                    "delivery_service" => $order->delivery_service ?? '-',
-                    "tracking_number" => $order->tracking_number ?? '-',
-                    "location" => $order->location,
-                    "notes" => $order->notes ?? '-',
-                    "date_ordered" => $order->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                    "product" => [
-                        "name" => $order->product->name,
-                        "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
-                    ],
-                    "buyer" => [
-                        "id" => $order->buyer->id,
-                        "name" => $order->buyer->name,
-                        "email" => $order->buyer->email,
-                    ],
-                ];
-            })
+            "pagination" => [
+                "current_page" => $orders->currentPage(),
+                "last_page" => $orders->lastPage(),
+                "per_page" => $orders->perPage(),
+                "total" => $orders->total(),
+                "next_page_url" => $orders->nextPageUrl(),
+                "prev_page_url" => $orders->previousPageUrl(),
+            ],
+            "seller_orders" => $sellerOrder,
         ]);
     }
 
@@ -201,8 +212,8 @@ class OrderController extends Controller
                 "shipping_status" => $order->shipping_status,
                 "delivery_service" => $order->delivery_service,
                 "tracking_number" => $order->tracking_number,
-                "location"=>$order->location,
-                "notes"=>$order->notes,
+                "location" => $order->location,
+                "notes" => $order->notes,
                 "date_ordered" => $order->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s')
             ]
         ]);

@@ -32,18 +32,25 @@ class ProductController extends Controller
 
     public function showOwnProduct()
     {
-        $products = Product::where("user_id", Auth::user()->id)->with(['user'])->get();
+        $products = Product::where("user_id", Auth::user()->id)->with(['user'])->paginate(10);
 
         return response()->json([
-            "own_product" => $products->map(function ($product) {
+             "pagination" => [
+                "current_page" => $products->currentPage(),
+                "per_page" => $products->perPage(),
+                "total" => $products->total(),
+                "last_page" => $products->lastPage(),
+                "next_page_url" => $products->nextPageUrl(),
+                "prev_page_url" => $products->previousPageUrl(),
+             ],
+            "data" => $products->getCollection()->transform(function ($product) {
                 return [
                     "id" => $product->id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
                     "image" => url($product->image),
-                    // "image" => "http://localhost:8000/storage/" .$product->image,
                 ];
-            })
+            }),
         ]);
     }
 
