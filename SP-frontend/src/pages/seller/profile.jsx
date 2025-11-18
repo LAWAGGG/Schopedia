@@ -8,7 +8,7 @@ import LoadingScreen from "../../components/loadingProfile";
 import { useNavigate } from "react-router-dom";
 import Schobot from "../../components/Chatbot";
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function Profile() {
   const [user, setUser] = useState({
@@ -32,7 +32,7 @@ export default function Profile() {
 
   async function handleLogout(e) {
     e.preventDefault()
-    const res = await fetch(`${import.meta.env.VITE_API_URL}api/logout`, {
+    const res = await fetch(`${BASE_URL}api/logout`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -58,7 +58,7 @@ export default function Profile() {
 
     async function fetchUser() {
       try {
-        const res = await fetch(`${BASE_URL}/api/user`, {
+        const res = await fetch(`${BASE_URL}api/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Gagal mengambil data profil.");
@@ -70,8 +70,6 @@ export default function Profile() {
           name: data.own_profile.name || "",
           email: data.own_profile.email || "",
           image: data.own_profile.image
-            ? `${BASE_URL}/${data.own_profile.image.replace(/^\/?storage\//, 'storage/')}`
-            : "/default-profile.jpg",
         });
       } catch (err) {
         console.error(err);
@@ -97,15 +95,18 @@ export default function Profile() {
     if (!token) return;
 
     setSaving(true);
+
     try {
       const formData = new FormData();
-      formData.append("id", user.id);
-      if (form.name) formData.append("name", form.name);
-      if (form.email) formData.append("email", form.email);
-      if (form.password) formData.append("password", form.password);
+
+      // hanya kirim data yang diisi
+      if (form.name !== "") formData.append("name", form.name);
+      if (form.email !== "") formData.append("email", form.email);
+      if (form.password !== "") formData.append("password", form.password);
       if (form.imageFile) formData.append("image", form.imageFile);
 
-      const res = await fetch(`${BASE_URL}/api/users/update`, {
+      // request update
+      const res = await fetch(`${BASE_URL}api/users/update`, {
         method: "POST",
         headers: {
           "Accept": "application/json",
@@ -115,31 +116,44 @@ export default function Profile() {
       });
 
       const data = await res.json();
-      console.log(data);
+      console.log("UPDATE RESPONSE:", data);
 
-      if (res.ok) {
-        console.log("✅ Profil berhasil diperbarui!");
-        setUser(prev => ({
-          ...prev,
-          name: form.name || prev.name,
-          email: form.email || prev.email,
-          image: form.imageFile
-            ? preview
-            : data.own_profile.image
-              ? `${BASE_URL}/${data.own_profile.image.replace(/^\/?storage\//, 'storage/')}`
-              : prev.image,
-        }));
-        setForm(prev => ({ ...prev, password: "" }));
-        setPreview(null);
-        setToken(token, true, form.name || user.name);
-      } else {
+      if (!res.ok) {
         if (data.errors) {
           const errors = Object.values(data.errors).flat();
           errors.forEach(err => alert(err));
         } else {
-          alert(data.message || "⚠️ Gagal memperbarui profil");
+          alert(data.message || "Gagal memperbarui profil");
         }
+        return;
       }
+
+      // =========================
+      // UPDATE STATE USER
+      // =========================
+      const updated = data.user || data.own_profile;
+
+      setUser({
+        id: updated.id || "",
+        name: updated.name || "",
+        email: updated.email || "",
+        image: updated.image
+          ? (updated.image.startsWith("http")
+            ? updated.image
+            : `${BASE_URL}${updated.image}`)
+          : "/default-profile.jpg",
+      });
+
+
+      // reset form
+      setForm(prev => ({ ...prev, password: "" }));
+      setPreview(null);
+
+      // update name di local/session storage
+      setToken(token, true, updated.name, updated.role || user.role);
+
+      alert("Profil berhasil diperbarui!");
+
     } catch (err) {
       console.error(err);
       alert("Terjadi kesalahan saat menyimpan perubahan.");
@@ -170,8 +184,8 @@ export default function Profile() {
             <div className="rounded-full  bg-white shadow-lg">
               <img
                 className="rounded-full w-40 h-40 object-cover border-4 border-black shadow-md"
-                src={preview || user.image || "/default-profile.jpg"}
-                alt="profile"
+                src={user.image}
+                alt={user.name}
                 onError={(e) => { e.target.src = "/default-profile.jpg"; }}
               />
             </div>

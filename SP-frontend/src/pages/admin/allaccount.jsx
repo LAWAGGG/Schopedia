@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Trash2, User, Users, Grid2X2, Loader2 } from "lucide-react";
 import { getToken } from "../../utils/utils";
 
@@ -11,6 +11,7 @@ export default function AllAccount() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [resultMessage, setResultMessage] = useState("");
     const [showResultModal, setShowResultModal] = useState(false);
+    const navigate = useNavigate()
 
     const API_URL = import.meta.env.VITE_API_URL;
 

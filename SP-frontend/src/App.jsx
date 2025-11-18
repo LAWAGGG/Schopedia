@@ -36,19 +36,31 @@ import RoleGuard from "./components/RoleGuard";
 import { getToken, getUserRole, removeToken } from "./utils/utils";
 
 export default function App() {
-  // gunakan state supaya UI refresh saat token berubah
-  const [token, setTokenState] = useState(getToken());
-  const [role, setRoleState] = useState(getUserRole());
 
-  // Dengarkan perubahan storage (logout tab lain juga sync)
-  useEffect(() => {
-    const sync = () => {
-      setTokenState(getToken());
-      setRoleState(getUserRole());
-    };
-    window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
-  }, []);
+  function RedirectRoute({ children }) {
+    const token = getToken();
+    const role = getUserRole();
+
+    if (token) {
+      if (role === "admin") return <Navigate to="/dashboardadmin" replace />;
+      if (role === "seller") return <Navigate to="/dashboardseller" replace />;
+      if (role === "buyer") return <Navigate to="/dashboard" replace />;
+
+      return <Navigate to="/" replace />;
+    }
+
+    return children;
+  }
+
+  function ProtectedRoute({ children }) {
+    const token = getToken();
+
+    if (!token) {
+      return <Navigate to="/" replace />;
+    }
+
+    return children;
+  }
 
   // fungsi logout global
   const logout = () => {
@@ -59,113 +71,133 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Auth */}
+
+      {/* Login Page & Register Page */}
       <Route
         path="/"
         element={
-          !token ? (
-            <Login onLogout={logout} />
-          ) : (
-            <Navigate
-              to={
-                role === "admin"
-                  ? "/dashboardadmin"
-                  : role === "seller"
-                  ? "/dashboardseller"
-                  : role === "buyer"
-                  ? "/dashboard"
-                  : "/"
-              }
-              replace
-            />
-          )
+          <RedirectRoute>
+            <Login />
+          </RedirectRoute>
         }
       />
-
       <Route
         path="/register"
-        element={!token ? <Register /> : <Navigate to="/" replace />}
+        element={
+          <RedirectRoute>
+            <Register />
+          </RedirectRoute>
+        }
       />
 
       {/* Buyer */}
       <Route
         path="/dashboard"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <Dashboard logout={logout} />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <Dashboard />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/product/:id"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <ProductDetail />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <ProductDetail />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/product/seller/:id"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <ProfileSeller />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <ProfileSeller />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/profileBuyyer"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <BuyerProfile />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <BuyerProfile />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/ordersBuyyer"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <BuyerOrders />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <BuyerOrders />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/ordersBuyyer/:orderId"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <OrderDetail />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <OrderDetail />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/walletBuyyer"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <BuyerWallet />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <BuyerWallet />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/cart"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <Cart />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <Cart />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/topup"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <Topup />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <Topup />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/buyerhistory"
         element={
-          <RoleGuard allowedRoles={["buyer"]}>
-            <History />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["buyer"]}>
+              <History />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
 
@@ -173,25 +205,33 @@ export default function App() {
       <Route
         path="/dashboardadmin"
         element={
-          <RoleGuard allowedRoles={["admin"]}>
-            <DashboardAdmin logout={logout} />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["admin"]}>
+              <DashboardAdmin />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/categories"
         element={
-          <RoleGuard allowedRoles={["admin"]}>
-            <Categories />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["admin"]}>
+              <Categories />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/allaccount"
         element={
-          <RoleGuard allowedRoles={["admin"]}>
-            <AllAccount />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["admin"]}>
+              <AllAccount />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
 
@@ -199,50 +239,61 @@ export default function App() {
       <Route
         path="/dashboardseller"
         element={
-          <RoleGuard allowedRoles={["seller"]}>
-            <DashboardSeller logout={logout} />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["seller"]}>
+              <DashboardSeller />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/orders"
         element={
-          <RoleGuard allowedRoles={["seller"]}>
-            <Orders />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["seller"]}>
+              <Orders />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/profile"
         element={
-          <RoleGuard allowedRoles={["seller"]}>
-            <Profile />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["seller"]}>
+              <Profile />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/products"
         element={
-          <RoleGuard allowedRoles={["seller"]}>
-            <Product />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["seller"]}>
+              <Product />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/wallet"
         element={
-          <RoleGuard allowedRoles={["seller"]}>
-            <Wallet />
-          </RoleGuard>
+          <ProtectedRoute>
+            <RoleGuard allowedRoles={["seller"]}>
+              <Wallet />
+            </RoleGuard>
+          </ProtectedRoute>
         }
       />
 
-      {/* Components */}
-      <Route path="/sidebar" element={<SideBar />} />
-      <Route path="/policy" element={<Policy />} />
-
       {/* 404 */}
       <Route path="*" element={<Navigate to="/" replace />} />
+
     </Routes>
   );
 }
