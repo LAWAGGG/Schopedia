@@ -7,7 +7,7 @@ import { getToken } from "../../utils/utils";
 import LoadingScreen from "../../components/loadingProfile";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const BASE_URL = "http://localhost:8000";
+
 
 export default function Profile() {
     const [user, setUser] = useState({
@@ -60,8 +60,13 @@ export default function Profile() {
 
         async function fetchUser() {
             try {
-                const res = await fetch(`${BASE_URL}/api/user`, {
-                    headers: { Authorization: `Bearer ${token}` },
+                const res = await fetch(`${import.meta.env.VITE_API_URL}api/user`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        Authorization: `Bearer ${getToken()}`,
+                    },
                 });
 
                 const data = await res.json();
@@ -73,7 +78,7 @@ export default function Profile() {
                     email: data.own_profile.email || "",
                     phone_number: data.own_profile.phone_number || "",
                     image: data.own_profile.image
-                        ? `${BASE_URL}/${data.own_profile.image.replace(/^\/?storage\//, "storage/")}`
+                        ? `${import.meta.env.VITE_API_URL}${data.own_profile.image.replace(/^\/?storage\//, "storage/")}`
                         : "/default-profile.jpg",
                 });
             } finally {
@@ -107,7 +112,7 @@ export default function Profile() {
             if (form.imageFile) formData.append("image", form.imageFile);
             if (form.phone_number) formData.append("phone_number", form.phone_number);
 
-            const res = await fetch(`${BASE_URL}/api/users/update`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}api/users/update`, {
                 method: "POST",
                 headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
                 body: formData,
@@ -124,7 +129,7 @@ export default function Profile() {
                     image: form.imageFile
                         ? preview
                         : data.own_profile.image
-                            ? `${BASE_URL}/${data.own_profile.image.replace(/^\/?storage\//, "storage/")}`
+                            ? `${import.meta.env.VITE_API_URL}${data.own_profile.image.replace(/^\/?storage\//, "storage/")}`
                             : prev.image,
                 }));
 
