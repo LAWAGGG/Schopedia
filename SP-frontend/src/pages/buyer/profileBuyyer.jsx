@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "../../components/sidebarBuyyer";
 import ProfileNav from "../../components/profileNav";
 import { Pencil, LogOut, LayoutDashboard, Truck, Wallet, User, Save } from "lucide-react";
-import setToken from "../../utils/utils";
+import setToken, { removeToken } from "../../utils/utils";
 import { getToken } from "../../utils/utils";
 import LoadingScreen from "../../components/loadingProfile";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -34,6 +34,7 @@ export default function Profile() {
 
     async function handleLogout(e) {
         e.preventDefault();
+
         const res = await fetch(`${import.meta.env.VITE_API_URL}api/logout`, {
             method: "POST",
             headers: {
@@ -43,8 +44,12 @@ export default function Profile() {
             },
         });
 
-        if (res.status === 200) navigate("/");
+        if (res.status === 200) {
+            removeToken();       // WAJIB
+            navigate("/");       // balik ke login
+        }
     }
+
 
     useEffect(() => {
         const token = getToken();
@@ -160,13 +165,13 @@ export default function Profile() {
                             className="w-24 h-24 rounded-full mt-5  object-cover shadow-md"
                         />
                         <div className="flex flex-col ml-7">
-                        <h2 className="mt-3 text-xl font-semibold text-gray-800">
-                            {user.name}
-                        </h2>
+                            <h2 className="mt-3 text-xl font-semibold text-gray-800">
+                                {user.name}
+                            </h2>
 
-                        <p className=" text-gray-500 text-sm">
-                            {user.email}
-                        </p>
+                            <p className=" text-gray-500 text-sm">
+                                {user.email}
+                            </p>
                         </div>
                     </div>
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "../../components/sideBar";
 import ProfileNav from "../../components/profileNav";
 import { Pencil, LogOut } from "lucide-react";
-import setToken from "../../utils/utils";
+import setToken, { removeToken } from "../../utils/utils";
 import { getToken } from "../../utils/utils";
 import LoadingScreen from "../../components/loadingProfile";
 import { useNavigate } from "react-router-dom";
@@ -42,7 +42,8 @@ export default function Profile() {
     })
     const data = await res.json()
     if (res.status == 200) {
-      navigate('/')
+      removeToken();
+      navigate("/");
     }
     console.log(data)
   }

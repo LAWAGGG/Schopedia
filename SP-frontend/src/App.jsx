@@ -52,7 +52,8 @@ export default function App() {
                   ? "/dashboardadmin"
                   : role === "seller"
                   ? "/dashboardseller"
-                  : "/dashboard"
+                  : role === "buyer"?
+                  "/dashboard":"/"
               }
               replace
             />
