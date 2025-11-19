@@ -46,10 +46,10 @@ class OrderController extends Controller
 
     public function getOrdersAsBuyer()
     {
-        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->get();
+        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->paginate(10);
 
         return response()->json([
-            "buyer_orders" => $orders->map(function ($order) {
+             "buyer_orders" => $orders->map(function ($order) {
                 return [
                     "id" => $order->id,
                     "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
@@ -61,7 +61,15 @@ class OrderController extends Controller
                         "image" => url($order->product->image) ?? null,
                     ],
                 ];
-            })
+            }),
+            "pagination" => [
+                "current_page" => $orders->currentPage(),
+                "last_page" => $orders->lastPage(),
+                "per_page" => $orders->perPage(),
+                "total" => $orders->total(),
+                "next_page_url" => $orders->nextPageUrl(),
+                "prev_page_url" => $orders->previousPageUrl(),
+            ],
         ]);
     }
 
@@ -96,7 +104,6 @@ class OrderController extends Controller
             ];
         });
 
-        // Kirim data + pagination info
         return response()->json([
             "pagination" => [
                 "current_page" => $orders->currentPage(),

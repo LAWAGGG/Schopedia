@@ -15,12 +15,10 @@ class OrderSeeder extends Seeder
         $sellers = User::where('role', 'seller')->get();
         $products = Product::all();
 
+        // Status yang valid
         $statuses = ['pending', 'accepted', 'canceled', 'completed'];
 
-        $shippingStatuses = ['pending', 'shipped', 'delivered'];
-
-        $deliveryServices = ['JNE', 'J&T', 'Sicepat', 'AnterAja', 'Ninja Express'];
-
+        // Catatan
         $notesList = [
             'Tolong bungkus yang rapi ya.',
             'Harap dikirim cepat, butuh urgent.',
@@ -30,6 +28,7 @@ class OrderSeeder extends Seeder
             'Jangan sampai salah alamat.',
         ];
 
+        // Lokasi
         $locations = [
             'Jl. Dewi Sartika No.',
             'Jl. Otista Raya No.',
@@ -43,12 +42,24 @@ class OrderSeeder extends Seeder
             for ($i = 0; $i < 20; $i++) {
 
                 $product = $products->random();
+                $seller = $sellers->random();
+
                 $quantity = rand(1, 5);
+                $status = $statuses[array_rand($statuses)];
+
+                // Shipping status otomatis berdasarkan status order
+                $shipping_status = match ($status) {
+                    'pending'   => 'pending',
+                    'accepted'  => 'pending',
+                    'canceled'  => 'pending',
+                    'completed' => 'delivered',
+                    default     => 'pending'
+                };
 
                 Order::create([
                     'user_id' => $buyer->id,
                     'product_id' => $product->id,
-                    'seller_id' => $sellers->random()->id,
+                    'seller_id' => $seller->id,
 
                     'quantity' => $quantity,
                     'total_price' => $product->price * $quantity,
@@ -56,11 +67,11 @@ class OrderSeeder extends Seeder
                     'location' => $locations[array_rand($locations)] . rand(1, 120) . ', Jakarta Selatan',
                     'notes' => $notesList[array_rand($notesList)],
 
-                    'status' => $statuses[array_rand($statuses)],
-                    'shipping_status' => $shippingStatuses[array_rand($shippingStatuses)],
+                    'status' => $status,
+                    'shipping_status' => $shipping_status,
 
-                    'delivery_service' => $deliveryServices[array_rand($deliveryServices)],
-                    'tracking_number' => strtoupper(substr(md5(rand()), 0, 10)),
+                    'delivery_service' => $status === 'completed' ? 'JNE' : null,
+                    'tracking_number' => $status === 'completed' ? strtoupper(substr(md5(rand()), 0, 10)) : null,
                 ]);
             }
         }
