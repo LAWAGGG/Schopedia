@@ -34,6 +34,7 @@ import Policy from "./components/policy";
 
 import RoleGuard from "./components/RoleGuard";
 import { getToken, getUserRole, removeToken } from "./utils/utils";
+import NotFound from "./components/NotFound";
 
 export default function App() {
 
@@ -71,6 +72,8 @@ export default function App() {
 
   return (
     <Routes>
+
+      <Route path="*" element={<NotFound/>}></Route>
 
       {/* Login Page & Register Page */}
       <Route

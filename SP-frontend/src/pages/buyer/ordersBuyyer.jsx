@@ -24,8 +24,15 @@ export default function OrdersBuyyer() {
   const [activeFilter, setActiveFilter] = useState("all"); // 'all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
   const navigate = useNavigate();
   const location = useLocation();
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    next_page_url: null,
+    prev_page_url: null
+  });
 
-  const fetchOrders = async () => {
+
+  const fetchOrders = async (url = `${import.meta.env.VITE_API_URL}api/order/buyer`) => {
     const token = getToken();
     if (!token) {
       navigate("/login");
@@ -33,14 +40,12 @@ export default function OrdersBuyyer() {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}api/order/buyer`, {
+      const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
-
-      console.log("🔄 Response Status:", res.status);
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -48,49 +53,30 @@ export default function OrdersBuyyer() {
 
       const data = await res.json();
 
-      console.log("📦 FULL API RESPONSE:", data);
-
       let buyerOrders = [];
 
       if (Array.isArray(data.buyer_orders)) {
         buyerOrders = data.buyer_orders;
-        console.log("✅ Menggunakan data.buyer_orders");
-      } else if (Array.isArray(data.orders)) {
-        buyerOrders = data.orders;
-        console.log("✅ Menggunakan data.orders");
-      } else if (Array.isArray(data.data)) {
-        buyerOrders = data.data;
-        console.log("✅ Menggunakan data.data");
-      } else if (Array.isArray(data)) {
-        buyerOrders = data;
-        console.log("✅ Menggunakan data langsung (array)");
-      } else {
-        console.log("❌ Struktur data tidak dikenali:", data);
-        buyerOrders = [];
       }
 
-      console.log(`🎯 Found ${buyerOrders.length} orders`);
-
-      buyerOrders.forEach((order, index) => {
-        console.log(`   Order ${index + 1}:`, {
-          id: order.id,
-          status: order.status,
-          product_name: order.product?.name,
-          quantity: order.quantity,
-          total_price: order.total_price,
-          date: order.date_ordered,
-          shipping_status: order.shipping_status
-        });
-      });
-
       setOrders(buyerOrders);
+
+      if (data.pagination) {
+        setPagination({
+          current_page: data.pagination.current_page,
+          last_page: data.pagination.last_page,
+          next_page_url: data.pagination.next_page_url,
+          prev_page_url: data.pagination.prev_page_url,
+        });
+      }
+
     } catch (err) {
-      console.error("❌ Error fetching orders:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchOrders();
@@ -98,6 +84,11 @@ export default function OrdersBuyyer() {
     const interval = setInterval(fetchOrders, 15000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchOrders(`${import.meta.env.VITE_API_URL}api/order/buyer?page=1`);
+  }, [activeFilter]);
 
   const getStatusIcon = (order) => {
     const statusLower = String(order.status || '').toLowerCase();
@@ -201,33 +192,28 @@ export default function OrdersBuyyer() {
     }
   };
 
-
   const filteredOrders = orders.filter(order => {
     if (activeFilter === "all") return true;
 
-    const statusLower = String(order.status || '').toLowerCase();
-    const shippingStatusLower = String(order.shipping_status || '').toLowerCase();
+    const statusLower = String(order.status || "").toLowerCase();
+    const shippingStatusLower = String(order.shipping_status || "").toLowerCase();
 
     const isCompleted = shippingStatusLower === "delivered" && statusLower === "completed";
     const isDelivered = shippingStatusLower === "delivered" && statusLower !== "completed";
 
-    switch (activeFilter) {
-      case "pending":
-        return ["pending", "menunggu"].includes(statusLower);
-      case "processing":
-        return ["processing", "diproses", "accepted", "confirmed", "dikonfirmasi"].includes(statusLower);
-      case "shipped":
-        return ["shipped", "dikirim"].includes(statusLower) && !isDelivered && !isCompleted;
-      case "delivered":
-        return isDelivered;
-      case "completed":
-        return isCompleted;
-      case "cancelled":
-        return ["canceled", "cancelled", "dibatalkan"].includes(statusLower);
-      default:
-        return true;
-    }
+    if (activeFilter === "completed") return isCompleted;
+    if (activeFilter === "delivered") return isDelivered;
+
+    const statusMap = {
+      pending: ["pending", "menunggu"],
+      processing: ["processing", "diproses", "accepted", "confirmed", "dikonfirmasi"],
+      shipped: ["shipped", "dikirim"],
+      cancelled: ["canceled", "cancelled", "dibatalkan"],
+    };
+
+    return statusMap[activeFilter]?.includes(statusLower);
   });
+
 
   const handleManualRefresh = () => {
     setLoading(true);
@@ -272,7 +258,7 @@ export default function OrdersBuyyer() {
 
         {/* Debug Info - selalu tampil */}
         {loading ? (
-          <div className="space-y-4 mb-24">
+          <div className="space-y-4 mb-10">
             <SkeletonOrderCard />
             <SkeletonOrderCard />
             <SkeletonOrderCard />
@@ -368,7 +354,7 @@ export default function OrdersBuyyer() {
                 </h3>
               </div>
             ) : (
-              <div className="space-y-4 mb-24">
+              <div className="space-y-4 mb-10">
                 {filteredOrders.map((order) => (
                   <Link
                     key={order.id}
@@ -413,6 +399,40 @@ export default function OrdersBuyyer() {
             )}
           </>
         )}
+
+        {/* Pagination Buttons */}
+        <div className="flex justify-center items-center gap-4 mt-6 mb-24">
+          {/* Previous Button */}
+          <button
+            disabled={!pagination.prev_page_url}
+            onClick={() => fetchOrders(pagination.prev_page_url)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all
+      ${pagination.prev_page_url
+                ? "bg-purple-600 text-white hover:bg-purple-700"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+          >
+            ← Previous
+          </button>
+
+          <span className="text-gray-600 text-sm">
+            Page {pagination.current_page} of {pagination.last_page}
+          </span>
+
+          {/* Next Button */}
+          <button
+            disabled={!pagination.next_page_url}
+            onClick={() => fetchOrders(pagination.next_page_url)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all
+      ${pagination.next_page_url
+                ? "bg-purple-600 text-white hover:bg-purple-700"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+          >
+            Next →
+          </button>
+        </div>
+
 
         {/* Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden">
