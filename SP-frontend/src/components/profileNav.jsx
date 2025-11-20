@@ -14,7 +14,7 @@ export default function ProfileNav({title}) {
     }, []);
 
     return (
-        <div className="shadow-sm ml-2 rounded-sm flex justify-between items-center p-4 w-[969px]">
+        <div className="shadow-sm ml-2 rounded-sm flex justify-between items-center p-4 w-full  max-w-[1200px]">
             <h1 className="text-xl font-bold">{title}</h1>
             <div className="flex gap-2 border border-gray-300 rounded-2xl py-1 px-3 items-center shrink-0">
                 <User className="w-4 h-4 text-gray-700" />
