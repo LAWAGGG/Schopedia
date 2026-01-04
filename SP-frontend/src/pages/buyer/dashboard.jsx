@@ -5,12 +5,6 @@ import CardBuyer from "../../components/cardBuyer";
 import Sidebarbuyyer from "../../components/sidebarBuyyer";
 import SearchBar from "../../components/searchBar";
 import { Home, Truck, Wallet, User, ShoppingCart } from "lucide-react";
-import banner3 from "../../../public/banner-schopedia2.png";
-// import banner from "../../../public/banner2.svg";
-import banner4 from "../../../public/banner-schopedia3.png";
-// import banner3 from "../../../public/banner3.jpg";
-import banner from "../../../public/banner-schopedia1.png";
-// import banner4 from "../../../public/banner4.webp";
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
@@ -24,10 +18,20 @@ export default function Dashboard() {
   const [category, setCategory] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  
+  // States untuk infinite scroll
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerRef = useRef(null);
+  const loadMoreRef = useRef(null);
 
-
-  const banners = [banner, banner3, banner4];
-
+  const banners = [
+    "/banner-schopedia1.png",
+    "/banner-schopedia2.png",
+    "/banner-schopedia3.png",
+  ];
+  
   async function fetchCategories() {
     try {
       setLoadingCategories(true);
@@ -49,10 +53,15 @@ export default function Dashboard() {
     }
   }
 
-  async function FetchProduct() {
+  async function FetchProduct(page = 1, append = false) {
     try {
-      setIsFetching(true);
-      const res = await fetch(`${import.meta.env.VITE_API_URL}api/product`, {
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsFetching(true);
+      }
+      
+      const res = await fetch(`${import.meta.env.VITE_API_URL}api/product?page=${page}&per_page=10`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -60,23 +69,79 @@ export default function Dashboard() {
           "Authorization": `Bearer ${getToken()}`,
         },
       });
+      
       if (!res.ok) throw new Error(`Gagal fetch produk (status ${res.status})`);
+      
       const data = await res.json();
       const finalData = data.data || data.all_products || data;
-      setProducts(Array.isArray(finalData) ? finalData : []);
-      setFilteredProducts(Array.isArray(finalData) ? finalData : []);
+      const newProducts = Array.isArray(finalData) ? finalData : [];
+
+      console.log(data)
+      
+      // Cek apakah masih ada data selanjutnya
+      if (newProducts.length === 0 || newProducts.length < 15) {
+        setHasMore(false);
+      }
+      
+      if (append) {
+        // Append produk baru ke produk yang sudah ada
+        setProducts(prev => [...prev, ...newProducts]);
+        setFilteredProducts(prev => [...prev, ...newProducts]);
+      } else {
+        // Set produk baru (reset)
+        setProducts(newProducts);
+        setFilteredProducts(newProducts);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setIsFetching(false);
+      setIsLoadingMore(false);
     }
   }
 
+  // Setup Intersection Observer
   useEffect(() => {
-    FetchProduct();
+    const options = {
+      root: null,
+      rootMargin: '100px',
+      threshold: 0.1
+    };
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      const target = entries[0];
+      if (target.isIntersecting && hasMore && !isLoadingMore && !isFetching) {
+        // Load halaman berikutnya
+        setCurrentPage(prev => prev + 1);
+      }
+    }, options);
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, isLoadingMore, isFetching]);
+
+  // Fetch produk saat currentPage berubah
+  useEffect(() => {
+    if (currentPage === 1) {
+      FetchProduct(1, false);
+    } else {
+      FetchProduct(currentPage, true);
+    }
+  }, [currentPage]);
+
+  // Initial fetch
+  useEffect(() => {
     fetchCategories();
   }, []);
 
+  // Filter produk berdasarkan kategori
   useEffect(() => {
     if (activeCategory === "All") {
       setFilteredProducts(products);
@@ -86,6 +151,14 @@ export default function Dashboard() {
       );
     }
   }, [activeCategory, products]);
+
+  // Reset pagination saat kategori berubah
+  useEffect(() => {
+    setCurrentPage(1);
+    setHasMore(true);
+    setProducts([]);
+    setFilteredProducts([]);
+  }, [activeCategory]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -141,7 +214,6 @@ export default function Dashboard() {
       </div>
 
       <div className="flex-1 md:ml-64 px-4 pt- pb-24 md:pt- md:px-8 max-w-full overflow-hidden relative">
-
         <div className="flex items-center justify-between mb-4 md:hidden">
           <h1 className="text-2xl font-bold text-gray-800">Welcome</h1>
           <ShoppingCart onClick={() => navigate("/cart")} className="w-6 h-6 text-purple-600" />
@@ -190,7 +262,6 @@ export default function Dashboard() {
             Kategori
           </h2>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-            {/* All Category Button */}
             <button
               onClick={() => setActiveCategory("All")}
               className={`px-5 py-1.5 rounded-xl text-sm flex-shrink-0 ${activeCategory === "All"
@@ -229,61 +300,22 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-2 mb-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
-          {isFetching ? (
+          {isFetching && currentPage === 1 ? (
             <>
-              <div className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
-                {/* Gambar */}
-                <div className="w-full h-40 bg-gray-200"></div>
-                {/* Isi */}
-                <div className="p-2">
-                  {/* Title skeleton */}
-                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
-                  {/* Price skeleton */}
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+              {[...Array(4)].map((_, index) => (
+                <div key={index} className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
+                  <div className="w-full h-40 bg-gray-200"></div>
+                  <div className="p-2">
+                    <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
+                    <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
-
-                {/* Gambar */}
-                <div className="w-full h-40 bg-gray-200"></div>
-                {/* Isi */}
-                <div className="p-2">
-                  {/* Title skeleton */}
-                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
-                  {/* Price skeleton */}
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                </div>
-              </div>
-              <div className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
-
-                {/* Gambar */}
-                <div className="w-full h-40 bg-gray-200"></div>
-                {/* Isi */}
-                <div className="p-2">
-                  {/* Title skeleton */}
-                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
-                  {/* Price skeleton */}
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                </div>
-              </div>
-              <div className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
-
-                {/* Gambar */}
-                <div className="w-full h-40 bg-gray-200"></div>
-                {/* Isi */}
-                <div className="p-2">
-                  {/* Title skeleton */}
-                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
-                  {/* Price skeleton */}
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                </div>
-              </div>
-
+              ))}
             </>
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <div
-                key={product.id}
+                key={`${product.id}-${Math.random()}`}
                 onClick={() => navigate(`/product/${product.id}`)}
                 className="flex justify-center"
               >
@@ -297,6 +329,33 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* Loading indicator untuk infinite scroll */}
+        {isLoadingMore && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 mb-4">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="bg-white rounded-xl pb-3 shadow-md overflow-hidden w-43 flex-shrink-0 border border-gray-100 animate-pulse">
+                <div className="w-full h-40 bg-gray-200"></div>
+                <div className="p-2">
+                  <div className="h-4 bg-gray-300 rounded w-4/5 mb-2"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Trigger element untuk Intersection Observer */}
+        {hasMore && !isLoadingMore && (
+          <div ref={loadMoreRef} className="h-10 flex justify-center items-center">
+            <div className="text-gray-400 text-sm">Loading more...</div>
+          </div>
+        )}
+
+        {!hasMore && filteredProducts.length > 0 && (
+          <div className="text-center text-gray-400 py-8">
+            Tidak ada produk lagi
+          </div>
+        )}
 
         <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden z-50">
           <button onClick={() => navigate("/dashboard")} className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}>

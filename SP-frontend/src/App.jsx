@@ -38,6 +38,15 @@ import NotFound from "./components/NotFound";
 
 export default function App() {
 
+  // debug bypass: set VITE_DEBUG_SIMPLE=1 to quickly verify React mounts
+  // if (import.meta.env.VITE_DEBUG_SIMPLE === '1') {
+  //   return (
+  //     <div style={{padding:20,fontFamily:'Plus Jakarta Sans, sans-serif'}}>
+  //       App mounted (debug)
+  //     </div>
+  //   );
+  // }
+
   function RedirectRoute({ children }) {
     const token = getToken();
     const role = getUserRole();
@@ -73,7 +82,7 @@ export default function App() {
   return (
     <Routes>
 
-      <Route path="*" element={<NotFound/>}></Route>
+     {/* <Route path="*" element={<NotFound/>}></Route> */}
 
       {/* Login Page & Register Page */}
       <Route
