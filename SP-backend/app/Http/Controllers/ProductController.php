@@ -15,9 +15,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product = Product::with(['user', 'category'])->get();
+        $product = Product::with(['user', 'category'])->paginate();
 
         return response()->json([
+            "page"=>$product->currentPage(),
+            "per_page"=>$product->perPage(),
             "all_products" => $product->map(function ($product) {
                 return [
                     "id" => $product->id,
