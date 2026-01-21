@@ -13,20 +13,33 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $product = Product::with(['user', 'category'])->paginate();
+        $query = Product::with(['user', 'category'])->orderBy("updated_at", "desc");
+
+        if ($request->search) {
+            $search = strtolower($request->search);
+            $query->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+        }
+
+        if ($request->category) {
+            $query->whereHas("category", function ($cat) use ($request) {
+                $cat->where("name", $request->category);
+            });
+        }
+
+        $products = $query->paginate();
 
         return response()->json([
-            "page"=>$product->currentPage(),
-            "per_page"=>$product->perPage(),
-            "all_products" => $product->map(function ($product) {
+            "page" => $products->currentPage(),
+            "per_page" => $products->perPage(),
+            "all_products" => $products->map(function ($products) {
                 return [
-                    "id" => $product->id,
-                    "name" => $product->name,
-                    "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
-                    "image" => url($product->image),
-                    "category_id" => $product->category_id
+                    "id" => $products->id,
+                    "name" => $products->name,
+                    "price" => 'Rp' . number_format($products->price, 2, ',', '.'),
+                    "image" => url($products->image),
+                    "category_id" => $products->category_id
                 ];
             })
         ]);
@@ -34,17 +47,17 @@ class ProductController extends Controller
 
     public function showOwnProduct()
     {
-        $products = Product::where("user_id", Auth::user()->id)->with(['user'])->paginate(10);
+        $products = Product::where("user_id", Auth::user()->id)->with(['user'])->orderBy("updated_at", "desc")->paginate(10);
 
         return response()->json([
-             "pagination" => [
+            "pagination" => [
                 "current_page" => $products->currentPage(),
                 "per_page" => $products->perPage(),
                 "total" => $products->total(),
                 "last_page" => $products->lastPage(),
                 "next_page_url" => $products->nextPageUrl(),
                 "prev_page_url" => $products->previousPageUrl(),
-             ],
+            ],
             "data" => $products->getCollection()->transform(function ($product) {
                 return [
                     "id" => $product->id,

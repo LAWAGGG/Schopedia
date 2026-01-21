@@ -75,7 +75,7 @@ class AuthController extends Controller
         $token = $user->createToken('koentji', [], $expiresAt)->plainTextToken;
 
         return response()->json([
-            'message' => 'User berhasil login.',
+            'message' => 'User logged in succesfully.',
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
