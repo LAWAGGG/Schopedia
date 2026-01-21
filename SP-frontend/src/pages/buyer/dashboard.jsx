@@ -18,11 +18,13 @@ export default function Dashboard() {
   const [category, setCategory] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  
+
   // States untuk infinite scroll
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const observerRef = useRef(null);
   const loadMoreRef = useRef(null);
 
@@ -31,7 +33,7 @@ export default function Dashboard() {
     "/banner-schopedia2.png",
     "/banner-schopedia3.png",
   ];
-  
+
   async function fetchCategories() {
     try {
       setLoadingCategories(true);
@@ -60,8 +62,18 @@ export default function Dashboard() {
       } else {
         setIsFetching(true);
       }
-      
-      const res = await fetch(`${import.meta.env.VITE_API_URL}api/product?page=${page}&per_page=10`, {
+
+      let url = `${import.meta.env.VITE_API_URL}api/product?page=${page}&per_page=10`;
+
+      if (debouncedSearch) {
+        url += `&search=${debouncedSearch}`;
+      }
+
+      if (activeCategory !== "All") {
+        url += `&category=${activeCategory.name}`;
+      }
+
+      const res = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -69,20 +81,20 @@ export default function Dashboard() {
           "Authorization": `Bearer ${getToken()}`,
         },
       });
-      
+
       if (!res.ok) throw new Error(`Gagal fetch produk (status ${res.status})`);
-      
+
       const data = await res.json();
       const finalData = data.data || data.all_products || data;
       const newProducts = Array.isArray(finalData) ? finalData : [];
 
       console.log(data)
-      
+
       // Cek apakah masih ada data selanjutnya
-      if (newProducts.length === 0 || newProducts.length < 15) {
+      if (newProducts.length === 0 || newProducts.length < 10) {
         setHasMore(false);
       }
-      
+
       if (append) {
         // Append produk baru ke produk yang sudah ada
         setProducts(prev => [...prev, ...newProducts]);
@@ -127,38 +139,38 @@ export default function Dashboard() {
     };
   }, [hasMore, isLoadingMore, isFetching]);
 
-  // Fetch produk saat currentPage berubah
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500); // 500ms delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  // Fetch produk saat currentPage atau debouncedSearch atau activeCategory berubah
   useEffect(() => {
     if (currentPage === 1) {
       FetchProduct(1, false);
     } else {
       FetchProduct(currentPage, true);
     }
-  }, [currentPage]);
+  }, [currentPage, debouncedSearch, activeCategory]);
 
   // Initial fetch
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Filter produk berdasarkan kategori
-  useEffect(() => {
-    if (activeCategory === "All") {
-      setFilteredProducts(products);
-    } else {
-      setFilteredProducts(
-        products.filter((p) => p.category_id === activeCategory.id)
-      );
-    }
-  }, [activeCategory, products]);
-
-  // Reset pagination saat kategori berubah
+  // Reset pagination saat kategori atau debouncedSearch berubah
   useEffect(() => {
     setCurrentPage(1);
     setHasMore(true);
     setProducts([]);
     setFilteredProducts([]);
-  }, [activeCategory]);
+  }, [activeCategory, debouncedSearch]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -220,7 +232,10 @@ export default function Dashboard() {
         </div>
 
         <div className="w-full mb-4">
-          <SearchBar title="Search" />
+          <SearchBar
+            title="Search"
+            onSearch={(value) => setSearchQuery(value)}
+          />
         </div>
 
         <div className="relative w-full overflow-hidden rounded-xl mb-6">

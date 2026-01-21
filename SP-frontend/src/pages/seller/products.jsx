@@ -37,40 +37,48 @@ export default function Dashboard() {
     });
 
     // Fetch semua product dengan pagination
-    async function FetchProduct(page = 1) {
+    async function FetchProduct(page = 1, append = false) {
         try {
-            setIsFetching(true);
-            const url = page === 1 
-                ? `${import.meta.env.VITE_API_URL}api/products/own`
-                : `${import.meta.env.VITE_API_URL}api/products/own?page=${page}`;
-            
-            const res = await fetch(url, {
-                headers: { Authorization: `Bearer ${getToken()}` },
+            append ? setIsLoadingMore(true) : setIsFetching(true);
+
+            const params = new URLSearchParams({
+                page: page.toString(),
+                search: debouncedSearch || "",
             });
 
-            const data = await res.json();
-            console.log("Response data:", data);
-
-            if (data.data && Array.isArray(data.data)) {
-                setProducts(data.data);
-                setFilteredProducts(data.data);
-                
-                // Set pagination info
-                if (data.pagination) {
-                    setPagination({
-                        current_page: data.pagination.current_page,
-                        per_page: data.pagination.per_page,
-                        total: data.pagination.total,
-                        last_page: data.pagination.last_page,
-                        next_page_url: data.pagination.next_page_url,
-                        prev_page_url: data.pagination.prev_page_url
-                    });
+            const res = await fetch(
+                `${import.meta.env.VITE_API_URL}api/product?${params.toString()}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        Authorization: `Bearer ${getToken()}`,
+                    },
                 }
+            );
+
+            if (!res.ok) throw new Error(`Gagal fetch produk (${res.status})`);
+
+            const data = await res.json();
+            const newProducts = data.data || [];
+
+            if (newProducts.length < 10) {
+                setHasMore(false);
+            }
+
+            if (append) {
+                setProducts((prev) => [...prev, ...newProducts]);
+                setFilteredProducts((prev) => [...prev, ...newProducts]);
+            } else {
+                setProducts(newProducts);
+                setFilteredProducts(newProducts);
             }
         } catch (err) {
-            console.error("gagal: ", err);
+            setError(err.message);
         } finally {
             setIsFetching(false);
+            setIsLoadingMore(false);
         }
     }
 
@@ -93,6 +101,10 @@ export default function Dashboard() {
         FetchProduct();
         fetchCategories();
     }, []);
+
+    useEffect(() => {
+        FetchProduct(currentPage, currentPage !== 1);
+    }, [currentPage, debouncedSearch]);
 
     // Navigation untuk pagination
     const handleNextPage = () => {
@@ -303,11 +315,10 @@ export default function Dashboard() {
                         <button
                             onClick={handlePrevPage}
                             disabled={!pagination.prev_page_url}
-                            className={`px-4 py-2 rounded-lg border ${
-                                !pagination.prev_page_url 
-                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                                    : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
-                            }`}
+                            className={`px-4 py-2 rounded-lg border ${!pagination.prev_page_url
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                                }`}
                         >
                             Previous
                         </button>
@@ -321,11 +332,10 @@ export default function Dashboard() {
                         <button
                             onClick={handleNextPage}
                             disabled={!pagination.next_page_url}
-                            className={`px-4 py-2 rounded-lg border ${
-                                !pagination.next_page_url 
-                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                                    : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
-                            }`}
+                            className={`px-4 py-2 rounded-lg border ${!pagination.next_page_url
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                                }`}
                         >
                             Next
                         </button>
