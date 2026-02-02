@@ -45,9 +45,16 @@ class ProductController extends Controller
         ]);
     }
 
-    public function showOwnProduct()
+    public function showOwnProduct(Request $request)
     {
-        $products = Product::where("user_id", Auth::user()->id)->with(['user'])->orderBy("updated_at", "desc")->paginate(10);
+        $query = Product::where("user_id", Auth::user()->id)->with(['user'])->orderBy("updated_at", "desc");
+
+        $search = $request->search;
+        if ($search) {
+            $query->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+        }
+
+        $products = $query->paginate(10);
 
         return response()->json([
             "pagination" => [

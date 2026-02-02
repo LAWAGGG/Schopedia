@@ -32,6 +32,7 @@ class UserController extends Controller
                     "phone_number" => $user->wallet->phone_number,
                     "role" => $user->role,
                     "image" => url($user->image),
+                    // "image" => $user->image,
                     "products" => $user->products->map(function ($product) {
                         return [
                             "id" => $product->id,
@@ -93,7 +94,7 @@ class UserController extends Controller
 
         $val = Validator::make($request->all(), [
             'name' => "nullable|string",
-            'password' => 'nullable|max:20',
+            'password' => 'nullable|max:20|min:6',
             'email' => 'nullable|unique:users,email',
             'image' => 'nullable|image|mimes:png,jpg,jpeg|max:5120'
         ], [
