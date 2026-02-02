@@ -16,7 +16,7 @@ export default function Charts() {
 
     const fetchMonthlySales = async () => {
         try {
-            const response = await fetch("http://localhost:8000/api/selling/orders", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}api/selling/orders`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",

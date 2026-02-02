@@ -163,12 +163,12 @@ export default function Profile() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <div className="hidden md:block w-64">
         <Sidebar />
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-gray-50">
         <div className="w-full bg-white">
           <ProfileNav title="Profile" />
         </div>
@@ -186,7 +186,7 @@ export default function Profile() {
                 className="rounded-full w-40 h-40 object-cover border-4 border-black shadow-md"
                 src={user.image}
                 alt={user.name}
-                onError={(e) => { e.target.src = "/default-profile.jpg"; }}
+                // onError={(e) => { e.target.src = "/default-profile.jpg"; }}
               />
             </div>
             <label

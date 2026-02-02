@@ -23,6 +23,8 @@ export default function DashboardSeller() {
                 const res = await fetch(`${import.meta.env.VITE_API_URL}api/selling/dashboard`, {
                     headers: {
                         "Authorization": `Bearer ${getToken()}`,
+                        "Content-Type":"application/json",
+                        "Accept":"application/json",
                     },
                 });
                 if (!res.ok) throw new Error("Gagal fetch dashboard");
@@ -41,7 +43,7 @@ export default function DashboardSeller() {
     }, []);
 
     return (
-        <div className="dashboard">
+        <div className="dashboard bg-gray-50">
             <div className="sidebar">
                 <Sidebar />
             </div>

@@ -7,8 +7,6 @@ import { getToken } from "../../utils/utils";
 import LoadingScreen from "../../components/loadingProfile";
 import { useNavigate, useLocation } from "react-router-dom";
 
-
-
 export default function Profile() {
     const [user, setUser] = useState({
         id: "",
@@ -78,8 +76,8 @@ export default function Profile() {
                     email: data.own_profile.email || "",
                     phone_number: data.own_profile.phone_number || "",
                     image: data.own_profile.image
-                        ? `${import.meta.env.VITE_API_URL}${data.own_profile.image.replace(/^\/?storage\//, "storage/")}`
-                        : "/default-profile.jpg",
+                    // ? `${import.meta.env.VITE_API_URL}${data.own_profile.image.replace(/^\/?storage\//, "storage/")}`
+                    // : "/default-profile.jpg",
                 });
             } finally {
                 setLoading(false);
@@ -127,10 +125,8 @@ export default function Profile() {
                     email: form.email || prev.email,
                     phone_number: form.phone_number || prev.phone_number,
                     image: form.imageFile
-                        ? preview
-                        : data.own_profile.image
-                            ? `${import.meta.env.VITE_API_URL}${data.own_profile.image.replace(/^\/?storage\//, "storage/")}`
-                            : prev.image,
+                        ? data.own_profile.image
+                        : prev.image,
                 }));
 
                 setForm((prev) => ({ ...prev, password: "" }));
@@ -143,7 +139,7 @@ export default function Profile() {
     };
 
     return (
-        <div className="flex min-h-screen relative">
+        <div className="flex min-h-screen relative bg-white">
 
             {/* SIDEBAR DESKTOP */}
             <div className="hidden md:block w-64">
@@ -182,13 +178,13 @@ export default function Profile() {
                     </div>
 
                     {/* FORM */}
-                    <div className="md:max-w-full w-full max-w-md">
+                    <div onSubmit={handleSave} className="md:max-w-full w-full max-w-md">
 
                         <h3 className="text-lg font-semibold text-gray-800 mb-6">
                             Edit Profile
                         </h3>
 
-                        <form onSubmit={handleSave} className="space-y-5">
+                        <form className="space-y-5">
 
                             {/* Username */}
                             <div>
