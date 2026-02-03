@@ -23,6 +23,8 @@ export default function OrderDetail() {
   const [error, setError] = useState(null);
   const [canceling, setCanceling] = useState(false);
   const [markingDelivered, setMarkingDelivered] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showDeliveredConfirm, setShowDeliveredConfirm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,7 +67,8 @@ export default function OrderDetail() {
   };
 
   const handleCancelOrder = async () => {
-    if (!order || !window.confirm("Apakah Anda yakin ingin membatalkan pesanan ini?")) {
+    // if (!order || !window.confirm("Apakah Anda yakin ingin membatalkan pesanan ini?")) {
+    if (!order) {
       return;
     }
 
@@ -94,18 +97,20 @@ export default function OrderDetail() {
         return;
       }
 
-      alert("Pesanan berhasil dibatalkan!");
+      // alert("Pesanan berhasil dibatalkan!");
       navigate("/ordersBuyyer");
     } catch (err) {
       console.error("Error canceling order:", err);
       alert("Terjadi kesalahan saat membatalkan pesanan.");
     } finally {
       setCanceling(false);
+      setShowCancelConfirm(false);
     }
   };
 
   const handleMarkDelivered = async () => {
-    if (!order || !window.confirm("Apakah Anda yakin pesanan sudah diterima dengan baik?")) {
+    // if (!order || !window.confirm("Apakah Anda yakin pesanan sudah diterima dengan baik?")) {
+    if (!order) {
       return;
     }
 
@@ -131,13 +136,14 @@ export default function OrderDetail() {
         return;
       }
 
-      alert("Pesanan berhasil ditandai sebagai diterima!");
+      // alert("Pesanan berhasil ditandai sebagai diterima!");
       await fetchOrderDetail();
     } catch (err) {
       console.error("Error marking order as delivered:", err);
       alert("Terjadi kesalahan saat menandai pesanan sebagai diterima.");
     } finally {
       setMarkingDelivered(false);
+      setShowDeliveredConfirm(false);
     }
   };
 
@@ -314,16 +320,16 @@ export default function OrderDetail() {
       : "/placeholder-product.jpg";
 
   // Tentukan kapan menampilkan informasi pengiriman
-  const shouldShowShippingInfo = order.shipping_status && 
-    order.shipping_status !== "pending" && 
-    order.status !== "pending" && 
+  const shouldShowShippingInfo = order.shipping_status &&
+    order.shipping_status !== "pending" &&
+    order.status !== "pending" &&
     order.status !== "menunggu";
 
   const shouldShowSellerInfo = order.seller && Object.keys(order.seller).length > 0;
 
   // Update kondisi untuk button actions - LEBIH AKURAT
-  const canMarkDelivered = order.shipping_status === "shipped" && 
-    order.status !== "completed" && 
+  const canMarkDelivered = order.shipping_status === "shipped" &&
+    order.status !== "completed" &&
     order.status !== "canceled" &&
     order.status !== "pending";
 
@@ -449,7 +455,7 @@ export default function OrderDetail() {
       {/* Banner Informasi Pending */}
       {!shouldShowShippingInfo && (
         <div>
-         
+
         </div>
       )}
 
@@ -502,7 +508,8 @@ export default function OrderDetail() {
           <div className="space-y-2">
             {canCancelOrder && (
               <button
-                onClick={handleCancelOrder}
+                // onClick={handleCancelOrder}
+                onClick={() => setShowCancelConfirm(true)}
                 disabled={canceling}
                 className={`w-full ${canceling
                   ? "bg-gray-400 cursor-not-allowed"
@@ -524,7 +531,8 @@ export default function OrderDetail() {
             )}
             {canMarkDelivered && (
               <button
-                onClick={handleMarkDelivered}
+                // onClick={handleMarkDelivered}
+                onClick={() => setShowDeliveredConfirm(true)}
                 disabled={markingDelivered}
                 className={`w-full ${markingDelivered
                   ? "bg-gray-400 cursor-not-allowed"
@@ -568,6 +576,71 @@ export default function OrderDetail() {
                 ? "Pesanan telah diterima. Menunggu konfirmasi penyelesaian."
                 : "Pesanan telah selesai."}
           </p>
+        </div>
+      )}
+
+
+      {/* CONFIRM CANCEL */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-xl w-full max-w-sm p-6 space-y-4">
+
+            <h3 className="font-semibold text-lg">Batalkan Pesanan?</h3>
+
+            <p className="text-sm text-gray-500">
+              Pesanan yang dibatalkan tidak dapat dikembalikan.
+            </p>
+
+            <div className="flex gap-3 pt-3">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 border rounded-lg py-2"
+                disabled={canceling}
+              >
+                Batal
+              </button>
+
+              <button
+                onClick={handleCancelOrder}
+                disabled={canceling}
+                className="flex-1 bg-red-600 text-white rounded-lg py-2 disabled:opacity-50"
+              >
+                {canceling ? "Memproses..." : "Ya, Batalkan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM DELIVERED */}
+      {showDeliveredConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
+          <div className="bg-white rounded-xl w-full max-w-sm p-6 space-y-4">
+
+            <h3 className="font-semibold text-lg">Pesanan Sudah Diterima?</h3>
+
+            <p className="text-sm text-gray-500">
+              Pastikan barang sudah diterima dengan baik sebelum konfirmasi.
+            </p>
+
+            <div className="flex gap-3 pt-3">
+              <button
+                onClick={() => setShowDeliveredConfirm(false)}
+                className="flex-1 border rounded-lg py-2"
+                disabled={markingDelivered}
+              >
+                Batal
+              </button>
+
+              <button
+                onClick={handleMarkDelivered}
+                disabled={markingDelivered}
+                className="flex-1 bg-green-600 text-white rounded-lg py-2 disabled:opacity-50"
+              >
+                {markingDelivered ? "Memproses..." : "Ya, Konfirmasi"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

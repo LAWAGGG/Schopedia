@@ -329,6 +329,7 @@ export default function Dashboard() {
             </>
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
+              console.log(product),
               <div
                 key={`${product.id}-${Math.random()}`}
                 onClick={() => navigate(`/product/${product.id}`)}

@@ -37,6 +37,7 @@ class ProductController extends Controller
                 return [
                     "id" => $products->id,
                     "name" => $products->name,
+                     "stock" => $products->stock,
                     "price" => 'Rp' . number_format($products->price, 2, ',', '.'),
                     "image" => url($products->image),
                     "category_id" => $products->category_id

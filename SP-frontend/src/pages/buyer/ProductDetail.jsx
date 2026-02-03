@@ -341,7 +341,19 @@ export default function ProductDetail() {
       </div>
 
       {showOrderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50  flex  flex-col items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="w-full">
+            {message.text && (
+          <div
+            className={`mb-4 p-3 rounded-lg border flex items-center gap-2 ${getMessageClass(
+              message.type
+            )}`}
+          >
+            {getMessageIcon(message.type)}
+            <span className="text-sm font-medium">{message.text}</span>
+          </div>
+        )}
+          </div>
           <div
             ref={modalRef}
             className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 relative"
@@ -409,6 +421,7 @@ export default function ProductDetail() {
             </div>
           </div>
         </div>
+        
       )}
 
       {showSuccessModal && (

@@ -44,6 +44,8 @@ export default function Orders() {
         prev_page_url: null
     });
 
+    const [successNotif, setSuccessNotif] = useState(false);
+
     const getToken = () => {
         return localStorage.getItem('token') || sessionStorage.getItem('token');
     };
@@ -115,14 +117,21 @@ export default function Orders() {
                 throw new Error(errorData.message || 'Failed to update order');
             }
 
-            const updatedOrderResponse = await response.json();
-            if (updatedOrderResponse.seller_order) {
-                setSelectedOrder(updatedOrderResponse.seller_order);
-            }
+            // const updatedOrderResponse = await response.json();
+            // if (updatedOrderResponse.seller_order) {
+            //     setSelectedOrder(updatedOrderResponse.seller_order);
+            // }
+            setSelectedOrder(null);
+
 
             await fetchOrders();
+            //alert('Order status updated successfully');
+            setSuccessNotif(true);
 
-            alert('Order status updated successfully');
+            setTimeout(() => {
+                setSuccessNotif(false);
+            }, 2500);
+
         } catch (error) {
             console.error('Error updating order:', error);
             alert(error.message || 'Failed to update order status');
@@ -160,7 +169,14 @@ export default function Orders() {
 
             await fetchOrders();
             setShippingData({ delivery_service: "", tracking_number: "" });
-            alert('Order shipped successfully');
+            // alert('Order shipped successfully');
+            setSuccessNotif(true);
+
+            setTimeout(() => {
+                setSuccessNotif(false);
+            }, 2500);
+
+
         } catch (error) {
             console.error('Error shipping order:', error);
             alert(error.message || 'Failed to ship order');
@@ -279,6 +295,14 @@ export default function Orders() {
 
             <main className="flex-1 px-6 ">
                 <Nav title="Orders" />
+
+                {successNotif && (
+                    <div className="fixed top-5 right-5 z-50">
+                        <div className="bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg animate-bounce">
+                            status berhasil diupdate
+                        </div>
+                    </div>
+                )}
 
                 <div className="px-4 md:pl-2 pr-12 py-6">
                     {/* Summary Cards */}
