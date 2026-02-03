@@ -74,7 +74,8 @@ export default function Register() {
                 rounded-none md:rounded-l-[25px]
                 p-8 md:p-12 
                 shadow-2xl md:shadow-none 
-                h-auto md:h-screen 
+                h-auto md:h-screen
+                min-h-screen
                 overflow-y-auto 
             "
             >
