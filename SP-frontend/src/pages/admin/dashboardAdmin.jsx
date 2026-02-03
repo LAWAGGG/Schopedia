@@ -68,7 +68,7 @@ export default function ProfileAdmin() {
             <div className="mt-3 px-8">
                 <div className="bg-gray-200 rounded-full p-1 flex items-center gap-2 w-fit">
                     <button
-                        onClick={() => handleNavigate("/profile")}
+                        onClick={() => handleNavigate("/dashboardadmin")}
                         className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium bg-white shadow-sm text-black"
                     >
                         <User size={16} /> Profile
@@ -117,12 +117,12 @@ export default function ProfileAdmin() {
                                     </p>
                                 </div>
                                 <div className="flex flex-col gap-3">
-                                    <button
+                                    {/* <button
                                         onClick={() => alert("Tombol Edit Profile diklik!")}
                                         className="bg-purple-600 text-white text-sm px-4 py-2 rounded-md hover:bg-purple-700 transition flex items-center gap-2"
                                     >
                                         <Edit2 size={14} /> Edit Profile
-                                    </button>
+                                    </button> */}
                                     <button
                                         type="button"
                                         onClick={e => handleLogout(e)}
@@ -137,11 +137,11 @@ export default function ProfileAdmin() {
                             <div className="flex justify-start gap-16 items-start">
                                 {/* Left info */}
                                 <div className="flex items-start gap-6">
-                                    <img
+                                    {/* <img
                                         src={profile.image || "default.png"}
                                         alt="profile"
                                         className="w-24 h-24 rounded-full object-cover"
-                                    />
+                                    /> */}
                                     <div>
                                         <div className="mb-4">
                                             <div className="flex items-center text-sm font-medium mb-1">
