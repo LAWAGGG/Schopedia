@@ -13,13 +13,17 @@ export default function ProfileNav({title}) {
         return () => window.removeEventListener("storage", handleStorageChange);
     }, []);
 
-    return (
-        <div className="shadow-sm ml-2 rounded-sm flex justify-between items-center p-4 w-full  max-w-[1200px]">
-            <h1 className="text-xl font-bold">{title}</h1>
-            <div className="flex gap-2 border border-gray-300 rounded-2xl py-1 px-3 items-center shrink-0">
+  return (
+    <div className="flex flex-col sm:flex-row bg-white rounded-md justify-between items-center shadow-sm p-3 sm:p-4 gap-3 sm:gap-4 w-full">
+            <h1 className="hidden sm:block text-lg sm:text-xl font-bold text-left">
+                {title}
+            </h1>
+
+            <div className="hidden sm:flex gap-2 border border-gray-300 rounded-2xl py-1 px-3 items-center shrink-0">
                 <User className="w-4 h-4 text-gray-700" />
                 <span className="truncate max-w-[150px] text-gray-700">{name}</span>
             </div>
         </div>
-    );
+);
+
 }

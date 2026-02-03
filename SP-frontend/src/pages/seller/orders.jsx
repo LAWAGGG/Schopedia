@@ -277,7 +277,7 @@ export default function Orders() {
                 <Sidebar />
             </aside>
 
-            <main className="flex-1 ">
+            <main className="flex-1 px-6 ">
                 <Nav title="Orders" />
 
                 <div className="px-4 md:pl-2 pr-12 py-6">

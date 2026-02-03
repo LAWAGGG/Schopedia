@@ -169,11 +169,11 @@ export default function Profile() {
       </div>
 
       <div className="flex-1 flex flex-col bg-gray-50">
-        <div className="w-full bg-white">
+        <div className=" px-6">
           <ProfileNav title="Profile" />
         </div>
 
-        <div className="flex flex-col items-center md:items-start md:px-10 px-4 py-10 w-full relative">
+        <div className="flex flex-col items-center px-4 sm:px-6 lg:px-10 py-10 w-full relative">
           {(loading || saving) && (
             <div className="absolute inset-0 bg-white/80 flex justify-center items-center z-10 rounded-md">
               <LoadingScreen />
@@ -186,7 +186,7 @@ export default function Profile() {
                 className="rounded-full w-40 h-40 object-cover border-4 border-black shadow-md"
                 src={user.image}
                 alt={user.name}
-                // onError={(e) => { e.target.src = "/default-profile.jpg"; }}
+              // onError={(e) => { e.target.src = "/default-profile.jpg"; }}
               />
             </div>
             <label
@@ -205,7 +205,7 @@ export default function Profile() {
             />
           </div>
 
-          <form onSubmit={handleSave} className="mt-8 w-full max-w-4xl relative">
+          <form onSubmit={handleSave} className="mt-8 w-full max-w-[1200px] relative">
             <div className="flex flex-col mb-4">
               <label className="mb-1 text-gray-700">Name</label>
               <input
@@ -241,7 +241,7 @@ export default function Profile() {
               />
             </div>
 
-            <div className="flex gap-4 ml-7 justify-center w-full">
+            <div className="flex gap-4 justify-center w-full">
               <button
                 type="button"
                 onClick={e => handleLogout(e)}

@@ -124,7 +124,7 @@ export default function WalletPage() {
                 <Sidebar />
             </aside>
 
-            <main className="flex-1">
+            <main className="flex-1 px-6">
                 <Navbar title="E-Wallet" />
 
                 <div className="px-4 md:px-8 py-6">
