@@ -14,6 +14,22 @@ class CategorySeeder extends Seeder
             'Minuman',
             'Snack',
             'Kue',
+
+            'Kerajinan Tangan',
+            'Seni & Lukisan',
+            'Aksesoris Handmade',
+
+            'Dekorasi Rumah',
+            'Barang Hiasan',
+            'Tas & Dompet Handmade',
+
+            'Alat Sekolah',
+            'Alat Tulis Kreatif',
+            'Mainan Edukatif',
+
+            'Tekstil & Jahitan',
+            'Baju Handmade',
+
             'Lainnya',
         ];
 

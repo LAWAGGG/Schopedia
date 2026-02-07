@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['user', 'category'])->orderBy("updated_at", "desc");
+        $query = Product::with(['user', 'category', 'images'])->orderBy("updated_at", "desc");
 
         if ($request->search) {
             $search = strtolower($request->search);
@@ -37,9 +38,9 @@ class ProductController extends Controller
                 return [
                     "id" => $products->id,
                     "name" => $products->name,
-                     "stock" => $products->stock,
+                    "stock" => $products->stock,
                     "price" => 'Rp' . number_format($products->price, 2, ',', '.'),
-                    "image" => url($products->image),
+                    "image" => url($products->images[0]->image_path),
                     "category_id" => $products->category_id
                 ];
             })
@@ -48,7 +49,7 @@ class ProductController extends Controller
 
     public function showOwnProduct(Request $request)
     {
-        $query = Product::where("user_id", Auth::user()->id)->with(['user'])->orderBy("updated_at", "desc");
+        $query = Product::where("user_id", Auth::user()->id)->with(['user', 'images'])->orderBy("updated_at", "desc");
 
         $search = $request->search;
         if ($search) {
@@ -71,7 +72,7 @@ class ProductController extends Controller
                     "id" => $product->id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
-                    "image" => url($product->image),
+                    "image" => url($product->images[0]->image_path)
                 ];
             }),
         ]);
@@ -88,7 +89,8 @@ class ProductController extends Controller
             "price" => "required|numeric",
             "stock" => "required|numeric",
             "category_id" => "required|exists:categories,id",
-            "image" => "nullable|image|mimes:png,jpg,jpeg"
+            "images" => "nullable|array",
+            "images.*" => "image|mimes:png,jpg,jpeg"
         ]);
 
         if ($val->fails()) {
@@ -98,23 +100,25 @@ class ProductController extends Controller
             ], 422);
         }
 
-        $input = $request->all();
-
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $slug = str($request->name)->slug();
-            $path = $file->storeAs(
-                "images/$slug", // folder
-                "image." . $file->extension(),
-                'public' // disk storage
-            );
-            // simpan path ke database
-            $input["image"] = "storage/" . $path;
-        }
-
+        $input = $request->except("images");
         $input['user_id'] = Auth::user()->id;
-
         $product = Product::create($input);
+
+        if ($request->hasFile("images")) {
+            foreach ($request->file("images") as $file) {
+                $slug = uniqid();
+                $path = $file->storeAs(
+                    "images/$slug", // folder
+                    "image" . $slug . "." . $file->extension(),
+                    'public' // disk storage
+                );
+
+                ProductImage::create([
+                    "product_id" => $product->id,
+                    "image_path" => "storage/" . $path
+                ]);
+            }
+        }
 
         return response()->json([
             "message" => "Product created successfully",
@@ -124,7 +128,9 @@ class ProductController extends Controller
                 "description" => $product->description,
                 "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
                 "stock" => $product->stock,
-                "image" => asset($product->image),
+                "images" => $product->images->map(function ($image) {
+                    return url($image->image_path);
+                }),
                 "date" => $product->created_at->format('Y-m-d H:i:s'),
                 "category_id" => $product->category_id
             ]
@@ -136,7 +142,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['user', 'category'])->where("id", $id)->first();
+        $product = Product::with(['user', 'category', 'images'])->where("id", $id)->first();
 
         if (!$product) {
             return response()->json([
@@ -151,7 +157,9 @@ class ProductController extends Controller
                 "description" => $product->description,
                 "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
                 "stock" => $product->stock,
-                "image" => asset($product->image),
+                "images" => $product->images->map(function ($image) {
+                    return url($image->image_path);
+                }),
                 "category" => $product->category->name,
                 "seller" => [
                     "id" => $product->user->id,
@@ -185,7 +193,8 @@ class ProductController extends Controller
             "price" => "nullable|numeric",
             "stock" => "nullable|numeric",
             "category_id" => "nullable|exists:categories,id",
-            "image" => "nullable|image|mimes:jpg,jpeg,png"
+            "images" => "nullable|array",
+            "images.*" => "image|mimes:png,jpg,jpeg"
         ]);
 
         if ($val->fails()) {
@@ -197,20 +206,30 @@ class ProductController extends Controller
 
         $input = $request->only(['name', 'description', 'price', 'stock', 'category_id']);
 
-        if ($request->hasFile("image")) {
-            $file = $request->file("image");
-            $slug = str($request->name ?? $product->name)->slug();
-            $ext  = $file->extension();
-
-            // pengecekan eksistensi image
-            if ($product->image) {
-                $oldDir = dirname(str_replace("storage/", "", $product->image));
-                if (Storage::disk("public")->exists($oldDir)) {
-                    Storage::disk("public")->deleteDirectory($oldDir);
+        if ($request->hasFile("images")) {
+            // Hapus semua ProductImage lama
+            foreach ($product->images as $image) {
+                $imagePath = str_replace("storage/", "", $image->image_path);
+                if (Storage::disk("public")->exists($imagePath)) {
+                    Storage::disk("public")->delete($imagePath);
                 }
+                $image->delete();
             }
-            $path = $file->storeAs("images/$slug", "image.$ext", "public");
-            $input["image"] = "storage/" . $path;
+
+            // Simpan images baru
+            $slug = uniqid();
+            foreach ($request->file("images") as $file) {
+                $path = $file->storeAs(
+                    "images/$slug",
+                    "image" . $slug . "." . $file->extension(),
+                    'public'
+                );
+
+                ProductImage::create([
+                    "product_id" => $product->id,
+                    "image_path" => "storage/" . $path
+                ]);
+            }
         }
 
         $product->update($input);
@@ -223,7 +242,9 @@ class ProductController extends Controller
                 "description" => $product->description,
                 "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
                 "stock" => $product->stock,
-                "image" => asset($product->image),
+                "images" => $product->images->map(function ($image) {
+                    return url($image->image_path);
+                }),
                 "date" => $product->created_at->format('Y-m-d H:i:s'),
                 "category_id" => $product->category_id
             ]
@@ -242,19 +263,19 @@ class ProductController extends Controller
             ], 404);
         }
 
-        if ($product->user_id != Auth::user()->id && Auth::user()->role != "admin") {
+        if ($product->user_id != Auth::user()->id) {
             return response()->json([
                 "message" => "Access Denied"
             ], 403);
         }
 
-        if ($product->image) {
-            $relativePath = str_replace("storage/", "", $product->image);
-
-            Storage::disk("public")->delete($relativePath);
-
-            $folderPath = dirname($relativePath);
-            Storage::disk("public")->deleteDirectory($folderPath);
+        // Hapus semua images yang terkait
+        foreach ($product->images as $image) {
+            $imagePath = str_replace("storage/", "", $image->image_path);
+            if (Storage::disk("public")->exists($imagePath)) {
+                Storage::disk("public")->delete($imagePath);
+            }
+            $image->delete();
         }
 
         $product->delete();

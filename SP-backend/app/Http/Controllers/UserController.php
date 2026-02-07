@@ -39,7 +39,7 @@ class UserController extends Controller
                             "name" => $product->name,
                             "category_id" => $product->category_id,
                             "price" => $product->price,
-                            "image" => url($product->image)
+                            "image" => url($product->images[0]->image_path)
                         ];
                     }),
                 ]
@@ -74,7 +74,7 @@ class UserController extends Controller
                         "name" => $product->name,
                         "price" => $product->price,
                         "price" => $product->price,
-                        "image" => url($product->image),
+                        "image" => url($product->images[0]->image_path),
                         "category_id" => $product->category_id,
                     ];
                 })

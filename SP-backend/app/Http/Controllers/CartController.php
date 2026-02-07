@@ -12,7 +12,7 @@ class CartController extends Controller
 {
     public function showOwnCart()
     {
-        $cart = Cart::where("user_id", Auth::user()->id)->with(["product"])->get();
+        $cart = Cart::where("user_id", Auth::user()->id)->with(["product"])->orderBy("created_at", "desc")->get();
 
         return response()->json([
             "cart" => $cart->map(function ($item) {
@@ -22,8 +22,7 @@ class CartController extends Controller
                     "product" => [
                         "id" => $item->product->id,
                         "name" => $item->product->name,
-                        "image" => url($item->product->image),
-                        // "image" => "http://localhost:8000/storage/" . $item->product->image,
+                        "image" => url($item->product->images[0]->image_path),
                         "price" => $item->product->price,
                         "stock" => $item->product->stock,
                         "seller_id" => $item->product->user->id,

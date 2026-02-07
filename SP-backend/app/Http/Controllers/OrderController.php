@@ -17,10 +17,11 @@ class OrderController extends Controller
     {
         $orders = Order::where('user_id', Auth::user()->id)
             ->where('status', 'completed')
-            ->with(['product', 'seller'])
+            ->with(['product.images', 'seller'])
             ->get();
 
         $buyedProducts = $orders->map(function ($order) {
+            $image = $order->product->images->first();
             return [
                 'id' => $order->product->id,
                 'quantity' => $order->quantity,
@@ -28,7 +29,7 @@ class OrderController extends Controller
                 'product' => [
                     'name' => $order->product->name,
                     'price' => $order->product->price,
-                    'image' => url($order->product->image),
+                    'image' => $image ? url($image->image_path) : null,
                 ],
                 'seller' => [
                     'id' => $order->seller->id,
@@ -46,10 +47,11 @@ class OrderController extends Controller
 
     public function getOrdersAsBuyer()
     {
-        $orders = Order::where('user_id', Auth::user()->id)->with(['product', 'seller'])->orderBy('created_at', 'desc')->paginate(10);
+        $orders = Order::where('user_id', Auth::user()->id)->with(['product.images', 'seller'])->orderBy('created_at', 'desc')->paginate(10);
 
         return response()->json([
-             "buyer_orders" => $orders->map(function ($order) {
+            "buyer_orders" => $orders->map(function ($order) {
+                $image = $order->product->images->first();
                 return [
                     "id" => $order->id,
                     "total_price" => 'Rp' . number_format($order->total_price, 2, ',', '.'),
@@ -58,7 +60,7 @@ class OrderController extends Controller
                     "date_ordered" => $order->created_at->format('Y-m-d H:i:s'),
                     "product" => [
                         "name" => $order->product->name,
-                        "image" => url($order->product->image) ?? null,
+                        'image' => $image ? url($image->image_path) : null,
                     ],
                 ];
             }),
@@ -188,7 +190,7 @@ class OrderController extends Controller
     {
         $order = Order::where('user_id', Auth::user()->id)
             ->where('id', $order_id)
-            ->with(['product', 'seller'])
+            ->with(['product.images', 'seller'])
             ->first();
 
         if (!$order) {
@@ -196,6 +198,8 @@ class OrderController extends Controller
                 'message' => "Order buyer not found"
             ], 404);
         }
+
+        $image = $order->product->images->first();
 
         return response()->json([
             "buyer_order" => [
@@ -205,7 +209,7 @@ class OrderController extends Controller
                     "name" => $order->product->name,
                     "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
                     "stock" => $order->product->stock,
-                    "image" => url($order->product->image),
+                    'image' => $image ? url($image->image_path) : null,
                     "category" => $order->product->category->name
                 ],
                 "seller" => [
@@ -230,7 +234,7 @@ class OrderController extends Controller
     {
         $order = Order::where('seller_id', Auth::user()->id)
             ->where('id', $order_id)
-            ->with(['product', 'buyer'])
+            ->with(['product.images', 'buyer'])
             ->first();
 
         if (!$order) {
@@ -238,6 +242,8 @@ class OrderController extends Controller
                 'message' => "Order seller not found"
             ], 404);
         }
+
+        $image = $order->product->images->first();
 
         return response()->json([
             "seller_order" => [
@@ -249,7 +255,7 @@ class OrderController extends Controller
                     "price" => 'Rp' . number_format($order->product->price, 2, ',', '.'),
                     "stock" => $order->product->stock,
                     "date_uploaded" => $order->product->created_at->format('Y-m-d H:i:s'),
-                    "image" => $order->product->image,
+                    'image' => $image ? url($image->image_path) : null,
                     "category" => $order->product->category->name
                 ],
                 "seller" => [
