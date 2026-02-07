@@ -27,20 +27,30 @@ export default function Dashboard() {
     next_page_url: null,
     prev_page_url: null,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const observerRef = useRef(null);
+  const loadMoreRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     stock: "",
     description: "",
     category_id: "",
-    image: null,
+    images: [],
   });
+  const [imagePreview, setImagePreview] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch semua product dengan pagination
-  async function FetchProduct(page = 1, search = searchQuery) {
+  // Fetch semua product dengan pagination infinite scroll
+  async function FetchProduct(page = 1, search = searchQuery, append = false) {
     try {
-      setIsFetching(true);
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsFetching(true);
+      }
       const baseUrl = `${import.meta.env.VITE_API_URL}api/products/own`;
       const params = new URLSearchParams();
       params.append("page", page);
@@ -56,8 +66,24 @@ export default function Dashboard() {
       console.log("Response data:", data);
 
       if (data.data && Array.isArray(data.data)) {
-        setProducts(data.data);
-        setFilteredProducts(data.data);
+        const newProducts = data.data;
+
+        if (append) {
+          // Append produk baru
+          setProducts((prev) => [...prev, ...newProducts]);
+          setFilteredProducts((prev) => [...prev, ...newProducts]);
+        } else {
+          // Reset produk
+          setProducts(newProducts);
+          setFilteredProducts(newProducts);
+        }
+
+        // Cek apakah masih ada page selanjutnya
+        if (newProducts.length === 0 || newProducts.length < 10) {
+          setHasMore(false);
+        } else {
+          setHasMore(true);
+        }
 
         // Set pagination info
         if (data.pagination) {
@@ -75,6 +101,7 @@ export default function Dashboard() {
       console.error("gagal: ", err);
     } finally {
       setIsFetching(false);
+      setIsLoadingMore(false);
     }
   }
 
@@ -101,18 +128,51 @@ export default function Dashboard() {
     fetchCategories();
   }, []);
 
-  // Navigation untuk pagination
-  const handleNextPage = () => {
-    if (pagination.next_page_url) {
-      FetchProduct(pagination.current_page + 1, searchQuery);
-    }
-  };
+  // Setup Intersection Observer untuk infinite scroll
+  useEffect(() => {
+    const options = {
+      root: null,
+      rootMargin: '300px',
+      threshold: 0.1
+    };
 
-  const handlePrevPage = () => {
-    if (pagination.prev_page_url) {
-      FetchProduct(pagination.current_page - 1, searchQuery);
+    observerRef.current = new IntersectionObserver((entries) => {
+      const target = entries[0];
+      if (target.isIntersecting && hasMore && !isLoadingMore && !isFetching) {
+        setCurrentPage(prev => prev + 1);
+      }
+    }, options);
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
     }
-  };
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, isLoadingMore, isFetching]);
+
+  // Debounce search timer
+  const searchTimeout = useRef(null);
+
+  // Fetch produk saat currentPage berubah
+  useEffect(() => {
+    if (currentPage === 1) {
+      FetchProduct(1, searchQuery, false);
+    } else {
+      FetchProduct(currentPage, searchQuery, true);
+    }
+  }, [currentPage]);
+
+  // Reset pagination saat search berubah
+  useEffect(() => {
+    setCurrentPage(1);
+    setHasMore(true);
+    setProducts([]);
+    setFilteredProducts([]);
+  }, [searchQuery]);
 
   // Modal control
   function openCreateModal() {
@@ -123,8 +183,9 @@ export default function Dashboard() {
       stock: "",
       description: "",
       category_id: categories[0]?.id || "",
-      image: null,
+      images: [],
     });
+    setImagePreview([]);
     setShowModal(true);
   }
 
@@ -160,8 +221,9 @@ export default function Dashboard() {
         stock: productDetail.stock?.toString() || "",
         description: productDetail.description || "",
         category_id: productDetail.category_id || categories[0]?.id || "",
-        image: null,
+        images: [],
       });
+      setImagePreview([]);
 
       setShowModal(true);
     } catch (error) {
@@ -185,7 +247,11 @@ export default function Dashboard() {
     form.append("description", formData.description);
     form.append("category_id", formData.category_id);
 
-    if (formData.image) form.append("image", formData.image);
+    if (formData.images && formData.images.length > 0) {
+      formData.images.forEach((image) => {
+        form.append("images[]", image);
+      });
+    }
 
     try {
       const res = await fetch(url, {
@@ -197,8 +263,10 @@ export default function Dashboard() {
       const data = await res.json();
       if (res.ok) {
         setShowModal(false);
-        setShowModal(false);
-        FetchProduct(pagination.current_page, searchQuery); // Reload current page
+        setCurrentPage(1);
+        setHasMore(true);
+        setProducts([]);
+        setFilteredProducts([]);
       } else {
         setErrorMessage(data.message || "Gagal menyimpan data");
         setShowErrorModal(true);
@@ -232,13 +300,12 @@ export default function Dashboard() {
       );
 
       if (res.ok) {
-        // Jika produk di halaman terakhir dan hanya ada 1 produk, kembali ke halaman sebelumnya
-        if (products.length === 1 && pagination.current_page > 1) {
-          FetchProduct(pagination.current_page - 1, searchQuery);
-        } else {
-          FetchProduct(pagination.current_page, searchQuery);
-        }
         setShowDeleteModal(false);
+        // Reset pagination dan fetch pertama halaman
+        setCurrentPage(1);
+        setHasMore(true);
+        setProducts([]);
+        setFilteredProducts([]);
       } else {
         const err = await res.json();
         setErrorMessage(err.message || "Gagal menghapus produk");
@@ -252,19 +319,8 @@ export default function Dashboard() {
     }
   }
 
-  // Debounce timer
-  const searchTimeout = useRef(null);
-
   function handleSearch(keyword) {
     setSearchQuery(keyword);
-
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current);
-    }
-
-    searchTimeout.current = setTimeout(() => {
-      FetchProduct(1, keyword);
-    }, 500);
   }
 
   return (
@@ -289,19 +345,22 @@ export default function Dashboard() {
         </div>
 
         <div className="flex flex-wrap gap-4 ml-18 justify-start mt-8">
-          {isFetching ? (
+          {isFetching && filteredProducts.length === 0 ? (
             <CardSkeletons />
           ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
-              <Card
-                key={product.id}
-                image={product.image}
-                name={product.name}
-                price={product.price}
-                onEdit={() => openEditModal(product)}
-                onDelete={() => openDeleteModal(product)}
-              />
-            ))
+            <>
+              {filteredProducts.map((product) => (
+                <Card
+                  key={product.id}
+                  image={product.image}
+                  name={product.name}
+                  price={product.price}
+                  onEdit={() => openEditModal(product)}
+                  onDelete={() => openDeleteModal(product)}
+                />
+              ))}
+              {isLoadingMore && <CardSkeletons />}
+            </>
           ) : (
             <div className="text-center text-gray-500 w-full py-8">
               Item tidak ditemukan
@@ -309,39 +368,16 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Pagination Controls */}
-        {pagination.last_page > 1 && (
-          <div className="flex justify-center items-center space-x-4 mt-8">
-            {/* Previous Button */}
-            <button
-              onClick={handlePrevPage}
-              disabled={!pagination.prev_page_url}
-              className={`px-4 py-2 rounded-lg border ${
-                !pagination.prev_page_url
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
-              }`}
-            >
-              Previous
-            </button>
+        {/* Trigger element untuk Intersection Observer */}
+        {hasMore && filteredProducts.length > 0 && (
+          <div ref={loadMoreRef} className="h-10 flex justify-center items-center">
+            {!isLoadingMore && <div className="text-gray-400 text-sm">Loading more...</div>}
+          </div>
+        )}
 
-            {/* Page Info */}
-            <div className="text-sm text-gray-600">
-              Page {pagination.current_page} of {pagination.last_page}
-            </div>
-
-            {/* Next Button */}
-            <button
-              onClick={handleNextPage}
-              disabled={!pagination.next_page_url}
-              className={`px-4 py-2 rounded-lg border ${
-                !pagination.next_page_url
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
-              }`}
-            >
-              Next
-            </button>
+        {!hasMore && filteredProducts.length > 0 && (
+          <div className="text-center text-gray-400 py-8">
+            Tidak ada produk lagi
           </div>
         )}
 
@@ -409,13 +445,61 @@ export default function Dashboard() {
                   ))}
                 </select>
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.files[0] })
-                  }
-                />
+                <div>
+                  <label className="block text-sm font-medium mb-2">Gambar Produk</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setFormData({ ...formData, images: files });
+                      const previews = files.map((file) =>
+                        URL.createObjectURL(file)
+                      );
+                      setImagePreview(previews);
+                    }}
+                    className="block w-full text-sm text-gray-500 border p-2 rounded cursor-pointer"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pilih satu atau lebih file gambar (PNG, JPG, JPEG)
+                  </p>
+
+                  {imagePreview.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium mb-2">
+                        Preview ({imagePreview.length} gambar):
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {imagePreview.map((preview, idx) => (
+                          <div key={idx} className="relative">
+                            <img
+                              src={preview}
+                              alt={`Preview ${idx + 1}`}
+                              className="w-full h-24 object-cover rounded border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newImages = formData.images.filter(
+                                  (_, i) => i !== idx
+                                );
+                                const newPreviews = imagePreview.filter(
+                                  (_, i) => i !== idx
+                                );
+                                setFormData({ ...formData, images: newImages });
+                                setImagePreview(newPreviews);
+                              }}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs font-bold"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex justify-end gap-2 mt-4">
                   <button

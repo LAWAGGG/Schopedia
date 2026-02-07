@@ -9,6 +9,7 @@ import {
   Wallet,
   User,
   Save,
+  Home,
 } from "lucide-react";
 import setToken, { removeToken } from "../../utils/utils";
 import { getToken } from "../../utils/utils";
@@ -323,51 +324,20 @@ export default function Profile() {
       </div>
 
       {/* MOBILE BOTTOM NAV */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden z-40">
-        <button
-          onClick={() => navigate("/dashboard")}
-          className={`flex flex-col items-center ${
-            location.pathname === "/dashboard"
-              ? "text-purple-600"
-              : "text-gray-500"
-          }`}
-        >
-          <LayoutDashboard size={22} />
-        </button>
-
-        <button
-          onClick={() => navigate("/ordersBuyyer")}
-          className={`flex flex-col items-center ${
-            location.pathname === "/ordersBuyyer"
-              ? "text-purple-600"
-              : "text-gray-500"
-          }`}
-        >
-          <Truck size={22} />
-        </button>
-
-        <button
-          onClick={() => navigate("/walletBuyyer")}
-          className={`flex flex-col items-center ${
-            location.pathname === "/walletBuyyer"
-              ? "text-purple-600"
-              : "text-gray-500"
-          }`}
-        >
-          <Wallet size={22} />
-        </button>
-
-        <button
-          onClick={() => navigate("/profileBuyyer")}
-          className={`flex flex-col items-center ${
-            location.pathname === "/profileBuyyer"
-              ? "text-purple-600"
-              : "text-gray-500"
-          }`}
-        >
-          <User size={22} />
-        </button>
-      </div>
+      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden z-50">
+          <button onClick={() => navigate("/dashboard")} className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}>
+            <Home size={22} />
+          </button>
+          <button onClick={() => navigate("/ordersBuyyer")} className={`flex flex-col items-center ${location.pathname === "/ordersBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
+            <Truck size={22} />
+          </button>
+          <button onClick={() => navigate("/walletBuyyer")} className={`flex flex-col items-center ${location.pathname === "/walletBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
+            <Wallet size={22} />
+          </button>
+          <button onClick={() => navigate("/profileBuyyer")} className={`flex flex-col items-center ${location.pathname === "/profileBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
+            <User size={22} />
+          </button>
+        </div>
     </div>
   );
 }

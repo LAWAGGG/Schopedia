@@ -9,6 +9,8 @@ import {
   Plus,
   Minus,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 export default function ProductDetail() {
@@ -21,9 +23,10 @@ export default function ProductDetail() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [quantity, setQuantity] = useState(1);
   const [showOrderModal, setShowOrderModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // ← Tambahkan state ini
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [notes, setNotes] = useState("");
   const [location, setLocation] = useState("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const navigate = useNavigate();
   const modalRef = useRef(null);
 
@@ -46,7 +49,26 @@ export default function ProductDetail() {
     if (quantity > 1) setQuantity((prev) => prev - 1);
   };
 
-  useEffect(() => setQuantity(1), [product]);
+  const handlePrevImage = () => {
+    if (product?.images?.length > 0) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? product.images.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const handleNextImage = () => {
+    if (product?.images?.length > 0) {
+      setCurrentImageIndex((prev) =>
+        prev === product.images.length - 1 ? 0 : prev + 1
+      );
+    }
+  };
+
+  useEffect(() => {
+    setQuantity(1);
+    setCurrentImageIndex(0);
+  }, [product]);
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -191,10 +213,13 @@ export default function ProductDetail() {
   if (!product)
     return <p className="text-center mt-10 text-gray-500">Produk tidak ditemukan</p>;
 
-  const { name, description, price, stock, image } = product;
-  const gambar = image?.startsWith("http")
-    ? image
-    : `${import.meta.env.VITE_API_URL}${image}`;
+  const { name, description, price, stock, images } = product;
+  const currentImage = images && images.length > 0 ? images[currentImageIndex] : null;
+  const gambar = currentImage?.startsWith("http")
+    ? currentImage
+    : currentImage
+      ? `${import.meta.env.VITE_API_URL}${currentImage}`
+      : "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk";
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -206,14 +231,38 @@ export default function ProductDetail() {
             onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/e0e0e0/a0a0a0?text=Produk" }}
             className="absolute inset-0 w-full h-full object-cover"
           />
+
+          {/* Carousel Navigation */}
+          {images && images.length > 1 && (
+            <>
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2.5 shadow-md transition z-10"
+              >
+                <ChevronLeft className="text-gray-800 w-6 h-6" />
+              </button>
+              <button
+                onClick={handleNextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2.5 shadow-md transition z-10"
+              >
+                <ChevronRight className="text-gray-800 w-6 h-6" />
+              </button>
+
+              {/* Image Counter */}
+              <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-full text-xs font-medium">
+                {currentImageIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
+
           <button
             onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 bg-white/80 hover:bg-white rounded-full p-2.5 shadow-md transition"
+            className="absolute top-4 left-4 bg-white/80 hover:bg-white rounded-full p-2.5 shadow-md transition z-20"
           >
             <ArrowLeft className="text-gray-800 w-5 h-5" />
           </button>
         </div>
-        <div className="flex absolute top-4 right-6 bg-purple-500 p-[.6rem] rounded-4xl">
+        <div className="flex absolute top-4 right-6 bg-purple-500 p-[.6rem] rounded-4xl z-20">
           <ShoppingCart onClick={() => navigate("/cart")} className="w-6 h-6 text-white" />
         </div>
       </div>
@@ -344,15 +393,15 @@ export default function ProductDetail() {
         <div className="fixed inset-0 z-50  flex  flex-col items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="w-full">
             {message.text && (
-          <div
-            className={`mb-4 p-3 rounded-lg border flex items-center gap-2 ${getMessageClass(
-              message.type
-            )}`}
-          >
-            {getMessageIcon(message.type)}
-            <span className="text-sm font-medium">{message.text}</span>
-          </div>
-        )}
+              <div
+                className={`mb-4 p-3 rounded-lg border flex items-center gap-2 ${getMessageClass(
+                  message.type
+                )}`}
+              >
+                {getMessageIcon(message.type)}
+                <span className="text-sm font-medium">{message.text}</span>
+              </div>
+            )}
           </div>
           <div
             ref={modalRef}
@@ -369,7 +418,7 @@ export default function ProductDetail() {
 
             <div className="mb-5">
               <label className="block text-sm text-black-600 mb-1">
-                Lokasi 
+                Lokasi
               </label>
               <input
                 type="text"
@@ -421,7 +470,7 @@ export default function ProductDetail() {
             </div>
           </div>
         </div>
-        
+
       )}
 
       {showSuccessModal && (

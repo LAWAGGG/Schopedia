@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getToken } from "../../utils/utils";
+import { getToken, removeToken } from "../../utils/utils";
 import CardBuyer from "../../components/cardBuyer";
 import Sidebarbuyyer from "../../components/sidebarBuyyer";
 import SearchBar from "../../components/searchBar";
@@ -82,7 +82,10 @@ export default function Dashboard() {
         },
       });
 
-      if (!res.ok) throw new Error(`Gagal fetch produk (status ${res.status})`);
+      if (!res.ok){
+        removeToken()
+        navigate('/')
+      }
 
       const data = await res.json();
       const finalData = data.data || data.all_products || data;
@@ -329,7 +332,6 @@ export default function Dashboard() {
             </>
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              console.log(product),
               <div
                 key={`${product.id}-${Math.random()}`}
                 onClick={() => navigate(`/product/${product.id}`)}
