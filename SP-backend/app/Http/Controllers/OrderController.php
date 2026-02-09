@@ -9,6 +9,7 @@ use App\Models\Wallet;
 use App\Models\Wallet_Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
@@ -78,7 +79,7 @@ class OrderController extends Controller
     public function getOrdersAsSeller()
     {
         $orders = Order::where('seller_id', Auth::user()->id)
-            ->with(['product', 'buyer'])
+            ->with(['product.images', 'buyer'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -279,7 +280,7 @@ class OrderController extends Controller
     {
         $order = Order::where('seller_id', Auth::user()->id)
             ->where('id', $order_id)
-            ->with(['product', 'buyer'])
+            ->with(['product.images', 'buyer'])
             ->first();
 
         if (!$order) {
@@ -299,22 +300,6 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $wallet = Wallet::where('user_id', $order->user_id)->first();
-
-        if (!$wallet) {
-            return response()->json([
-                "message" => "wallet not found"
-            ], 404);
-        }
-
-        $sellerWallet = Wallet::where('user_id', $order->seller_id)->first();
-
-        if (!$sellerWallet) {
-            return response()->json([
-                "message" => "seller wallet not found"
-            ], 404);
-        }
-
         if ($request->status == $order->status) {
             return response()->json([
                 "message" => "No changes detected, the status is still -> " . $order->status
@@ -322,56 +307,51 @@ class OrderController extends Controller
         }
 
         if ($request->status == 'accepted' && $order->status != "accepted") {
-
-            if ($wallet->balance < $order->total_price) {
-                return response()->json([
-                    "message" => "Buyer wallet balance is not enough to accept this order"
-                ], 403);
-            }
-
-            $wallet->decrement('balance', $order->total_price);
-
-            $sellerWallet->increment('balance', $order->total_price);
-
+            // ✅ Check stock BEFORE transaction
             if ($order->quantity > $order->product->stock) {
                 return response()->json([
                     "message" => "Not enough stock for this product"
                 ], 400);
             }
 
-            $order->product->decrement("stock", $order->quantity);
+            // ✅ Use transaction untuk atomic operations
+            return DB::transaction(function () use ($request, $order) {
+                $wallet = Wallet::where('user_id', $order->user_id)->lockForUpdate()->first();
 
-            Wallet_Transaction::create([
-                'wallet_id' => $wallet->id,
-                'order_id' => $order->id,
-                'type' => 'payment',
-                'amount' => $order->total_price,
-                'note' => 'Payment for Order Product ' . $order->product->name,
-                'status' => 'success'
-            ]);
+                if (!$wallet) {
+                    return response()->json([
+                        "message" => "wallet not found"
+                    ], 404);
+                }
 
-            Wallet_Transaction::create([
-                'wallet_id' => $sellerWallet->id,
-                'order_id' => $order->id,
-                'type' => 'transfer',
-                'amount' => $order->total_price,
-                'note' => 'Earning from Order #' . $order->id,
-                'status' => 'success'
-            ]);
-        }
+                if ($wallet->balance < $order->total_price) {
+                    return response()->json([
+                        "message" => "Buyer wallet balance is not enough to accept this order"
+                    ], 403);
+                }
 
-        if ($request->status == 'canceled' && $order->status != 'canceled') {
-            if ($order->status == 'accepted') {
-                $wallet->increment('balance', $order->total_price);
+                $sellerWallet = Wallet::where('user_id', $order->seller_id)->lockForUpdate()->first();
 
-                $sellerWallet->decrement('balance', $order->total_price);
+                if (!$sellerWallet) {
+                    return response()->json([
+                        "message" => "seller wallet not found"
+                    ], 404);
+                }
 
+                // ✅ Decrement wallet AFTER all checks pass
+                $wallet->decrement('balance', $order->total_price);
+                $sellerWallet->increment('balance', $order->total_price);
+
+                // ✅ Decrement stock
+                $order->product->decrement("stock", $order->quantity);
+
+                // ✅ Create transaction records
                 Wallet_Transaction::create([
                     'wallet_id' => $wallet->id,
                     'order_id' => $order->id,
                     'type' => 'payment',
                     'amount' => $order->total_price,
-                    'note' => 'Refund for Canceled Order #' . $order->id . " canceled by " . (Auth::user()->id == $order->seller_id ? "seller" : "buyer"),
+                    'note' => 'Payment for Order Product ' . $order->product->name,
                     'status' => 'success'
                 ]);
 
@@ -380,11 +360,65 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'type' => 'transfer',
                     'amount' => $order->total_price,
-                    'note' => 'Transferring for canceled Order #' . $order->id . " canceled by " . (Auth::user()->id == $order->seller_id ? "seller" : "buyer"),
+                    'note' => 'Earning from Order #' . $order->id,
                     'status' => 'success'
                 ]);
 
-                $order->product->increment('stock', $order->quantity);
+                // ✅ Update order status last
+                $order->update([
+                    "status" => (string) $request->status
+                ]);
+
+                return response()->json([
+                    "message" => "Order updated succesfully",
+                    "seller_order" => $order
+                ]);
+            });
+        }
+
+        if ($request->status == 'canceled' && $order->status != 'canceled') {
+            if ($order->status == 'accepted') {
+                return DB::transaction(function () use ($order) {
+                    $wallet = Wallet::where('user_id', $order->user_id)->lockForUpdate()->first();
+                    $sellerWallet = Wallet::where('user_id', $order->seller_id)->lockForUpdate()->first();
+
+                    if (!$wallet || !$sellerWallet) {
+                        return response()->json([
+                            "message" => "Wallet not found"
+                        ], 404);
+                    }
+
+                    $wallet->increment('balance', $order->total_price);
+                    $sellerWallet->decrement('balance', $order->total_price);
+
+                    Wallet_Transaction::create([
+                        'wallet_id' => $wallet->id,
+                        'order_id' => $order->id,
+                        'type' => 'payment',
+                        'amount' => $order->total_price,
+                        'note' => 'Refund for Canceled Order #' . $order->id . " canceled by " . (Auth::user()->id == $order->seller_id ? "seller" : "buyer"),
+                        'status' => 'success'
+                    ]);
+
+                    Wallet_Transaction::create([
+                        'wallet_id' => $sellerWallet->id,
+                        'order_id' => $order->id,
+                        'type' => 'transfer',
+                        'amount' => $order->total_price,
+                        'note' => 'Transferring for canceled Order #' . $order->id . " canceled by " . (Auth::user()->id == $order->seller_id ? "seller" : "buyer"),
+                        'status' => 'success'
+                    ]);
+
+                    $order->product->increment('stock', $order->quantity);
+                    $order->update([
+                        "status" => (string) 'canceled'
+                    ]);
+
+                    return response()->json([
+                        "message" => "Order updated succesfully",
+                        "seller_order" => $order
+                    ]);
+                });
             }
         }
 
@@ -471,7 +505,10 @@ class OrderController extends Controller
                 "errors" => $val->errors()
             ], 422);
         }
-        $order = Order::where('seller_id', Auth::id())->where('id', $order_id)->first();
+        $order = Order::where('seller_id', Auth::id())
+            ->where('id', $order_id)
+            ->with(['buyer', 'product'])
+            ->first();
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
@@ -516,7 +553,10 @@ class OrderController extends Controller
 
     public function markDelivered($order_id)
     {
-        $order = Order::where('user_id', Auth::id())->where('id', $order_id)->first();
+        $order = Order::where('user_id', Auth::id())
+            ->where('id', $order_id)
+            ->with(['buyer'])
+            ->first();
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
@@ -524,10 +564,6 @@ class OrderController extends Controller
 
         if ($order->shipping_status !== 'shipped') {
             return response()->json(['message' => 'Order not yet shipped'], 400);
-        }
-
-        if ($order->shipping_status === 'delivered' || $order->status == 'completed') {
-            return response()->json(['message' => 'Order already delivered'], 400);
         }
 
         $order->update([
@@ -566,91 +602,94 @@ class OrderController extends Controller
 
         $user = Auth::user();
 
-        $rawCartItems = Cart::with(['product.user'])
-            ->where('user_id', $user->id)
-            ->get();
+        return DB::transaction(function () use ($request, $user) {
+            $rawCartItems = Cart::with(['product.user'])
+                ->where('user_id', $user->id)
+                ->lockForUpdate()
+                ->get();
 
-        if ($rawCartItems->isEmpty()) {
-            return response()->json(['message' => 'Cart is empty'], 400);
-        }
-
-        $cartItems = $rawCartItems->filter(function ($item) {
-            return $item->product && $item->product->stock > 0;
-        });
-
-        if ($cartItems->isEmpty() && !$rawCartItems->isEmpty()) {
-            return response()->json(['message' => 'All items in cart are out of stock'], 400);
-        }
-
-        foreach ($cartItems as $item) {
-            if (!$item->quantity) {
-                return response()->json([
-                    'message' => 'Invalid quantity in cart for product: ' . $item->product->name
-                ], 400);
+            if ($rawCartItems->isEmpty()) {
+                return response()->json(['message' => 'Cart is empty'], 400);
             }
 
-            if (!$item->product->user_id) {
-                return response()->json([
-                    'message' => 'Seller not found for product: ' . $item->product->name
-                ], 400);
+            $cartItems = $rawCartItems->filter(function ($item) {
+                return $item->product && $item->product->stock > 0;
+            });
+
+            if ($cartItems->isEmpty() && !$rawCartItems->isEmpty()) {
+                return response()->json(['message' => 'All items in cart are out of stock'], 400);
             }
-        }
 
-        $grandTotal = 0;
-        foreach ($cartItems as $item) {
-            $productPrice = $item->product->price;
-            $grandTotal += $productPrice * $item->quantity;
-        }
+            foreach ($cartItems as $item) {
+                if (!$item->quantity) {
+                    return response()->json([
+                        'message' => 'Invalid quantity in cart for product: ' . $item->product->name
+                    ], 400);
+                }
 
-        $wallet = Wallet::where('user_id', $user->id)->first();
-        if (!$wallet || $wallet->balance < $grandTotal) {
-            return response()->json([
-                'message' => 'Insufficient wallet balance'
-            ], 400);
-        }
-
-        foreach ($cartItems as $item) {
-            if ($item->quantity > $item->product->stock) {
-                return response()->json([
-                    'message' => "Not enough stock for product: " . $item->product->name
-                ], 400);
+                if (!$item->product->user_id) {
+                    return response()->json([
+                        'message' => 'Seller not found for product: ' . $item->product->name
+                    ], 400);
+                }
             }
-        }
 
-        $groups = $cartItems->groupBy(function ($item) {
-            return $item->product->user_id;
-        });
-
-        $orders = [];
-
-        foreach ($groups as $sellerId => $items) {
-            foreach ($items as $item) {
+            $grandTotal = 0;
+            foreach ($cartItems as $item) {
                 $productPrice = $item->product->price;
-                $totalPrice = $productPrice * $item->quantity;
-
-                $order = Order::create([
-                    'user_id' => $user->id,
-                    'product_id' => $item->product_id,
-                    'seller_id' => $sellerId,
-                    'quantity' => $item->quantity,
-                    'total_price' => $totalPrice,
-                    'location' => $request->location,
-                    'notes' => $request->notes ?? 'Pembelian dari cart',
-                    'status' => 'pending',
-                    'shipping_status' => 'pending',
-                ]);
-
-                $orders[] = $order;
+                $grandTotal += $productPrice * $item->quantity;
             }
-        }
 
-        Cart::where('user_id', $user->id)->delete();
+            $wallet = Wallet::where('user_id', $user->id)->lockForUpdate()->first();
+            if (!$wallet || $wallet->balance < $grandTotal) {
+                return response()->json([
+                    'message' => 'Insufficient wallet balance'
+                ], 400);
+            }
 
-        return response()->json([
-            'message' => 'Checkout succesfully created',
-            'total_orders' => count($orders),
-            'total_all_price' => 'Rp' . number_format($grandTotal, 0, ',', '.'),
-            'orders' => $orders,
-        ]);
+            foreach ($cartItems as $item) {
+                if ($item->quantity > $item->product->stock) {
+                    return response()->json([
+                        'message' => "Not enough stock for product: " . $item->product->name
+                    ], 400);
+                }
+            }
+
+            $groups = $cartItems->groupBy(function ($item) {
+                return $item->product->user_id;
+            });
+
+            $orders = [];
+
+            foreach ($groups as $sellerId => $items) {
+                foreach ($items as $item) {
+                    $productPrice = $item->product->price;
+                    $totalPrice = $productPrice * $item->quantity;
+
+                    $order = Order::create([
+                        'user_id' => $user->id,
+                        'product_id' => $item->product_id,
+                        'seller_id' => $sellerId,
+                        'quantity' => $item->quantity,
+                        'total_price' => $totalPrice,
+                        'location' => $request->location,
+                        'notes' => $request->notes ?? 'Pembelian dari cart',
+                        'status' => 'pending',
+                        'shipping_status' => 'pending',
+                    ]);
+
+                    $orders[] = $order;
+                }
+            }
+
+            Cart::where('user_id', $user->id)->delete();
+
+            return response()->json([
+                'message' => 'Checkout succesfully created',
+                'total_orders' => count($orders),
+                'total_all_price' => 'Rp' . number_format($grandTotal, 0, ',', '.'),
+                'orders' => $orders,
+            ]);
+        });
     }
 }
