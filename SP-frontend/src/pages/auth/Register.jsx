@@ -16,9 +16,21 @@ export default function Register() {
     const [policyOpen, setPolicyOpen] = useState(false);
     const [termsOpen, setTermsOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [alertMessage, setAlertMessage] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+
+    // Check apakah user di desktop view
+    const isDesktopView = () => window.innerWidth >= 1024;
 
     async function handleRegister(e) {
         e.preventDefault();
+
+        // batasi akses buyer registrasi di desktop web
+        if (role === "buyer" && isDesktopView()) {
+            setAlertMessage("Buyer registration hanya tersedia di mobile/tablet view");
+            return;
+        }
+
         setLoading(true);
         const res = await fetch(`${import.meta.env.VITE_API_URL}api/register`, {
             method: "POST",
@@ -37,19 +49,19 @@ export default function Register() {
         const data = await res.json();
         if (res.status === 200) {
             setLoading(false);
-            Navigate("/");
+            setSuccessMessage("Register berhasil! Silakan login.");
+            setTimeout(() => {
+                Navigate("/");
+            }, 1500);
         } else if (data.errors?.email) {
             setLoading(false);
-            setTimeout(() => {
-                alert("Email sudah dipakai!");
-            }, 500);
+            setAlertMessage("Email sudah dipakai!");
         } else if (data.errors?.password) {
             setLoading(false);
-            setTimeout(() => {
-                alert("password minimal 6 huruf!");
-            }, 500);
+            setAlertMessage("Password minimal 6 huruf!");
         } else {
             setLoading(false);
+            setAlertMessage("Terjadi kesalahan saat mendaftar");
         }
         console.log(data);
     }
@@ -224,6 +236,28 @@ export default function Register() {
                     {termsOpen && <Terms open={termsOpen} onClose={() => setTermsOpen(false)} />}
                     {policyOpen && <Policy open={policyOpen} onClose={() => setPolicyOpen(false)} />}
                 </form>
+
+                {alertMessage && (
+                    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-opacity-30 z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs text-center">
+                            <p className="font-semibold mb-4">{alertMessage}</p>
+                            <button onClick={() => setAlertMessage(null)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {successMessage && (
+                    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-opacity-30 z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs text-center">
+                            <p className="font-semibold mb-4 text-green-600">{successMessage}</p>
+                            <button onClick={() => setSuccessMessage(null)} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

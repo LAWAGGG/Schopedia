@@ -28,10 +28,7 @@ export default function Dashboard() {
     prev_page_url: null,
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const observerRef = useRef(null);
-  const loadMoreRef = useRef(null);
+  const [perPage, setPerPage] = useState(10);
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -42,18 +39,16 @@ export default function Dashboard() {
   });
   const [imagePreview, setImagePreview] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  // Fetch semua product dengan pagination infinite scroll
-  async function FetchProduct(page = 1, search = searchQuery, append = false) {
+  // Fetch semua product dengan pagination
+  async function FetchProduct(page = 1, search = searchQuery, itemsPerPage = perPage) {
     try {
-      if (append) {
-        setIsLoadingMore(true);
-      } else {
-        setIsFetching(true);
-      }
+      setIsFetching(true);
       const baseUrl = `${import.meta.env.VITE_API_URL}api/products/own`;
       const params = new URLSearchParams();
       params.append("page", page);
+      params.append("per_page", itemsPerPage);
       if (search) params.append("search", search);
 
       const url = `${baseUrl}?${params.toString()}`;
@@ -68,22 +63,9 @@ export default function Dashboard() {
       if (data.data && Array.isArray(data.data)) {
         const newProducts = data.data;
 
-        if (append) {
-          // Append produk baru
-          setProducts((prev) => [...prev, ...newProducts]);
-          setFilteredProducts((prev) => [...prev, ...newProducts]);
-        } else {
-          // Reset produk
-          setProducts(newProducts);
-          setFilteredProducts(newProducts);
-        }
-
-        // Cek apakah masih ada page selanjutnya
-        if (newProducts.length === 0 || newProducts.length < 10) {
-          setHasMore(false);
-        } else {
-          setHasMore(true);
-        }
+        // Set produk ke state
+        setProducts(newProducts);
+        setFilteredProducts(newProducts);
 
         // Set pagination info
         if (data.pagination) {
@@ -101,7 +83,6 @@ export default function Dashboard() {
       console.error("gagal: ", err);
     } finally {
       setIsFetching(false);
-      setIsLoadingMore(false);
     }
   }
 
@@ -123,56 +104,30 @@ export default function Dashboard() {
     }
   }
 
+  // Init: Fetch kategori dan ambil per_page dari URL
   useEffect(() => {
-    FetchProduct();
     fetchCategories();
-  }, []);
 
-  // Setup Intersection Observer untuk infinite scroll
-  useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: '300px',
-      threshold: 0.1
-    };
-
-    observerRef.current = new IntersectionObserver((entries) => {
-      const target = entries[0];
-      if (target.isIntersecting && hasMore && !isLoadingMore && !isFetching) {
-        setCurrentPage(prev => prev + 1);
-      }
-    }, options);
-
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
+    // Ambil per_page dari URL query parameter
+    const params = new URLSearchParams(window.location.search);
+    const perPageParam = params.get("per_page");
+    if (perPageParam) {
+      setPerPage(parseInt(perPageParam));
     }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [hasMore, isLoadingMore, isFetching]);
+  }, []);
 
   // Debounce search timer
   const searchTimeout = useRef(null);
 
-  // Fetch produk saat currentPage berubah
-  useEffect(() => {
-    if (currentPage === 1) {
-      FetchProduct(1, searchQuery, false);
-    } else {
-      FetchProduct(currentPage, searchQuery, true);
-    }
-  }, [currentPage]);
-
-  // Reset pagination saat search berubah
+  // Saat search atau perPage berubah: reset ke halaman 1
   useEffect(() => {
     setCurrentPage(1);
-    setHasMore(true);
-    setProducts([]);
-    setFilteredProducts([]);
-  }, [searchQuery]);
+  }, [searchQuery, perPage]);
+
+  // Fetch produk saat currentPage, perPage, atau searchQuery berubah
+  useEffect(() => {
+    FetchProduct(currentPage, searchQuery, perPage);
+  }, [currentPage, perPage, searchQuery]);
 
   // Modal control
   function openCreateModal() {
@@ -186,6 +141,7 @@ export default function Dashboard() {
       images: [],
     });
     setImagePreview([]);
+    setFieldErrors({});
     setShowModal(true);
   }
 
@@ -224,6 +180,7 @@ export default function Dashboard() {
         images: [],
       });
       setImagePreview([]);
+      setFieldErrors({});
 
       setShowModal(true);
     } catch (error) {
@@ -234,6 +191,32 @@ export default function Dashboard() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setFieldErrors({});
+
+    // Validasi form di client-side
+    const errors = {};
+    if (!formData.name.trim()) {
+      errors.name = ["The name field is required."];
+    }
+    if (!formData.price) {
+      errors.price = ["The price field is required."];
+    }
+    if (!formData.stock) {
+      errors.stock = ["The stock field is required."];
+    }
+    if (!formData.description.trim()) {
+      errors.description = ["The description field is required."];
+    }
+    if (!formData.category_id) {
+      errors.category_id = ["The category id field is required."];
+    }
+
+    // Jika ada error, tampilkan dan jangan submit
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setLoading(true);
 
     const url = editingProduct
@@ -263,10 +246,13 @@ export default function Dashboard() {
       const data = await res.json();
       if (res.ok) {
         setShowModal(false);
+        // Reset search dan page untuk refresh data
         setCurrentPage(1);
-        setHasMore(true);
-        setProducts([]);
-        setFilteredProducts([]);
+        setSearchQuery("");
+      } else if (data.message === "Invalid fields" && data.errors) {
+        // Set field errors dari response backend
+        setFieldErrors(data.errors);
+        setLoading(false);
       } else {
         setErrorMessage(data.message || "Gagal menyimpan data");
         setShowErrorModal(true);
@@ -301,11 +287,9 @@ export default function Dashboard() {
 
       if (res.ok) {
         setShowDeleteModal(false);
-        // Reset pagination dan fetch pertama halaman
+        // Reset search dan page untuk refresh data
         setCurrentPage(1);
-        setHasMore(true);
-        setProducts([]);
-        setFilteredProducts([]);
+        setSearchQuery("");
       } else {
         const err = await res.json();
         setErrorMessage(err.message || "Gagal menghapus produk");
@@ -320,7 +304,15 @@ export default function Dashboard() {
   }
 
   function handleSearch(keyword) {
-    setSearchQuery(keyword);
+    // Clear previous timeout
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    // Set debounce timer (500ms)
+    searchTimeout.current = setTimeout(() => {
+      setSearchQuery(keyword);
+    }, 500);
   }
 
   return (
@@ -335,7 +327,21 @@ export default function Dashboard() {
 
         <SearchBar title="Product" onSearch={handleSearch} />
 
-        <div className="flex justify-end items-center mb-10 mt-8">
+        <div className="flex justify-between items-center mb-10 mt-8">
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium">per page:</label>
+            <select
+              value={perPage}
+              onChange={(e) => setPerPage(parseInt(e.target.value))}
+              className="border border-gray-300 rounded px-3 py-2 text-sm"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
           <button
             onClick={openCreateModal}
             className="bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-2 px-5 rounded-xl shadow-lg hover:scale-105 transition-all text-lg"
@@ -359,7 +365,6 @@ export default function Dashboard() {
                   onDelete={() => openDeleteModal(product)}
                 />
               ))}
-              {isLoadingMore && <CardSkeletons />}
             </>
           ) : (
             <div className="text-center text-gray-500 w-full py-8">
@@ -368,16 +373,51 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Trigger element untuk Intersection Observer */}
-        {hasMore && filteredProducts.length > 0 && (
-          <div ref={loadMoreRef} className="h-10 flex justify-center items-center">
-            {!isLoadingMore && <div className="text-gray-400 text-sm">Loading more...</div>}
+        {/* Pagination Controls */}
+        {filteredProducts.length > 0 && (
+          <div className="flex justify-center items-center gap-3 mt-8">
+            <button
+              onClick={() => setCurrentPage(pagination.current_page - 1)}
+              disabled={pagination.current_page === 1 || isFetching}
+              className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-all"
+            >
+              ← Previous
+            </button>
+
+            <div className="flex items-center gap-2">
+              {Array.from({ length: pagination.last_page }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    disabled={isFetching}
+                    className={`px-3 py-2 rounded-lg transition-all ${pagination.current_page === page
+                        ? "bg-purple-500 text-white"
+                        : "border border-gray-300 hover:bg-gray-100"
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(pagination.current_page + 1)}
+              disabled={pagination.current_page === pagination.last_page || isFetching}
+              className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-all"
+            >
+              Next →
+            </button>
           </div>
         )}
 
-        {!hasMore && filteredProducts.length > 0 && (
-          <div className="text-center text-gray-400 py-8">
-            Tidak ada produk lagi
+        {/* Info Pagination */}
+        {filteredProducts.length > 0 && (
+          <div className="text-center text-gray-600 text-sm mt-4">
+            Showing {(pagination.current_page - 1) * pagination.per_page + 1} to{" "}
+            {Math.min(pagination.current_page * pagination.per_page, pagination.total)} of{" "}
+            {pagination.total} products
           </div>
         )}
 
@@ -389,61 +429,117 @@ export default function Dashboard() {
                 {editingProduct ? "Edit Produk" : "Tambah Produk"}
               </h2>
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                <input
-                  type="text"
-                  placeholder="Nama produk"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Harga"
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
-                  }
-                  className="border p-2 rounded"
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Stok"
-                  value={formData.stock}
-                  onChange={(e) =>
-                    setFormData({ ...formData, stock: e.target.value })
-                  }
-                  className="border p-2 rounded"
-                  required
-                />
-                <textarea
-                  placeholder="Deskripsi"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="border p-2 rounded"
-                />
+                {/* Nama Produk */}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Nama produk"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    onFocus={() => setFieldErrors({ ...fieldErrors, name: [] })}
+                    className={`w-full border p-2 rounded ${
+                      fieldErrors.name ? "border-red-500 bg-red-50" : "border-gray-300"
+                    }`}
+                  />
+                  {fieldErrors.name && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {fieldErrors.name[0]}
+                    </p>
+                  )}
+                </div>
 
-                <select
-                  value={formData.category_id}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      category_id: parseInt(e.target.value),
-                    })
-                  }
-                  className="border p-2 rounded"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                {/* Harga */}
+                <div>
+                  <input
+                    type="number"
+                    placeholder="Harga"
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
+                    onFocus={() => setFieldErrors({ ...fieldErrors, price: [] })}
+                    className={`w-full border p-2 rounded ${
+                      fieldErrors.price ? "border-red-500 bg-red-50" : "border-gray-300"
+                    }`}
+                  />
+                  {fieldErrors.price && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {fieldErrors.price[0]}
+                    </p>
+                  )}
+                </div>
+
+                {/* Stok */}
+                <div>
+                  <input
+                    type="number"
+                    placeholder="Stok"
+                    value={formData.stock}
+                    onChange={(e) =>
+                      setFormData({ ...formData, stock: e.target.value })
+                    }
+                    onFocus={() => setFieldErrors({ ...fieldErrors, stock: [] })}
+                    className={`w-full border p-2 rounded ${
+                      fieldErrors.stock ? "border-red-500 bg-red-50" : "border-gray-300"
+                    }`}
+                  />
+                  {fieldErrors.stock && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {fieldErrors.stock[0]}
+                    </p>
+                  )}
+                </div>
+
+                {/* Deskripsi */}
+                <div>
+                  <textarea
+                    placeholder="Deskripsi"
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    onFocus={() => setFieldErrors({ ...fieldErrors, description: [] })}
+                    className={`w-full border p-2 rounded ${
+                      fieldErrors.description ? "border-red-500 bg-red-50" : "border-gray-300"
+                    }`}
+                  />
+                  {fieldErrors.description && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {fieldErrors.description[0]}
+                    </p>
+                  )}
+                </div>
+
+                {/* Kategori */}
+                <div>
+                  <select
+                    value={formData.category_id}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        category_id: parseInt(e.target.value),
+                      })
+                    }
+                    onFocus={() => setFieldErrors({ ...fieldErrors, category_id: [] })}
+                    className={`w-full border p-2 rounded ${
+                      fieldErrors.category_id ? "border-red-500 bg-red-50" : "border-gray-300"
+                    }`}
+                  >
+                    <option value="">Pilih Kategori</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  {fieldErrors.category_id && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {fieldErrors.category_id[0]}
+                    </p>
+                  )}
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Gambar Produk</label>
