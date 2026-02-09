@@ -35,12 +35,13 @@ class ProductController extends Controller
             "page" => $products->currentPage(),
             "per_page" => $products->perPage(),
             "all_products" => $products->map(function ($products) {
+                $image = $products->images->first();
                 return [
                     "id" => $products->id,
                     "name" => $products->name,
                     "stock" => $products->stock,
                     "price" => 'Rp' . number_format($products->price, 2, ',', '.'),
-                    "image" => url($products->images[0]->image_path),
+                    "image" => $image ? url($image->image_path) : null,
                     "category_id" => $products->category_id
                 ];
             })
@@ -56,7 +57,9 @@ class ProductController extends Controller
             $query->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
         }
 
-        $products = $query->paginate(10);
+        $perPage = $request->per_page ?? 10;
+
+        $products = $query->paginate($perPage);
 
         return response()->json([
             "pagination" => [
@@ -68,11 +71,12 @@ class ProductController extends Controller
                 "prev_page_url" => $products->previousPageUrl(),
             ],
             "data" => $products->getCollection()->transform(function ($product) {
+                $image = $product->images->first();
                 return [
                     "id" => $product->id,
                     "name" => $product->name,
                     "price" => 'Rp' . number_format($product->price, 2, ',', '.'),
-                    "image" => url($product->images[0]->image_path)
+                    "image" => $image ? url($image->image_path) : null
                 ];
             }),
         ]);
@@ -105,18 +109,20 @@ class ProductController extends Controller
         $product = Product::create($input);
 
         if ($request->hasFile("images")) {
+            $slug = uniqid();
+            $imageCounter = 1;
             foreach ($request->file("images") as $file) {
-                $slug = uniqid();
                 $path = $file->storeAs(
-                    "images/$slug", // folder
-                    "image" . $slug . "." . $file->extension(),
-                    'public' // disk storage
+                    "images/$slug",
+                    "image" . $imageCounter . "." . $file->extension(),
+                    'public'
                 );
 
                 ProductImage::create([
                     "product_id" => $product->id,
                     "image_path" => "storage/" . $path
                 ]);
+                $imageCounter++;
             }
         }
 
@@ -218,10 +224,11 @@ class ProductController extends Controller
 
             // Simpan images baru
             $slug = uniqid();
+            $imageCounter = 1;
             foreach ($request->file("images") as $file) {
                 $path = $file->storeAs(
                     "images/$slug",
-                    "image" . $slug . "." . $file->extension(),
+                    "image" . $imageCounter . "." . $file->extension(),
                     'public'
                 );
 
@@ -229,6 +236,7 @@ class ProductController extends Controller
                     "product_id" => $product->id,
                     "image_path" => "storage/" . $path
                 ]);
+                $imageCounter++;
             }
         }
 
