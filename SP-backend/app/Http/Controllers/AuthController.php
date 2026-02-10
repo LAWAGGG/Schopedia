@@ -59,7 +59,7 @@ class AuthController extends Controller
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 "message" => "User dengan email {$request->email} tidak ditemukan atau password salah."
-            ], 404);
+            ], 401);
         }
 
         $user = Auth::user();
