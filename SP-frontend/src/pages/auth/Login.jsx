@@ -34,24 +34,24 @@ export default function Login() {
                 body: JSON.stringify({ email, password, remember_me: remember }),
             });
 
-            const data = await res.json();
-            console.log(data);
-
-            // batasi akses di Android untuk admin/seller
-            if (isAndroid() && data.user.role !== "buyer") {
-                setLoading(false);
-                setAlertMessage("Not access permission");
-                return;
-            }
-
-            // batasi akses buyer di desktop web
-            if (data.user.role === "buyer" && isDesktopView()) {
-                setLoading(false);
-                setAlertMessage("Buyer access hanya tersedia di mobile/tablet view");
-                return;
-            }
-
             if (res.status === 200) {
+                const data = await res.json();
+                console.log(data);
+
+                // batasi akses di Android untuk admin/seller
+                if (isAndroid() && data.user.role !== "buyer") {
+                    setLoading(false);
+                    setAlertMessage("Not access permission");
+                    return;
+                }
+
+                // batasi akses buyer di desktop web
+                if (data.user.role === "buyer" && isDesktopView()) {
+                    setLoading(false);
+                    setAlertMessage("Buyer access hanya tersedia di mobile/tablet view");
+                    return;
+                }
+
                 setLoading(false);
 
                 // simpan token, name, dan role
@@ -61,7 +61,7 @@ export default function Login() {
                 if (data.user.role === "admin") navigate("/dashboardadmin");
                 else if (data.user.role === "seller") navigate("/dashboardseller");
                 else if (data.user.role === "buyer") navigate("/dashboard");
-            } else if (res.status === 404) {
+            } else if (res.status === 401) {
                 setLoading(false);
                 setError("Email atau password salah!");
             } else if (res.status === 422) {
