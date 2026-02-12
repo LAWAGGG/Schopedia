@@ -39,6 +39,8 @@ export default function Profile() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log("Cek", preview);
+
   async function handleLogout(e) {
     e.preventDefault();
 
@@ -52,8 +54,8 @@ export default function Profile() {
     });
 
     if (res.status === 200) {
-      removeToken(); // WAJIB
-      navigate("/"); // balik ke login
+      removeToken();
+      navigate("/");
     }
   }
 
@@ -76,7 +78,7 @@ export default function Profile() {
         });
 
         const data = await res.json();
-        console.log(data);
+        console.log("Ck Profile", data);
 
         setUser({
           id: data.own_profile.id || "",
@@ -104,6 +106,7 @@ export default function Profile() {
     setPreview(URL.createObjectURL(file));
   };
 
+
   const handleSave = async (e) => {
     e.preventDefault();
     const token = getToken();
@@ -129,47 +132,54 @@ export default function Profile() {
             Authorization: `Bearer ${token}`,
           },
           body: formData,
-        },
+        }
       );
 
       const data = await res.json();
 
       if (res.ok) {
-        // =========================
-        // UPDATE STATE USER
-        // =========================
+
         const updated = data.user || data.own_profile || {};
+        
+        const newImageUrl = updated.image
+          ? updated.image.startsWith("http")
+            ? `${updated.image}?t=${Date.now()}`
+            : `${import.meta.env.VITE_API_URL}${updated.image}?t=${Date.now()}`
+          : user.image;
 
         setUser((prev) => ({
           id: updated.id || prev.id,
           name: updated.name || prev.name,
           email: updated.email || prev.email,
           phone_number: updated.phone_number || prev.phone_number,
-          image: updated.image
-            ? updated.image.startsWith("http")
-              ? updated.image
-              : `${import.meta.env.VITE_API_URL}${updated.image}`
-            : prev.image,
+          image: newImageUrl,
         }));
 
-        // reset form
-        setForm((prev) => ({ ...prev, password: "" }));
-        setPreview(null);
+        setForm({
+          name: "",
+          email: "",
+          password: "",
+          phone_number: "",
+          imageFile: null,
+        });
+        setPreview(null); // Reset preview SETELAH state update
 
-        // Perbaiki pemanggilan setToken: token, rememberMe, name, role
-        // Kita asumsikan default rememberMe = true jika token ada di localStorage
+        // Perbaiki pemanggilan setToken
         const isRemembered = localStorage.getItem("token") !== null;
         setToken(
           token,
           isRemembered,
           updated.name || user.name,
-          updated.role || user.role || "buyer",
+          updated.role || user.role || "buyer"
         );
 
-        // alert("Profil berhasil diperbarui!"); // Optional feedback
+        // alert("Profil berhasil diperbarui!");
+      } else {
+        alert("Gagal update profil: " + (data.message || "Unknown error"));
       }
     } catch (error) {
       console.error("Gagal update profil:", error);
+      alert("Terjadi kesalahan saat update profil");
     } finally {
       setSaving(false);
     }
@@ -201,6 +211,10 @@ export default function Profile() {
               <img
                 src={preview || user.image}
                 className="w-24 h-24 rounded-full mt-5 border object-cover shadow-md"
+                key={user.image} // ← TAMBAHKAN KEY UNTUK FORCE RE-RENDER
+                onError={(e) => {
+                  e.target.src = "/default.png"; // ← FALLBACK IMAGE
+                }}
               />
               <label
                 htmlFor="imageUpload"
@@ -294,6 +308,10 @@ export default function Profile() {
                   <input
                     type="text"
                     className="bg-transparent outline-none flex-1"
+                    value={form.phone_number}
+                    onChange={(e) =>
+                      setForm({ ...form, phone_number: e.target.value })
+                    }
                     placeholder={user.phone_number}
                   />
                 </div>
@@ -325,19 +343,43 @@ export default function Profile() {
 
       {/* MOBILE BOTTOM NAV */}
       <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.15)] flex justify-around items-center h-18 md:hidden z-50">
-          <button onClick={() => navigate("/dashboard")} className={`flex flex-col items-center ${location.pathname === "/dashboard" ? "text-purple-600" : "text-gray-500"}`}>
-            <Home size={22} />
-          </button>
-          <button onClick={() => navigate("/ordersBuyyer")} className={`flex flex-col items-center ${location.pathname === "/ordersBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
-            <Truck size={22} />
-          </button>
-          <button onClick={() => navigate("/walletBuyyer")} className={`flex flex-col items-center ${location.pathname === "/walletBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
-            <Wallet size={22} />
-          </button>
-          <button onClick={() => navigate("/profileBuyyer")} className={`flex flex-col items-center ${location.pathname === "/profileBuyyer" ? "text-purple-600" : "text-gray-500"}`}>
-            <User size={22} />
-          </button>
-        </div>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className={`flex flex-col items-center ${location.pathname === "/dashboard"
+              ? "text-purple-600"
+              : "text-gray-500"
+            }`}
+        >
+          <Home size={22} />
+        </button>
+        <button
+          onClick={() => navigate("/ordersBuyyer")}
+          className={`flex flex-col items-center ${location.pathname === "/ordersBuyyer"
+              ? "text-purple-600"
+              : "text-gray-500"
+            }`}
+        >
+          <Truck size={22} />
+        </button>
+        <button
+          onClick={() => navigate("/walletBuyyer")}
+          className={`flex flex-col items-center ${location.pathname === "/walletBuyyer"
+              ? "text-purple-600"
+              : "text-gray-500"
+            }`}
+        >
+          <Wallet size={22} />
+        </button>
+        <button
+          onClick={() => navigate("/profileBuyyer")}
+          className={`flex flex-col items-center ${location.pathname === "/profileBuyyer"
+              ? "text-purple-600"
+              : "text-gray-500"
+            }`}
+        >
+          <User size={22} />
+        </button>
+      </div>
     </div>
   );
 }
